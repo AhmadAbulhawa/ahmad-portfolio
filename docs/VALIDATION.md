@@ -4,6 +4,10 @@
 
 The final approval review is **desktop only at 1440px**: see [screenshots, confirmed fixes and current evidence](qa/README.md). That review corrects the earlier moving privacy-mask timing and verifies all 634 final delivery frames; it supersedes the earlier mask sampling. The mobile observations below describe the initial build, not a new mobile approval pass.
 
+## Latest CV integration
+
+The owner-supplied PDF is included unchanged. Both homepage download links were clicked in real Chromium at 1440px and returned the exact source bytes. HTTP 200 and application/pdf delivery, no automatic PDF request, no desktop overflow/runtime errors, and CLS 0 were verified. The homepage approval screenshot was refreshed. Lint, typecheck and build passed again; the export contains 84 files totaling 8.09 MiB.
+
 ## Build and static delivery
 
 - `npm run lint`: passed, no ESLint errors or warnings.
@@ -51,4 +55,4 @@ An uncompressed Python development server scored 82 for mobile performance. Clou
 
 ## Limits and remaining content
 
-The initial longer Garage recording could not be transferred; the later owner-selected archive was used instead, preserving all three selected scenes in full. No latest CV PDF or downloadable versions of the inline UI screenshots/personal photography were available. There is no fake CV download or invented imagery. The Framer reference was network-blocked. Final domain remains unset; canonical URLs, absolute social image URLs, and the sitemap become available when `NEXT_PUBLIC_SITE_URL` is set for the approved domain and the build is rerun.
+The initial longer Garage recording could not be transferred; the later owner-selected archive was used instead, preserving all three selected scenes in full. The latest owner-supplied CV PDF is now included with working hero/contact download links. Downloadable versions of the inline UI screenshots/personal photography remain unavailable; no invented imagery is used. The Framer reference was network-blocked. Final domain remains unset; canonical URLs, absolute social image URLs, and the sitemap become available when `NEXT_PUBLIC_SITE_URL` is set for the approved domain and the build is rerun.

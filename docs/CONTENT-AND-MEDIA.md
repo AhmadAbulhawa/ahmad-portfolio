@@ -59,9 +59,12 @@ The archive and extracted originals remain outside public/ and Git. `scripts/pre
 
 Homepage: the first widescreen scene. Case study: a single widescreen stage progressively changes among three scenes, with native playback controls and previous/next scene buttons. A clip mounts only on explicit play; scrolling updates posters without downloading video and releases a previous player. No full-length original recording is served.
 
+## CV — supplied and integrated
+
+The newest owner-supplied PDF is served unchanged as `public/ahmad-abulhawa-cv.pdf` (SHA-256: `bf980631003b6eed80a4bc6162160a36a4bafade0e55f2a5e395c4279d83273c`). The hero and contact section provide native download links. The source attachment is preserved; no qualifications or employment claims were added during this integration.
+
 ## Other unavailable assets
 
-- CV: no actual PDF provided. No disabled or fake download link is shown. Add the newest authorized PDF as `public/ahmad-abulhawa-cv.pdf` and rebuild; hero/contact actions appear automatically.
 - Three inline AqarAI UI screenshots and the newer tower image are visible in chat but have no downloadable file paths in this execution environment. They are not re-created or replaced with fake UI. Attach them as accessible image files for integration. Current Munjiz imagery is extracted from the owner's original video, and AqarAI uses its supplied visualization.
 - No personal photograph was supplied or recovered. The design is intentionally typography-led.
 - Final domain is not selected. Set NEXT_PUBLIC_SITE_URL to the approved HTTPS origin before the approved production build. Until then no invented canonical URL or localhost social image is emitted.

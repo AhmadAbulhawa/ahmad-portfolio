@@ -31,7 +31,7 @@ python -m http.server 3000 --directory out
 
 Garage Tahmeen uses the owner's three selected recordings in full, with no additional temporal trimming. Only compression, silent delivery, exact-ratio resizing, and privacy masks for the clipped header and identity-bearing copy/location are applied. Munjiz uses three separately edited moments selected after reviewing its complete portrait recording. Neither project serves a full-length continuous source recording.
 
-No CV was provided. Add `public/ahmad-abulhawa-cv.pdf` and rebuild to enable real download actions automatically.
+The owner-supplied CV is included unchanged at `public/ahmad-abulhawa-cv.pdf`. Download actions are available in the hero and contact section.
 
 ## Documentation
 

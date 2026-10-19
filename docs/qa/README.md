@@ -17,6 +17,10 @@ A full-page screenshot shows a sticky media stage only once. These additional vi
 - Garage Tahmeen: [scene 2](screenshots/garage-tahmeen-scene-2-1440.png), [scene 3](screenshots/garage-tahmeen-scene-3-1440.png).
 - Munjiz: [scene 2](screenshots/munjiz-scene-2-1440.png), [scene 3](screenshots/munjiz-scene-3-1440.png).
 
+## CV integration follow-up
+
+The supplied one-page PDF is now available through both homepage Download CV links. Both links were clicked in Chromium at 1440px; each downloaded bytes identical to the supplied file (SHA-256 recorded in the content audit). The static export serves it as application/pdf with HTTP 200, and does not fetch it until requested. The homepage screenshot has been refreshed after adding the links: no overflow, runtime errors or layout shifts were observed. ESLint, TypeScript and the production static export pass again. The case-study screenshots and media audit below remain from the preceding desktop review; their assets were unchanged.
+
 ## Confirmed problems fixed
 
 1. **Moving privacy-mask timing.** The recording's actual time base is 1/30017. Scheduling its moving masks against an assumed 30 fps left a small number of partially exposed frames during fast scrolling. Masks now follow each source frame's actual presentation timestamp, with a wider privacy envelope while the paragraph crosses the top boundary. No frames or scene duration have been cut.
