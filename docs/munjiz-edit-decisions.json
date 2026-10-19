@@ -1,0 +1,23 @@
+[
+  {
+    "name": "munjiz-arrival",
+    "source_start": 0.8,
+    "source_end": 3.3,
+    "rationale": "Tower approach into the presentation studio",
+    "bytes": 534396
+  },
+  {
+    "name": "munjiz-studios",
+    "source_start": 3.7,
+    "source_end": 7.2,
+    "rationale": "Curved facade movement through exam and project studios",
+    "bytes": 647062
+  },
+  {
+    "name": "munjiz-perspective",
+    "source_start": 7.6,
+    "source_end": 11.15,
+    "rationale": "Career studio transition into the work collection",
+    "bytes": 664463
+  }
+]

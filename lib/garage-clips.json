@@ -1,0 +1,41 @@
+{
+  "reviewedForPublicDisplay": true,
+  "clips": [
+    {
+      "src": "/projects/garage-tahmeen-rotation.mp4",
+      "poster": "/projects/garage-tahmeen-rotation.webp",
+      "width": 1434,
+      "height": 618,
+      "label": "Garage Tahmeen \u2014 Vehicle rotation",
+      "description": "An authentic excerpt from the owner-supplied Garage Tahmeen recording. The camera moves from the front of the vehicle to a settled rear view, preserving the original continuous turn. Identity-bearing details are masked for client privacy.",
+      "badge": "Play scene",
+      "duration": "8.5s",
+      "title": "A full change of perspective.",
+      "note": "The camera moves from the front of the vehicle to a settled rear view, preserving the original continuous turn."
+    },
+    {
+      "src": "/projects/garage-tahmeen-scan.mp4",
+      "poster": "/projects/garage-tahmeen-scan.webp",
+      "width": 1434,
+      "height": 618,
+      "label": "Garage Tahmeen \u2014 The technical reveal",
+      "description": "An authentic excerpt from the owner-supplied Garage Tahmeen recording. The original scanning transition exposes the vehicle\u2019s inner structure, keeping the visual reveal intact. Identity-bearing details are masked for client privacy.",
+      "badge": "Play scene",
+      "duration": "8.3s",
+      "title": "Design, beneath the surface.",
+      "note": "The original scanning transition exposes the vehicle\u2019s inner structure, keeping the visual reveal intact."
+    },
+    {
+      "src": "/projects/garage-tahmeen-drive.mp4",
+      "poster": "/projects/garage-tahmeen-drive.webp",
+      "width": 1434,
+      "height": 618,
+      "label": "Garage Tahmeen \u2014 The driving scene",
+      "description": "An authentic excerpt from the owner-supplied Garage Tahmeen recording. A short driving scene brings the interface and automotive narrative back together. Identity-bearing details are masked for client privacy.",
+      "badge": "Play scene",
+      "duration": "4.3s",
+      "title": "Motion that carries the story.",
+      "note": "A short driving scene brings the interface and automotive narrative back together."
+    }
+  ]
+}
