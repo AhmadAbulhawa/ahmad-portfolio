@@ -1,26 +1,9 @@
-# Real project demo footage
+# Authentic project media
 
-This portfolio showcases **actual user-supplied video recordings** rather than embedding or recreating the original websites.
+Only optimized, authorized delivery assets belong in this directory. Preserve originals outside public/ and Git. Never add a full-length continuous project recording; preserve the owner-selected clip boundaries.
 
-## Garage Tahmeen
+Munjiz: three separately encoded portrait scenes (`munjiz-arrival`, `munjiz-studios`, `munjiz-perspective`), each with MP4 and WebP poster. AqarAI: one trimmed interior visualization and poster, explicitly distinct from application UI. CISmate: three authentic application screenshots, encoded as WebP.
 
-- Source: original widescreen cinematic automotive website screen recording provided by the owner, approximately 50 seconds (about 44 MB).
-- Codex should trim carefully to emphasize compelling transitions, interactive scroll, and motion.
-- Create web-optimized version(s) and poster frame, preserving aspect ratio and visual quality.
-- Display publicly as **Garage Tahmeen**. Do not include the original client's name, repository link, or unauthorized visual assets in public-facing text.
-- The original file exceeds Cloudflare Pages' 25 MiB limit per static asset; compress/split or host appropriately before production deployment.
+Garage Tahmeen: three original owner-selected segments, optimized without further trimming (`garage-tahmeen-rotation`, `garage-tahmeen-scan`, `garage-tahmeen-drive`). The exact original aspect ratio and full scene timing are preserved. The clipped header and moving identity-bearing copy/location are masked for privacy. Matching posters and small responsive posters are extracted from those sanitized delivery clips. See `lib/garage-clips.json` and `docs/CONTENT-AND-MEDIA.md`.
 
-## Munjiz
-
-- Source: user-provided vertical H.264 MP4 named `WhatsApp Video 2026-10-19 at 6.08.45 PM.mp4`.
-- Approximately 12 seconds, 464×848, 2.4 MB.
-- It shows a cinematic Munjiz branding/landing experience, not a complete walkthrough of app features.
-- Preserve portrait framing; render within a responsive portrait showcase with a poster image. Avoid forced 16:9 crop.
-
-## Media handling
-
-- Owner uploads the **original** source videos; do not replace with previously prepared sample compressions.
-- Never use random stock imagery or fabricate project demos.
-- Codex can trim and web-optimize copies, but must preserve originals during editing.
-- Don't autoplay heavy videos at page load. Show poster first, use lazy loading and native playback on tap/click, with muted autoplay only for appropriately lightweight previews and reduced-motion safeguards.
-- Expected production media filenames can be decided after both originals are present in the repository.
+Keep every asset below 25 MiB. Use H.264/yuv420p with fast-start, silent delivery, unchanged aspect ratio, and scene-aligned trims. Real source files must never be overwritten.
