@@ -38,5 +38,6 @@ No CV was provided. Add `public/ahmad-abulhawa-cv.pdf` and rebuild to enable rea
 - [Content sources, exact edits, media status, integration steps](docs/CONTENT-AND-MEDIA.md)
 - [Cloudflare Pages setup](docs/CLOUDFLARE-PAGES.md)
 - [Validation evidence](docs/VALIDATION.md)
+- [Desktop approval screenshots and final visual QA](docs/qa/README.md)
 
 Set `NEXT_PUBLIC_SITE_URL` to the final approved HTTPS origin before production build. No domain is guessed. No website deployment or publication is authorized by this implementation.

@@ -1,6 +1,8 @@
 # Validation evidence
 
-19 October 2026. No deployment or publication performed.
+19 October 2026. No merge, deployment or publication performed by the assistant. GitHub reports PR #1 was already merged separately; the final QA fixes await review on `fix/desktop-visual-qa`.
+
+The final approval review is **desktop only at 1440px**: see [screenshots, confirmed fixes and current evidence](qa/README.md). That review corrects the earlier moving privacy-mask timing and verifies all 634 final delivery frames; it supersedes the earlier mask sampling. The mobile observations below describe the initial build, not a new mobile approval pass.
 
 ## Build and static delivery
 

@@ -1,0 +1,30 @@
+{
+  "ocr": {
+    "frames": 634,
+    "posters": 6,
+    "scanned": 640,
+    "hits": [],
+    "elapsed_seconds": 186,
+    "method": "Every native delivery frame and each full/small poster; Arabic+English OCR. Visual inspection and mask coverage are checked separately; OCR is not treated as proof alone."
+  },
+  "coverage": {
+    "native_frames": 634,
+    "visible_mask_regions_checked": 920,
+    "failed": [],
+    "method": "Every delivery frame: opaque coverage in the clipped-logo region plus frame-aligned moving identity-copy/location rectangles, inset to exclude codec boundary ringing."
+  },
+  "delivery_sha256": {
+    "garage-tahmeen-drive-small.webp": "f40122d9b5428a16a7a20cb01d78aa52e6d65a31fc92d8430074d561e9ac86f0",
+    "garage-tahmeen-drive.mp4": "7a337fde4413fe0195723ad4e960882119e19b1273181495ec7abbc20a4d7d1c",
+    "garage-tahmeen-drive.webp": "d986fac011421495aa1f08ce2b705f5fca63e3f0a3fde18d1f0e73fba9b0d583",
+    "garage-tahmeen-rotation-small.webp": "913e61dd3aa02c4cb20b6fa7f3e9234ba966a79e2ac94f758502afbb97faa86a",
+    "garage-tahmeen-rotation.mp4": "42e299816778b4caf974a87484c258157807cc1e4d2e3fc23a4ac86909837d46",
+    "garage-tahmeen-rotation.webp": "bd4ecfd0d3090a3135acd032eacd1ab0a64b1a78132304c3f69307913eabd05d",
+    "garage-tahmeen-scan-small.webp": "ef7bc832aef3a45bcf8100a1120270d6b34fa750c5c566aecae556bbc24dbd43",
+    "garage-tahmeen-scan.mp4": "326d388d33131ef44786ec99baf11a7f22d7adb04828538bacbd74594e61c9b1",
+    "garage-tahmeen-scan.webp": "f112c990357b9a25d3662b9a65e176241c0d6bf80498e9c67a4753a742124ce9"
+  },
+  "source_frame_counts": [256, 249, 129],
+  "delivery_dimensions": [1434, 618],
+  "original_dimensions": [1912, 824]
+}
