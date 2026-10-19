@@ -1,0 +1,38 @@
+[
+  {
+    "scene": "rotation",
+    "source_segment": 1,
+    "editing": "owner-selected clip; no additional temporal trimming",
+    "header_mask_pixels": 22,
+    "moving_copy_and_location_redacted": true,
+    "privacy_timing": "source-frame PTS",
+    "browser_scrollbar_masked": true,
+    "delivery_width": 1434,
+    "delivery_height": 618,
+    "source_sha256": "e1c12b48f09b3c5e6e5d300a406404ecde6b59a1f3c2dd37082eb0186486b43a"
+  },
+  {
+    "scene": "scan",
+    "source_segment": 2,
+    "editing": "owner-selected clip; no additional temporal trimming",
+    "header_mask_pixels": 22,
+    "moving_copy_and_location_redacted": false,
+    "privacy_timing": "source-frame PTS",
+    "browser_scrollbar_masked": true,
+    "delivery_width": 1434,
+    "delivery_height": 618,
+    "source_sha256": "196488c7a09dd7eec5825b5fd3c739884f58d33d25c6c2b87b89a3b75cacbe75"
+  },
+  {
+    "scene": "drive",
+    "source_segment": 3,
+    "editing": "owner-selected clip; no additional temporal trimming",
+    "header_mask_pixels": 22,
+    "moving_copy_and_location_redacted": false,
+    "privacy_timing": "source-frame PTS",
+    "browser_scrollbar_masked": true,
+    "delivery_width": 1434,
+    "delivery_height": 618,
+    "source_sha256": "c24b44f035bb51f086c4fa87646edf2a7bc01f24ed500e1fb848d9c2f7597797"
+  }
+]

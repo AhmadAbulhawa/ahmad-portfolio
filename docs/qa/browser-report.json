@@ -1,0 +1,70 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "scrollWidth": 1440,
+      "height": 5918,
+      "cls": 0,
+      "brokenImages": 0,
+      "runtimeErrors": 0,
+      "failedResources": 0,
+      "initialVideoRequests": 0
+    },
+    {
+      "slug": "garage-tahmeen",
+      "scrollWidth": 1440,
+      "height": 4123,
+      "cls": 0,
+      "brokenImages": 0,
+      "runtimeErrors": 0,
+      "failedResources": 0,
+      "initialVideoRequests": 0
+    },
+    {
+      "slug": "munjiz",
+      "scrollWidth": 1440,
+      "height": 4579,
+      "cls": 0,
+      "brokenImages": 0,
+      "runtimeErrors": 0,
+      "failedResources": 0,
+      "initialVideoRequests": 0
+    },
+    {
+      "slug": "aqar-ai",
+      "scrollWidth": 1440,
+      "height": 2832,
+      "cls": 0,
+      "brokenImages": 0,
+      "runtimeErrors": 0,
+      "failedResources": 0,
+      "initialVideoRequests": 0
+    },
+    {
+      "slug": "cismate",
+      "scrollWidth": 1440,
+      "height": 2693,
+      "cls": 0,
+      "brokenImages": 0,
+      "runtimeErrors": 0,
+      "failedResources": 0,
+      "initialVideoRequests": 0
+    }
+  ],
+  "interactions": [
+    "home: dialog playback, Escape, video release and focus restoration pass.",
+    "Homepage: all four project entry links navigate and return to selected work.",
+    "garage-tahmeen: all three scenes play at their native ratio; scroll, previous/next, source release and jump-to-top regression pass.",
+    "garage-tahmeen: next-project and back-to-work links navigate successfully.",
+    "munjiz: all three scenes play at their native ratio; scroll, previous/next, source release and jump-to-top regression pass.",
+    "munjiz: next-project and back-to-work links navigate successfully.",
+    "aqar-ai: dialog playback, Escape, video release and focus restoration pass.",
+    "aqar-ai: next-project and back-to-work links navigate successfully.",
+    "cismate: next-project and back-to-work links navigate successfully.",
+    "Reduced-motion desktop: immediate content and no smooth scrolling."
+  ]
+}

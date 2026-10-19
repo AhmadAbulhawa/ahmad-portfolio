@@ -1,0 +1,31 @@
+{
+  "name": "ahmad-abulhawa-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build && node scripts/check-export.mjs",
+    "typecheck": "next typegen && tsc --noEmit",
+    "lint": "eslint .",
+    "check:export": "node scripts/check-export.mjs",
+    "qa:desktop": "node scripts/qa-desktop.mjs"
+  },
+  "dependencies": {
+    "gsap": "^3.14.2",
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0",
+    "playwright": "^1.64.1",
+    "typescript": "^5.9.0"
+  }
+}
