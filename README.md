@@ -21,11 +21,11 @@ Related repositories for reference:
 
 **Use actual demo videos rather than recreating or embedding the original project websites inside the portfolio.**
 
-- **Garage Tahmeen:** Show a real, user-provided screen recording of its cinematic transitions, scroll interactions, and UI. Use the neutral portfolio-facing name only.
+- **Garage Tahmeen:** Show the user-provided screen recording of its cinematic transitions, scroll interactions, and UI. Use the neutral portfolio-facing name only. Expected assets: `public/projects/garage-tahmeen-preview.mp4` and `public/projects/garage-tahmeen-poster.webp` (prepared and ready to upload).
 - **Munjiz:** Show a real, user-provided screen recording of its interface, interactive components, motion, and RTL behavior.
 - Place a high-quality still poster/thumbnail before video load; clicking opens an accessible larger video player with native controls. Desktop may silently preview on hover/in-view if performance permits; mobile must work through tap and never depend on hover.
 - Prioritize load speed. Lazy-load the videos, use `preload="none"` or `metadata`, `playsInline`, muted hover previews, and reduced-motion safeguards. Compress assets and keep each static file within hosting size limits; do not load both full videos on initial page load.
-- If the real MP4/WebM files are not yet present, build polished poster/placeholder slots and document the exact expected filenames in `public/projects/`. **Never fabricate footage, fake demos, or recreate a miniature version of the project website as a substitute.**
+- If the real MP4/WebM files are not yet present in the repository, build polished poster/placeholder slots and document the exact expected filenames in `public/projects/`. **Never fabricate footage, fake demos, or recreate a miniature version of the project website as a substitute.**
 - Each project can still have a concise static case-study page with its video, key features, tech stack, and GitHub link. AqarAI can use authorized screenshots/visuals until a real demo video is available.
 
 ## Implementation requirements
