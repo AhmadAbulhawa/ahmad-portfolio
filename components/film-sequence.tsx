@@ -14,25 +14,29 @@ export function FilmSequence({ clips }: { clips: FilmClip[] }) {
   const id = useId();
   const clip = clips[active];
   useEffect(() => {
-    // The scroll position chooses a scene; it never starts a media download.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((entry) => entry.isIntersecting);
-        for (const entry of visible) {
-          const index = Number((entry.target as HTMLElement).dataset.scene);
-          if (index !== activeRef.current) {
-            activeRef.current = index;
-            setActive(index);
-            setPlaying(false);
-            setFailed(false);
-          }
-        }
-      },
-      { rootMargin: '-35% 0px -35% 0px', threshold: 0 },
-    );
-    chapters.current.forEach((el) => {
-      if (el) observer.observe(el);
-    });
+    // Read the viewport center with pixel coordinates. Percentage root margins
+    // depend on viewport width and can select stale scenes on wide displays.
+    let frame = 0;
+    function updateScene() {
+      frame = 0;
+      const center = window.innerHeight / 2;
+      let index = 0;
+      chapters.current.forEach((chapter, current) => {
+        if (chapter && chapter.getBoundingClientRect().top <= center) index = current;
+      });
+      if (index !== activeRef.current) {
+        activeRef.current = index;
+        setActive(index);
+        setPlaying(false);
+        setFailed(false);
+      }
+    }
+    function scheduleScene() {
+      if (!frame) frame = requestAnimationFrame(updateScene);
+    }
+    window.addEventListener('scroll', scheduleScene, { passive: true });
+    window.addEventListener('resize', scheduleScene);
+    updateScene();
     const visibility = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) setPlaying(false);
@@ -45,7 +49,9 @@ export function FilmSequence({ clips }: { clips: FilmClip[] }) {
     }
     document.addEventListener('visibilitychange', pauseWhenHidden);
     return () => {
-      observer.disconnect();
+      window.removeEventListener('scroll', scheduleScene);
+      window.removeEventListener('resize', scheduleScene);
+      cancelAnimationFrame(frame);
       visibility.disconnect();
       document.removeEventListener('visibilitychange', pauseWhenHidden);
     };
@@ -103,7 +109,11 @@ export function FilmSequence({ clips }: { clips: FilmClip[] }) {
                 width={clip.width}
                 height={clip.height}
                 alt={`Still from ${clip.label}`}
-                sizes={clip.width > clip.height ? '(max-width: 760px) calc(100vw - 40px), 800px' : '(max-width: 560px) 50vw, 340px'}
+                sizes={
+                  clip.width > clip.height
+                    ? '(max-width: 760px) calc(100vw - 40px), 800px'
+                    : '(max-width: 560px) 50vw, 340px'
+                }
               />
               <span className="play-badge">
                 <Play />

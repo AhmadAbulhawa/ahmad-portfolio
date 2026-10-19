@@ -31,12 +31,13 @@ python -m http.server 3000 --directory out
 
 Garage Tahmeen uses the owner's three selected recordings in full, with no additional temporal trimming. Only compression, silent delivery, exact-ratio resizing, and privacy masks for the clipped header and identity-bearing copy/location are applied. Munjiz uses three separately edited moments selected after reviewing its complete portrait recording. Neither project serves a full-length continuous source recording.
 
-No CV was provided. Add `public/ahmad-abulhawa-cv.pdf` and rebuild to enable real download actions automatically.
+The owner-supplied CV is included unchanged at `public/ahmad-abulhawa-cv.pdf`. Download actions are available in the hero and contact section.
 
 ## Documentation
 
 - [Content sources, exact edits, media status, integration steps](docs/CONTENT-AND-MEDIA.md)
 - [Cloudflare Pages setup](docs/CLOUDFLARE-PAGES.md)
 - [Validation evidence](docs/VALIDATION.md)
+- [Desktop approval screenshots and final visual QA](docs/qa/README.md)
 
 Set `NEXT_PUBLIC_SITE_URL` to the final approved HTTPS origin before production build. No domain is guessed. No website deployment or publication is authorized by this implementation.
