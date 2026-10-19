@@ -17,13 +17,24 @@ Related repositories for reference:
 - https://github.com/AhmadAbulhawa/almanaseer-cinematic-website (reference only; public portfolio should use the neutral name Garage Tahmeen and only cleared media)
 - https://github.com/AhmadAbulhawa/aqar-ai
 
+## Confirmed project presentation decision
+
+**Use actual demo videos rather than recreating or embedding the original project websites inside the portfolio.**
+
+- **Garage Tahmeen:** Show a real, user-provided screen recording of its cinematic transitions, scroll interactions, and UI. Use the neutral portfolio-facing name only.
+- **Munjiz:** Show a real, user-provided screen recording of its interface, interactive components, motion, and RTL behavior.
+- Place a high-quality still poster/thumbnail before video load; clicking opens an accessible larger video player with native controls. Desktop may silently preview on hover/in-view if performance permits; mobile must work through tap and never depend on hover.
+- Prioritize load speed. Lazy-load the videos, use `preload="none"` or `metadata`, `playsInline`, muted hover previews, and reduced-motion safeguards. Compress assets and keep each static file within hosting size limits; do not load both full videos on initial page load.
+- If the real MP4/WebM files are not yet present, build polished poster/placeholder slots and document the exact expected filenames in `public/projects/`. **Never fabricate footage, fake demos, or recreate a miniature version of the project website as a substitute.**
+- Each project can still have a concise static case-study page with its video, key features, tech stack, and GitHub link. AqarAI can use authorized screenshots/visuals until a real demo video is available.
+
 ## Implementation requirements
 
 - Next.js App Router, TypeScript, GSAP as needed.
 - Static export suitable for **Cloudflare Pages**; no SSR, server actions, or dynamic server APIs.
 - Optimized, responsive, mobile-first experience with accessible keyboard controls, reduced-motion support, and semantic markup.
 - Premium minimalist design: clear typography, project-first storytelling, restrained page motion.
-- Lightweight clips or image-sequence previews of real project interactions, lazy-loaded with fallback poster images.
+- Two real videos provided by the user (Munjiz and Garage Tahmeen) as the primary visual showcases, lazy-loaded with fallback poster images; no site-in-site reconstruction.
 - No fabricated project screenshots, fake metrics, testimonials, or experience claims.
 - Avoid unauthorized third-party logos, photos, and footage.
 - Pages/sections: Home, Selected Work, individual Project Case Studies, About/Skills, Contact.
