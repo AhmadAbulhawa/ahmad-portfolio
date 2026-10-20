@@ -33,6 +33,10 @@ try{
       rects:videos.map(v=>{const r=v.getBoundingClientRect();return [r.x,r.y,r.width,r.height]})};
   });
   await page.goto('http://127.0.0.1:3000/',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(() =>
+    document.querySelectorAll('.film-clip').length === 6 &&
+    document.querySelectorAll('.film-video').length === 1,
+    null,{timeout:15000});
   assert.equal(await page.locator('.film-clip').count(),6);
   assert.equal(await page.locator('.film-video').count(),1);
   let s=await summary();
