@@ -17,7 +17,7 @@ Ported from:
 ThreeUI Community (c) 2026 Meng To, MIT license:
 https://github.com/MengTo/threeui/blob/main/LICENSE
 
-Preserve this credit and the MIT license if these files are reused. The existing shader itself is unchanged; the React wrapper has reduced particles, capped DPR, adjusted pause-on-reduced-motion behavior and a transparent surface for our hero layering. No Pro/Beta source or external media are included.
+The full upstream copyright and MIT permission notice are included in `docs/THREEUI-MIT-LICENSE.txt`. Preserve the notice when these files are reused. The existing shader itself is unchanged; the React wrapper has reduced particles, capped DPR, adjusted pause-on-reduced-motion behavior and a transparent surface for our hero layering. No Pro/Beta source or external media are included.
 
 ## Review and validation
 Run with Node 22+:
