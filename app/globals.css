@@ -3278,3 +3278,27 @@ body:not(:has(.firn-journey)) .firn-mobile-panel {
   .firn-portrait{opacity:1;transform:none!important;}
   .firn-feature{transform:none!important;transition:none!important;}
 }
+
+
+/* Portrait treatment: crop away the screenshot's lower pre-rendered titles/navigation
+   until the clean portrait replacement has been uploaded. */
+.firn-portrait {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 43%, transparent 76%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 43%, transparent 76%);
+}
+@media(max-width:900px) {
+  .firn-stage{background:#eaf3f8;}
+  .firn-portrait {
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 42%, transparent 70%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 42%, transparent 70%);
+    background-position: 62% 0%;
+  }
+  .firn-headline {text-shadow:0 1px 14px rgba(230,238,246,.65);}
+  .firn-kicker{color:#364450;}
+}
+@media(max-width:560px) {
+  .firn-headline{bottom:clamp(76px,11vh,114px);}
+  .firn-scroll-label{position:absolute;right:0;bottom:-40px;}
+  .firn-skip{bottom:11px;}
+  .firn-topline span:first-child{font-size:7px;letter-spacing:.11em;}
+}
