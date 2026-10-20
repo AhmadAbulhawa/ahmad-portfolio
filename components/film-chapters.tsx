@@ -24,20 +24,23 @@ const clamp = (n: number) => Math.max(0, Math.min(1, n));
 function placeCards(cards: (HTMLAnchorElement | null)[], selected: number, reduced: boolean) {
   const mobile = window.innerWidth < 700;
   const width = window.innerWidth;
-  const radius = mobile ? Math.min(width * .46, 205) : Math.min(width * .29, 355);
-  const centralAngle = Math.PI * .26;
+  const radius = mobile ? Math.min(width * .44, 205) : Math.min(width * .29, 380);
   cards.forEach((card, index) => {
     if (!card) return;
-    const angle = (index - selected) * (Math.PI * .55) + centralAngle;
+    const level = index - selected;
+    // A true spiral staircase: one panel comes squarely to the front centre
+    // of the viewport; all others climb/circle the same axis behind it.
+    const angle = level * Math.PI * .61;
     const x = Math.sin(angle) * radius;
-    const z = Math.cos(angle) * radius;
-    const y = (index - selected) * (mobile ? 120 : 165);
-    const scale = .62 + (z + radius) / (2 * radius) * .38;
+    const z = Math.cos(angle) * radius - Math.abs(level) * 15;
+    const y = level * (mobile ? 155 : 195);
+    const scale = level === 0 ? 1 : Math.max(.52, .68 + (z / radius) * .10);
     card.style.transform =
       'translate3d(calc(-50% + ' + x.toFixed(1) + 'px),calc(-50% + ' +
       y.toFixed(1) + 'px),' + z.toFixed(1) + 'px) rotateY(' +
-      (-angle * 180 / Math.PI).toFixed(1) + 'deg) scale(' + scale.toFixed(3) + ')';
-    card.style.zIndex = String(Math.round(z + radius));
+      (-angle * 180 / Math.PI * .72).toFixed(1) + 'deg) scale(' + scale.toFixed(3) + ')';
+    card.style.zIndex = level === 0 ? '1000' : String(Math.round(z + radius));
+    card.style.opacity = level === 0 ? '1' : Math.abs(level) > 1 ? '.5' : '.8';
     card.style.transitionDuration = reduced ? '0ms' : '1050ms';
   });
 }
@@ -63,6 +66,8 @@ export function FilmChapters() {
     let lockedUntil = 0;
     let startY = 0;
     let startX = 0;
+    let bridgeTimer: ReturnType<typeof setTimeout> | null = null;
+    let bridgeBusy = false;
     const complete = [false, false, false];
     function setPosition(next: number) {
       position = next;
@@ -74,22 +79,29 @@ export function FilmChapters() {
     function release() {
       if (released) return;
       released = true;
+      if (bridgeTimer) clearTimeout(bridgeTimer);
+      bridgeBusy = false;
+      node!.dataset.bridge = '';
       node!.dataset.released = 'true';
+      document.documentElement.dataset.filmReleased = 'true';
       document.body.style.overflow = previousBody;
       document.documentElement.style.overflow = previousHtml;
+      if (!released) delete document.documentElement.dataset.filmReleased;
       videos.current.forEach(v => v?.pause());
     }
     if (location.hash && location.hash !== '#intro') {
       released = true;
       node.dataset.released = 'true';
+      document.documentElement.dataset.filmReleased = 'true';
     } else {
+      delete document.documentElement.dataset.filmReleased;
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
     }
     const second = videos.current[1];
     const primeSecond = () => {
-      if (second && second.readyState >= 1 && second.currentTime < 2.12) {
-        try { second.currentTime = 2.12; } catch { /* seek later */ }
+      if (second && second.readyState >= 1 && second.currentTime < 2.68) {
+        try { second.currentTime = 2.68; } catch { /* seek later */ }
       }
     };
     second?.addEventListener('loadedmetadata', primeSecond);
@@ -121,7 +133,7 @@ export function FilmChapters() {
       const begin = () => {
         if (released || position !== index) return;
         try {
-          if (index === 1 && video.currentTime < 2.12) video.currentTime = 2.12;
+          if (index === 1 && video.currentTime < 2.68) video.currentTime = 2.68;
           if (index !== 1 && video.currentTime > .1) video.currentTime = 0;
         } catch { /* wait for playback readiness */ }
         void video.play().catch(() => {
@@ -138,7 +150,7 @@ export function FilmChapters() {
     function go(direction: number) {
       if (released) return;
       const now = performance.now();
-      if (running || now < lockedUntil) return;
+      if (running || bridgeBusy || now < lockedUntil) return;
       lockedUntil = now + 950;
       if (direction < 0) {
         if (position > 0) {
@@ -164,6 +176,24 @@ export function FilmChapters() {
         return;
       }
       const next = position + 1;
+      if (next === 2) {
+        // Source 02 ends with a small sideways goggle; source 03 begins
+        // with a larger frontal product shot. Mask the geometry change using
+        // a short prismatic dark flash, never a low-quality video re-encode.
+        bridgeBusy = true;
+        node!.dataset.bridge = 'cover';
+        bridgeTimer = setTimeout(() => {
+          if (released) return;
+          setPosition(2);
+          playClip(2);
+          node!.dataset.bridge = 'reveal';
+          bridgeTimer = setTimeout(() => {
+            if (!released) node!.dataset.bridge = '';
+            bridgeBusy = false;
+          }, 500);
+        }, 280);
+        return;
+      }
       if (next === 3) {
         const video = videos.current[2];
         if (video && video.readyState >= 1) {
@@ -205,7 +235,27 @@ export function FilmChapters() {
       if (document.hidden) video?.pause();
       else if (running) void video?.play().catch(() => {});
     }
+    // Header links are explicit navigation and must bypass the gate even
+    // while a film is running. Ordinary wheel/touch inputs are still locked.
+    function onNavigation(event: MouseEvent) {
+      if (released || !(event.target instanceof Element)) return;
+      const anchor = event.target.closest<HTMLAnchorElement>('a[href]');
+      if (!anchor || !(anchor.closest('.firn-header') || anchor.classList.contains('film-explore-all'))) return;
+      const url = new URL(anchor.href, location.href);
+      if (url.origin !== location.origin || url.pathname !== location.pathname ||
+          !url.hash || url.hash === '#intro') return;
+      release();
+      const destination = decodeURIComponent(url.hash.slice(1));
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.getElementById(destination)?.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }));
+    }
+    function onHashChange() {
+      if (!released && location.hash && location.hash !== '#intro') release();
+    }
     const onSkip = () => release();
+    document.addEventListener('click', onNavigation, true);
+    window.addEventListener('hashchange', onHashChange);
     skip?.addEventListener('click', onSkip);
     window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -216,6 +266,9 @@ export function FilmChapters() {
     node.dataset.playing = 'false';
     setPosition(0);
     return () => {
+      if (bridgeTimer) clearTimeout(bridgeTimer);
+      document.removeEventListener('click', onNavigation, true);
+      window.removeEventListener('hashchange', onHashChange);
       skip?.removeEventListener('click', onSkip);
       second?.removeEventListener('loadedmetadata', primeSecond);
       endedHandlers.forEach(fn => fn());
@@ -253,6 +306,7 @@ export function FilmChapters() {
           ))}
         </div>
         <div className="film-ambient" aria-hidden="true" />
+        <div className="film-bridge" aria-hidden="true" />
         {!gallery && (
           <div className="film-sentence" key={currentChapter} aria-live="polite">
             <span className="film-micro">{content.eyebrow}</span>

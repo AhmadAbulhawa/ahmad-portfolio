@@ -147,3 +147,21 @@
 .film-journey[data-playing="false"] .film-next{opacity:1;}
 .film-journey .film-video{object-fit:cover;}
 @media(max-width:700px){.film-journey .film-video{object-fit:contain;}}
+
+
+/* V9 — use full frontal project placement with adjacent cards on a
+   rising/falling circular staircase, instead of a sidebar arrangement. */
+.film-glass-card {transition:transform 1050ms cubic-bezier(.22,1,.36,1),opacity 1050ms ease,border-color .3s,box-shadow .3s;}
+.film-glass-card.is-selected {border-color:#ffcfaa;box-shadow:0 0 0 2px rgba(128,211,255,.65),0 32px 100px #000d;}
+.film-bridge{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  opacity:0;
+  background:radial-gradient(ellipse at 50% 44%,rgba(48,36,100,.62),rgba(2,4,12,.95) 39%,#010207 77%);
+  transition:opacity .28s ease;
+}
+.film-journey[data-bridge="cover"] .film-bridge {opacity:1;}
+.film-journey[data-bridge="reveal"] .film-bridge {opacity:0;transition-duration:.47s;}
+@media(max-width:700px){
+ .film-helix{perspective:1100px;}
+ .film-glass-card.is-selected{box-shadow:0 0 0 2px #87ccf7,0 26px 80px #000c;}
+}

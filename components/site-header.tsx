@@ -24,7 +24,8 @@ export function SiteHeader({ cv }: { cv?: string }) {
     }
     document.addEventListener('keydown', onKeyDown);
     return () => {
-      document.body.style.overflow = previous;
+      document.body.style.overflow =
+        document.documentElement.dataset.filmReleased === 'true' ? '' : previous;
       document.removeEventListener('keydown', onKeyDown);
     };
   }, [open]);
