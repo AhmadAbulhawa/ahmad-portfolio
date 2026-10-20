@@ -420,3 +420,54 @@ body:has(.film-journey) .firn-mobile-panel a>span{color:#a1c2f6;}
  .film-journey .film-video-reverse-1,
  .film-journey .film-video-reverse-2 {object-position:center center;}
 }
+
+
+/* V15 mobile performance / portrait framing.
+   The original 1920x1080 films remain untouched. CSS portrait crop removes
+   letterbox bars without downloading or transcoding a second, lower-quality copy. */
+@media (max-width: 700px) {
+  .film-journey {height:100dvh!important;min-height:100dvh!important;}
+  .film-sticky {height:100dvh!important;}
+  .film-videos, .film-video{
+    width:100vw!important;
+    height:100dvh!important;
+    object-fit:cover!important;
+    object-position:50% 44%!important;
+    background:#030409;
+  }
+  .film-video-1, .film-video-2,
+  .film-video-reverse-1,.film-video-reverse-2 {
+    object-position:50% 50%!important;
+  }
+  .film-ambient{
+    background:linear-gradient(180deg,rgba(3,4,9,.10) 0%,transparent 46%,rgba(3,4,9,.54) 69%,#030409 99%)!important;
+  }
+  /* The compositor was simultaneously repainting three 3D glass blur
+     filters and a 19px Gaussian background on EACH spiral frame. */
+  .film-glass-card{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    box-shadow:0 10px 25px rgba(1,4,12,.55)!important;
+    will-change:transform,opacity;
+  }
+  .film-glass-card::before{opacity:.75;}
+  .film-card-art::before{filter:none!important;opacity:.15;}
+  .film-card-art-full{filter:none!important;}
+  .film-typed-letter{will-change:auto;filter:none!important;}
+  .film-sentence h1{text-shadow:0 1px 9px rgba(1,4,12,.70)!important;}
+  .film-gallery{perspective:none!important;}
+  .film-helix{perspective:1000px!important;}
+  .film-journey[data-chapter="3"] .film-video-2 {
+    opacity:.39;
+  }
+}
+.film-resume-clip{
+  position:absolute;z-index:18;left:50%;bottom:clamp(62px,11svh,105px);
+  transform:translateX(-50%);min-height:50px;padding:13px 20px;
+  background:#091627;border:1px solid #8bdcf5;color:#f4faff;
+  border-radius:28px;box-shadow:0 7px 30px #0008;
+  font-size:12px;font-weight:750;letter-spacing:.11em;
+  white-space:nowrap;cursor:pointer;
+}
+.film-resume-clip span{color:#ffc394;margin-right:8px;}
+.film-resume-clip:focus-visible{outline:2px solid #ffc394;outline-offset:3px;}

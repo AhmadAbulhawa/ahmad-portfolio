@@ -23,6 +23,17 @@ for (const setup of setups) {
  assert.ok(await originals.nth(0).evaluate(v=>v.paused),'No autoplay before scroll');
  const sizes=await originals.nth(0).evaluate(v=>({width:v.getBoundingClientRect().width,viewport:innerWidth}));
  assert.ok(sizes.width>=sizes.viewport-2,'Video must fill screen width');
+ if (setup.name === 'iphone') {
+   const portrait = await originals.first().evaluate(v => ({
+     fit:getComputedStyle(v).objectFit,
+     width:v.getBoundingClientRect().width,
+     height:v.getBoundingClientRect().height,
+     viewportHeight:innerHeight
+   }));
+   assert.equal(portrait.fit,'cover','Mobile cinema must fill portrait viewport without horizontal black letterbox bars');
+   assert.ok(Math.abs(portrait.height-portrait.viewportHeight)<5,'Mobile cinema must fill phone viewport height');
+   console.log('mobile portrait fit '+JSON.stringify(portrait));
+ }
  const menu=await page.locator('.firn-header-inner').evaluate(el=>getComputedStyle(el).backgroundColor);
  assert.ok(menu.startsWith('rgba(') || menu==='transparent','Navigation must have transparent background: '+menu);
  const artwork=await page.locator('.film-card-art-full').first().evaluate(el=>getComputedStyle(el).backgroundSize);
@@ -32,6 +43,20 @@ for (const setup of setups) {
  assert.ok(cismateArt.includes('cismate-login.jpeg'),'CISmate card must show the real login screenshot');
 
  assert.equal(artwork,'contain','Project media must be entirely visible, no crop');
+ const touchSwipe=async(direction)=>{
+   await page.evaluate(direction=>{
+     const make=(type,y)=>new TouchEvent(type,{
+       bubbles:true,cancelable:true,
+       touches:type==='touchend'?[]:[new Touch({identifier:11,target:document.body,clientX:180,clientY:y})],
+       changedTouches:[new Touch({identifier:11,target:document.body,clientX:180,clientY:y})],
+       targetTouches:type==='touchend'?[]:[new Touch({identifier:11,target:document.body,clientX:180,clientY:y})]
+     });
+     window.dispatchEvent(make('touchstart',360));
+     window.dispatchEvent(make('touchmove',360-direction*100));
+     window.dispatchEvent(make('touchend',360-direction*130));
+   },direction);
+   await page.waitForTimeout(150);
+ };
  const down=async()=>{
    await page.evaluate(()=>window.dispatchEvent(new WheelEvent('wheel',{deltaY:140,cancelable:true,bubbles:true})));
    await page.waitForTimeout(130);
@@ -109,6 +134,16 @@ for (const setup of setups) {
  assert.equal(await section.getAttribute('data-scene'),'6');
  await page.waitForTimeout(1350);
  assert.match(await cards.nth(3).evaluate(el=>el.style.transform),/rotateY\(0(?:\.0+)?deg\)/,'CISmate must reach a frontal straight-on orientation');
+ if (setup.name === 'iphone') {
+   // On mobile the carousel must remain responsive to real swipe events,
+   // with no 1.2-second gallery lockout.
+   await touchSwipe(-1);
+   await page.waitForTimeout(720);
+   assert.equal(await section.getAttribute('data-scene'),'5','Finger swipe up must return to previous gallery step');
+   await touchSwipe(1);
+   await page.waitForTimeout(720);
+   assert.equal(await section.getAttribute('data-scene'),'6','Finger swipe down must restore final gallery step');
+ }
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-cismate-login.png'});
  await page.waitForTimeout(1250);
  await up();

@@ -88,11 +88,14 @@ export function FilmChapters() {
   const [scene, setScene] = useState(0);
   const [introTriggered, setIntroTriggered] = useState(false);
   const [errors, setErrors] = useState<boolean[]>([false, false, false]);
+  const [needsResume, setNeedsResume] = useState(false);
+  const resumeRef = useRef<null | (() => void)>(null);
 
   useEffect(() => {
     const node = root.current;
     if (!node) return;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    const mobile = matchMedia('(max-width: 700px)').matches;
     const previousBody = document.body.style.overflow;
     const previousHtml = document.documentElement.style.overflow;
     const skip = node.querySelector<HTMLAnchorElement>('.film-skip');
@@ -111,8 +114,21 @@ export function FilmChapters() {
     let helixFrame = 0;
     let helixPose = 0;
     let helixBusy = false;
+    let queuedMobileStep = 0;
+    let waitingTimer: ReturnType<typeof setTimeout> | null = null;
     const disposers: Array<() => void> = [];
-    const helixDuration = reduce.matches ? 0 : 1200;
+    const helixDuration = reduce.matches ? 0 : mobile ? 580 : 1200;
+    function clearWaitTimer() {
+      if (waitingTimer) clearTimeout(waitingTimer);
+      waitingTimer = null;
+    }
+    function showStallFor(video: HTMLVideoElement) {
+      clearWaitTimer();
+      if (!running || activeVideo !== video) return;
+      waitingTimer = setTimeout(() => {
+        if (!released && running && activeVideo === video && video.readyState < 3) setNeedsResume(true);
+      }, 1500);
+    }
     function cancelHelix() {
       cancelAnimationFrame(helixFrame);
       helixFrame = 0;
@@ -145,6 +161,14 @@ export function FilmChapters() {
           helixFrame = 0;
           helixBusy = false;
           node!.dataset.helixMoving = 'false';
+          // Keep one intentional swipe made during the mobile animation.
+          // Never buffer wheel momentum, never skip video chapters.
+          if (mobile && queuedMobileStep) {
+            const step = queuedMobileStep;
+            queuedMobileStep = 0;
+            lockedUntil = 0;
+            advance(step);
+          }
         }
       };
       helixFrame = requestAnimationFrame(tick);
@@ -162,6 +186,9 @@ export function FilmChapters() {
       if (released) return;
       released = true;
       cancelHelix();
+      queuedMobileStep = 0;
+      clearWaitTimer();
+      setNeedsResume(false);
       bridgeBusy = false;
       bridgeGeneration++;
       if (bridgeTimer) clearTimeout(bridgeTimer);
@@ -206,11 +233,24 @@ export function FilmChapters() {
         activeVideo = null;
         node!.dataset.playing = 'false';
         node!.dataset.finished = String(i);
-        // Prevent momentum from one wheel gesture triggering the next chapter.
-        lockedUntil = performance.now() + 650;
+        clearWaitTimer();
+        setNeedsResume(false);
+        // Mobile swipes are deliberate gestures and should not feel frozen
+        // after the previous clip finishes. Wheel has a longer momentum guard.
+        lockedUntil = performance.now() + (mobile ? 160 : 650);
       };
+      const playing = () => { clearWaitTimer(); setNeedsResume(false); };
+      const waiting = () => showStallFor(video);
       video.addEventListener('ended',finished);
-      disposers.push(()=>video.removeEventListener('ended',finished));
+      video.addEventListener('playing',playing);
+      video.addEventListener('waiting',waiting);
+      video.addEventListener('stalled',waiting);
+      disposers.push(()=>{
+        video.removeEventListener('ended',finished);
+        video.removeEventListener('playing',playing);
+        video.removeEventListener('waiting',waiting);
+        video.removeEventListener('stalled',waiting);
+      });
     }
     videos.current.forEach((video,i)=>bindEnd(video,i,false));
     reversed.current.forEach((video,i)=>bindEnd(video,i,true));
@@ -222,6 +262,7 @@ export function FilmChapters() {
       if (i === 2 && reverse) reversed.current[1]?.setAttribute('preload','auto');
       const video = reverse ? reversed.current[i] : videos.current[i];
       if (!video) return;
+      setNeedsResume(false);
       const targetVideo: HTMLVideoElement = video;
       running = true;
       node!.dataset.playing = 'true';
@@ -234,17 +275,24 @@ export function FilmChapters() {
       const desired = !reverse && i === 1 ? 1.8 : 0;
       const start = () => {
         if (released || position !== i || activeVideo !== targetVideo) return;
+        showStallFor(targetVideo);
         void targetVideo.play().catch(()=>{
           if (released) return;
-          running = false;
-          activeVideo = null;
-          node!.dataset.playing = 'false';
+          // On mobile the muted full-HD clip may need a second direct tap
+          // after an asynchronous seek; DO NOT release or skip the scene.
           node!.dataset.mediaError = 'playback';
+          clearWaitTimer();
+          setNeedsResume(true);
         });
       };
       function ready() {
         if (targetVideo.readyState < 1) {
+          showStallFor(targetVideo);
+          targetVideo.preload = 'auto';
           targetVideo.addEventListener('loadedmetadata',ready,{once:true});
+          // Explicit load prevents mobile data-saver/low-memory WebKit
+          // from waiting indefinitely for a metadata-only hidden video.
+          targetVideo.load();
           return;
         }
         if (Math.abs(targetVideo.currentTime - desired) > .12) {
@@ -301,8 +349,15 @@ export function FilmChapters() {
     }
 
     function advance(direction: number) {
-      if (released || running || bridgeBusy || helixBusy || performance.now()<lockedUntil) return;
-      lockedUntil=performance.now()+(position>=3?1250:850);
+      if (released || running || bridgeBusy) return;
+      if (helixBusy) {
+        // Mobile finger gestures made during the brief animation remain
+        // responsive: queue only the last next/previous request.
+        if (mobile && position >= 3) queuedMobileStep = direction;
+        return;
+      }
+      if (performance.now() < lockedUntil) return;
+      lockedUntil = performance.now() + (position>=3 ? (mobile ? 620 : 1250) : (mobile ? 380 : 850));
       if (direction>0) {
         if (position < 3) {
           if (!forwardEnd[position]) {
@@ -404,6 +459,9 @@ export function FilmChapters() {
       bridgeTimer = null;
       bridgeRevealTimer = null;
       cancelHelix();
+      clearWaitTimer();
+      queuedMobileStep = 0;
+      setNeedsResume(false);
       bridgeBusy = false;
       bridgeGeneration++;
       running = false;
@@ -444,6 +502,15 @@ export function FilmChapters() {
         node!.classList.remove('film-resetting');
       });
     }
+    resumeRef.current = () => {
+      if (released) return;
+      if (bridgeBusy) return;
+      const video = activeVideo;
+      if (!video || video.ended) return;
+      setNeedsResume(false);
+      video.preload = 'auto';
+      void video.play().catch(() => setNeedsResume(true));
+    };
     const onSkip=()=>release();
     window.addEventListener('portfolio:restart-intro', restartIntro);
     document.addEventListener('click',onNavigation,true);
@@ -471,6 +538,8 @@ export function FilmChapters() {
       if(bridgeTimer)clearTimeout(bridgeTimer);
       if(bridgeRevealTimer)clearTimeout(bridgeRevealTimer);
       cancelHelix();
+      clearWaitTimer();
+      resumeRef.current = null;
       bridgeGeneration++;
       disposers.forEach(fn=>fn());
       window.removeEventListener('portfolio:restart-intro', restartIntro);
@@ -568,6 +637,12 @@ export function FilmChapters() {
           </span>
           <Link href="#work" className="film-explore-all">ALL PROJECTS ↘</Link>
         </div>
+        {needsResume && !errors.some(Boolean) && (
+          <button type="button" className="film-resume-clip"
+            onClick={() => resumeRef.current?.()}>
+            <span aria-hidden="true">▶</span> TAP TO CONTINUE FILM
+          </button>
+        )}
         {errors.some(Boolean) && (
           <p className="film-media-warning" role="status">
             A cinematic clip is temporarily unavailable. You can still access the case studies below.

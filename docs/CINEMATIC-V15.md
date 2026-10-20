@@ -1,0 +1,5 @@
+# V15 — mobile fixes while preserving desktop and source quality
+
+The original six 1920×1080 forward/reverse video streams remain unchanged. Mobile films now use object-fit:cover at 100dvh (portrait screen), eliminating large horizontal letterboxing caused by contain. Face/goggles are center-cropped consistently across all three chapters. Desktop keeps existing cover framing.
+
+On phone only the JS-driven gallery animation shortens from 1200ms to 580ms with an about-620ms interaction guard. A second deliberate touch swipe during the animation is buffered as one next/previous step rather than ignored; films remain gated until ended with zero skipping. Mobile image cards drop costly 12px backdrop blur, 19px multi-pane background blur and saturate/contrast GPU filters while preserving sharp full images. Video buffering/play() failure exposes an explicit resume button rather than silently locking the full page. New QA checks viewport-height cover and mobile touch events, while preserving all desktop and film reverse tests.
