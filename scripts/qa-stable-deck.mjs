@@ -12,16 +12,17 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   const gesture=async(d=1)=>{
     await page.waitForTimeout(370);
-    if(cfg.touch)await page.evaluate(d=>{
-      const el=document.querySelector('.film-journey');
-      const fire=(event,y,last)=>{
-        const t=new Touch({identifier:1,target:el,clientX:195,clientY:y});
-        el.dispatchEvent(new TouchEvent(event,{bubbles:true,cancelable:true,
-          touches:last?[]:[t],targetTouches:last?[]:[t],changedTouches:[t]}));
-      };
-      fire('touchstart',480,false);fire('touchend',480-d*165,true);
-    },d);
-    else await page.mouse.wheel(0,140*d);
+    if(cfg.touch){
+      // WebKit does not permit new Touch() via a page script; Playwright's
+      // dispatchEvent serializes the touch data in a compatible format.
+      const section=page.locator('.film-journey');
+      await section.dispatchEvent('touchstart',{
+        touches:[{clientX:195,clientY:480}],changedTouches:[{clientX:195,clientY:480}]
+      });
+      await section.dispatchEvent('touchend',{
+        touches:[],changedTouches:[{clientX:195,clientY:480-d*165}]
+      });
+    } else await page.mouse.wheel(0,140*d);
   };
   const summary=()=>page.evaluate(()=>{
     const videos=[...document.querySelectorAll('.film-clip')];
