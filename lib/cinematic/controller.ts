@@ -98,7 +98,7 @@ export class CinematicController {
     this.seekStart();
     if (v.seeking || !Number.isFinite(v.duration) || v.duration <= 0) return;
     const t = v.currentTime;
-    if (t > this.lastTime + 0.005) {
+    if (Math.abs(t - this.lastTime) > 0.005) {
       this.progressed = true;
       this.lastTime = t;
       this.lastProgressAt = this.now();
@@ -106,8 +106,8 @@ export class CinematicController {
     const end = this.limit();
     const remaining = end - t;
     const frame = 1 / 24 + 0.005; // the actual originals are 24 fps
-    const bufferedToEnd =
-      v.buffered.length > 0 && v.buffered.end(v.buffered.length - 1) >= end - frame;
+    const buffered = v.buffered;
+    const bufferedToEnd = buffered.length > 0 && buffered.end(buffered.length - 1) >= end - frame;
     // A paused final sample is safe. A still-running decoder must either reach
     // its duration or hold a fully buffered FINAL sample; no elapsed-time skip.
     const finalSample =
@@ -151,7 +151,6 @@ export class CinematicController {
   }
   private play() {
     const generation = this.generation;
-    this.lastProgressAt = this.now();
     this.startWatchdog();
     // Never await metadata/canplay/seeked: play remains inside user activation.
     void this.video.play().catch(() => {
@@ -163,6 +162,12 @@ export class CinematicController {
     if (this.stopped || ['released', 'transitioning', 'gallery'].includes(this.state.phase)) return;
     this.inspect();
     if (this.active()) {
+      if (this.state.phase === 'stalled') {
+        // WebKit can report paused=false while its decoder is stationary.
+        // play() alone is a no-op then. Re-arm playback in THIS user gesture.
+        this.video.pause();
+        this.lastProgressAt = this.now();
+      }
       if (this.video.error) {
         const time = this.video.currentTime;
         this.video.load();
@@ -181,6 +186,7 @@ export class CinematicController {
     const s = this.state;
     if (s.phase === 'idle') {
       if (direction < 0) return;
+      this.lastProgressAt = this.now();
       this.publish({ phase: 'loading' });
       this.play();
       return;
@@ -221,7 +227,10 @@ export class CinematicController {
   }
   resume() {
     this.inspect();
-    if (this.active()) this.play();
+    if (this.active()) {
+      this.lastProgressAt = this.now();
+      this.play();
+    }
   }
   suspend() {
     if (this.active()) {

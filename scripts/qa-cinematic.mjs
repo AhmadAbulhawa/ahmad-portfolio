@@ -5,7 +5,12 @@ import { chromium, webkit } from 'playwright';
 const base = process.env.PORTFOLIO_QA_URL || 'http://127.0.0.1:3000';
 const output = path.resolve(process.env.PORTFOLIO_QA_OUTPUT || 'work/qa');
 await mkdir(output, { recursive: true });
-const report = { browser: process.env.QA_BROWSER || 'chromium', results: [], screenshots: [] };
+const report = {
+  browser: process.env.QA_BROWSER || 'chromium',
+  results: [],
+  stallRecoveries: [],
+  screenshots: [],
+};
 const engine = process.env.QA_BROWSER === 'webkit' ? webkit : chromium;
 const browser = await engine.launch({
   headless: true,
@@ -81,8 +86,41 @@ try {
         });
       } else await page.mouse.wheel(0, 100 * direction);
     };
-    const naturalFinish = async () => {
+    const finishFilm = async () => {
       try {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          await page.waitForFunction(
+            () =>
+              ['completed', 'stalled'].includes(
+                document.querySelector('.film-journey')?.dataset.phase,
+              ),
+            null,
+            { timeout: 22000 },
+          );
+          if ((await section.getAttribute('data-phase')) === 'completed') break;
+          const media = await video.evaluate((v) => ({
+            src: v.currentSrc,
+            time: v.currentTime,
+            duration: v.duration,
+            seeking: v.seeking,
+          }));
+          if (
+            media.seeking ||
+            !Number.isFinite(media.duration) ||
+            media.time > media.duration - 0.5
+          ) {
+            await phase('completed');
+            break;
+          }
+          const chapterBefore = await section.getAttribute('data-chapter');
+          report.stallRecoveries.push({ viewport: setup.name, ...media });
+          await gesture(media.src.includes('-reverse') ? -1 : 1);
+          assert.equal(
+            await section.getAttribute('data-chapter'),
+            chapterBefore,
+            'Stall retry must keep the unfinished chapter',
+          );
+        }
         await phase('completed');
       } catch (error) {
         console.error(
@@ -97,6 +135,11 @@ try {
                 paused: v.paused,
                 seeking: v.seeking,
                 ready: v.readyState,
+                network: v.networkState,
+                buffered: Array.from({ length: v.buffered.length }, (_, i) => [
+                  v.buffered.start(i),
+                  v.buffered.end(i),
+                ]),
                 error: v.error?.code,
               }))
               .catch(() => null),
@@ -117,7 +160,7 @@ try {
     assert.equal(await video.evaluate((v) => v.playbackRate), 1);
     await gesture();
     await chapter(0);
-    await naturalFinish();
+    await finishFilm();
     await gesture();
     await chapter(1);
     assert.equal(await video.evaluate((v) => v.playbackRate), 1);
@@ -128,7 +171,7 @@ try {
     await gesture();
     await chapter(1);
     assert.ok(await video.evaluate((v) => !v.paused), 'Gesture resumes same unfinished film');
-    await naturalFinish();
+    await finishFilm();
     await shot('philosophy-final');
     // Restore the real reported Safari final-sample state with no media events.
     await video.evaluate((v) => {
@@ -152,7 +195,7 @@ try {
       'No hidden shatter playback interval',
     );
     await shot('transformation');
-    await naturalFinish();
+    await finishFilm();
     await gesture();
     await phase('gallery');
     await page.waitForSelector('.glass-project');
@@ -186,15 +229,15 @@ try {
     await gesture(-1);
     await chapter(2);
     assert.match(await video.getAttribute('src'), /shatter-reverse/);
-    await naturalFinish();
+    await finishFilm();
     await gesture(-1);
     await chapter(1);
     assert.match(await video.getAttribute('src'), /dissolve-reverse/);
-    await naturalFinish();
+    await finishFilm();
     await gesture(-1);
     await chapter(0);
     assert.match(await video.getAttribute('src'), /goggles-on-reverse/);
-    await naturalFinish();
+    await finishFilm();
     await gesture(-1);
     await phase('idle');
     // Every navigation destination must release the active cinema.
@@ -233,7 +276,7 @@ try {
       v.addEventListener('ended', (e) => e.stopImmediatePropagation(), true),
     );
     await gesture();
-    await naturalFinish();
+    await finishFilm();
     await chapter(0);
     // Lower sections stay functional with reduced motion; tab system is keyboard operable.
     await page.locator('.film-skip').click();

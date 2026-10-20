@@ -12,6 +12,7 @@ class Media extends EventTarget {
   buffered = { length: 1, end: () => 8 };
   calls = 0;
   loads = 0;
+  pauses = 0;
   reject = false;
   play() {
     this.calls++;
@@ -21,6 +22,7 @@ class Media extends EventTarget {
     return Promise.resolve();
   }
   pause() {
+    this.pauses++;
     this.paused = true;
     this.dispatchEvent(new Event('pause'));
   }
@@ -225,6 +227,30 @@ test('reverse dissolve plays the entire already-trimmed asset, without a second 
     s.media.currentTime = 6.49;
     s.tick();
     assert.equal(s.c.state.phase, 'completed');
+  } finally {
+    s.close();
+  }
+});
+
+test('a gesture re-arms a stationary WebKit decoder even when paused stays false', () => {
+  const s = setup();
+  try {
+    s.c.gesture(1);
+    s.media.currentTime = 3;
+    s.tick();
+    s.tick(1000);
+    s.c.gesture(1); // ordinary gestures must not conceal missing playback progress
+    s.tick(1000);
+    assert.equal(s.c.state.phase, 'stalled');
+    assert.equal(s.media.paused, false);
+    const pauses = s.media.pauses,
+      src = s.media.src;
+    s.c.gesture(1);
+    assert.equal(s.media.pauses, pauses + 1);
+    assert.equal(s.media.currentTime, 3);
+    assert.equal(s.media.src, src);
+    assert.equal(s.c.state.chapter, 0);
+    assert.equal(s.c.state.phase, 'playing');
   } finally {
     s.close();
   }
