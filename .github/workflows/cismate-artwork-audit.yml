@@ -1,0 +1,42 @@
+name: Compare CISmate login screenshots
+on:
+  push:
+    branches: [portfolio-3d-v2]
+    paths: ['.github/workflows/cismate-artwork-audit.yml']
+permissions:
+  contents: read
+jobs:
+  visual-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install image tooling
+        run: python -m pip install --quiet pillow
+      - name: Fetch real screenshots from owner's CISmate repository and arrange numbered proof
+        run: |
+          mkdir -p cismate-screenshots
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            curl -fLsS --retry 2 "https://raw.githubusercontent.com/AhmadAbulhawa/CISmate/main/assets/screenshots/${i}.jpeg" -o "cismate-screenshots/${i}.jpeg"
+          done
+          python - <<'PY'
+          from PIL import Image,ImageOps,ImageDraw
+          from pathlib import Path
+          sheet=Image.new('RGB',(1200,960),'#0e1420')
+          d=ImageDraw.Draw(sheet)
+          for idx in range(10):
+              num=idx+1
+              im=Image.open(f'cismate-screenshots/{num}.jpeg').convert('RGB')
+              im.thumbnail((210,405))
+              x=20+(idx%5)*236 + (210-im.width)//2
+              y=32+(idx//5)*465
+              sheet.paste(im,(x,y))
+              d.text((20+(idx%5)*236,y+410),f'{num}.jpeg {Image.open(f"cismate-screenshots/{num}.jpeg").size}',fill='#d5eafe')
+          sheet.save('cismate-screenshots/contact-sheet.jpg',quality=90)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cismate-owner-screenshots
+          path: cismate-screenshots/
