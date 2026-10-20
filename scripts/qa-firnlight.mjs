@@ -24,6 +24,7 @@ for (const setup of setups) {
  }
  await page.waitForTimeout(500);
  assert.equal(await section.getAttribute('data-scene'),'0');
+ assert.equal(await page.locator('.film-resume-clip').count(),0,'No continue-film button should ever appear');
  assert.ok(await originals.nth(0).evaluate(v=>v.paused),'No autoplay before scroll');
  const sizes=await originals.nth(0).evaluate(v=>({width:v.getBoundingClientRect().width,viewport:innerWidth}));
  assert.ok(sizes.width>=sizes.viewport-2,'Video must fill screen width');
@@ -88,13 +89,31 @@ for (const setup of setups) {
  assert.ok(await page.locator('.film-sentence .film-typed-letter').count()>12,'Design quote writes on second scroll');
  assert.equal(await originals.nth(1).evaluate(v=>v.playbackRate),1,'Second film must be normal speed');
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-dissolve.png'});
- await ended(1);
+ if (setup.name==='iphone') {
+   // Reproduce the user's screenshot: stage 02 stuck with goggles on screen
+   // after Safari stops at the final time but omits 'ended'.
+   await originals.nth(1).evaluate(video => {
+     Object.defineProperty(video,'duration',{configurable:true,get:()=>8});
+     Object.defineProperty(video,'currentTime',{configurable:true,get:()=>7.98});
+     Object.defineProperty(video,'paused',{configurable:true,get:()=>true});
+   });
+   await touchSwipe(1);
+   await page.waitForTimeout(300);
+   assert.equal(await section.getAttribute('data-scene'),'2',
+     'A real mobile swipe after last frame 02 must unlock scene 03');
+   await originals.nth(1).evaluate(video=>{
+     delete video.duration;delete video.currentTime;delete video.paused;
+   });
+ } else {
+   await ended(1);
+ }
+
  // Emulate iOS/WebKit, where an offscreen 1080p video is not "canplay"
  // until play() has been requested. The old bridge waited forever.
  await originals.nth(2).evaluate(v => {
    Object.defineProperty(v, 'readyState', {configurable:true,get:()=>0});
  });
- await down();
+ if (setup.name!=='iphone') await down();
  await page.waitForFunction(() => document.querySelector('.film-journey')?.dataset.scene === '2',{timeout:4500});
  assert.equal(await section.getAttribute('data-playing'),'true','Film three must start despite missing canplay (iOS)');
  await originals.nth(2).evaluate(v => {delete v.readyState;});

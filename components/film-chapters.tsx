@@ -87,9 +87,6 @@ export function FilmChapters() {
   const cards = useRef<(HTMLAnchorElement | null)[]>([]);
   const [scene, setScene] = useState(0);
   const [introTriggered, setIntroTriggered] = useState(false);
-  const [errors, setErrors] = useState<boolean[]>([false, false, false]);
-  const [needsResume, setNeedsResume] = useState(false);
-  const resumeRef = useRef<null | (() => void)>(null);
 
   useEffect(() => {
     const node = root.current;
@@ -117,6 +114,7 @@ export function FilmChapters() {
     let queuedMobileStep = 0;
     let waitingTimer: ReturnType<typeof setTimeout> | null = null;
     const disposers: Array<() => void> = [];
+    const completeVideo = new WeakMap<HTMLVideoElement, () => void>();
     const helixDuration = reduce.matches ? 0 : mobile ? 580 : 1200;
     function clearWaitTimer() {
       if (waitingTimer) clearTimeout(waitingTimer);
@@ -126,7 +124,9 @@ export function FilmChapters() {
       clearWaitTimer();
       if (!running || activeVideo !== video) return;
       waitingTimer = setTimeout(() => {
-        if (!released && running && activeVideo === video && video.readyState < 3) setNeedsResume(true);
+        if (!released && running && activeVideo === video && video.readyState < 3) {
+          node!.dataset.mediaError = 'waiting';
+        }
       }, 1500);
     }
     function cancelHelix() {
@@ -188,7 +188,6 @@ export function FilmChapters() {
       cancelHelix();
       queuedMobileStep = 0;
       clearWaitTimer();
-      setNeedsResume(false);
       bridgeBusy = false;
       bridgeGeneration++;
       if (bridgeTimer) clearTimeout(bridgeTimer);
@@ -227,29 +226,31 @@ export function FilmChapters() {
       video.pause();
       video.playbackRate = i === 2 ? 1.5 : 1;
       const finished = () => {
-        // Safari occasionally ends decoding at the final timestamp without
-        // delivering 'ended'. The same handler is safely idempotent.
         if (activeVideo !== video) return;
-        video.pause();
+        // Mark completion BEFORE pausing to prevent duplicate Safari events.
+        activeVideo = null;
         forwardEnd[i] = !reverse;
         running = false;
-        activeVideo = null;
         node!.dataset.playing = 'false';
         node!.dataset.finished = String(i);
+        node!.dataset.mediaError = '';
         clearWaitTimer();
-        setNeedsResume(false);
-        lockedUntil = performance.now() + (mobile ? 160 : 650);
+        video.pause();
+        lockedUntil = performance.now() + (mobile ? 140 : 650);
+      };
+      completeVideo.set(video, finished);
+      const atRealEnd = () => {
+        const duration = video.duration;
+        if (video.seeking || !Number.isFinite(duration) || duration <= 0) return false;
+        const remaining = duration - video.currentTime;
+        // Do NOT skip a playing film. Only recover WebKit when it has
+        // actually stopped at the last frame, or reached the exact end.
+        return video.ended || (remaining <= .09 && (video.paused || remaining <= .012));
       };
       const endByTimestamp = () => {
-        // A late 'timeupdate' or automatic pause at the actual end can
-        // unlock the next chapter if WebKit omits its native ended event.
-        // Do not unlock on seek, on stalled playback, or before the last
-        // 80ms of the *actual* recording.
-        if (activeVideo !== video || video.seeking || !Number.isFinite(video.duration) ||
-            video.duration <= 0 || video.currentTime < video.duration - .08) return;
-        if (!video.paused || video.ended) finished();
+        if (activeVideo === video && atRealEnd()) finished();
       };
-      const playing = () => { clearWaitTimer(); setNeedsResume(false); };
+      const playing = () => { clearWaitTimer(); node!.dataset.mediaError = ''; };
       const waiting = () => showStallFor(video);
       video.addEventListener('ended',finished);
       video.addEventListener('timeupdate',endByTimestamp);
@@ -289,7 +290,6 @@ export function FilmChapters() {
         video.src = video.dataset.src;
       }
       if (!video) return;
-      setNeedsResume(false);
       const targetVideo: HTMLVideoElement = video;
       running = true;
       node!.dataset.playing = 'true';
@@ -310,7 +310,8 @@ export function FilmChapters() {
           if (released || activeVideo !== targetVideo) return;
           clearWaitTimer();
           node!.dataset.mediaError = 'playback';
-          setNeedsResume(true); // retry by a direct finger tap
+          // Keep chapter gated. The NEXT finger swipe or tap invokes
+          // play() again in a genuine user activation; no floating button.
         });
       }
       if (desired === 0) {
@@ -359,7 +360,36 @@ export function FilmChapters() {
     }
 
     function advance(direction: number) {
-      if (released || running || bridgeBusy) return;
+      if (released || bridgeBusy) return;
+      if (running) {
+        const current = activeVideo;
+        if (current) {
+          const duration = current.duration;
+          const remaining = duration - current.currentTime;
+          const lastFrame = !current.seeking && Number.isFinite(duration) &&
+            duration > 0 && (current.ended ||
+            (remaining <= .09 && (current.paused || remaining <= .012)));
+          if (lastFrame) {
+            // Critical real-iPhone fix: Safari sometimes pauses on the actual
+            // last frame without an ended event, making scene 02 seem frozen.
+            completeVideo.get(current)?.();
+            lockedUntil = 0;
+            advance(direction); // SAME intended swipe proceeds after real end.
+            return;
+          }
+          // If paused, stalled, or rejected, a normal swipe retries the same
+          // clip using this gesture; it never skips an unfinished film.
+          if (current.paused || current.readyState < 3 || node!.dataset.mediaError) {
+            current.preload = 'auto';
+            if (current.error) current.load();
+            node!.dataset.mediaError = '';
+            void current.play().catch(() => {
+              if (!released && activeVideo === current) node!.dataset.mediaError = 'playback';
+            });
+          }
+        }
+        return;
+      }
       if (helixBusy) {
         // Mobile finger gestures made during the brief animation remain
         // responsive: queue only the last next/previous request.
@@ -471,7 +501,6 @@ export function FilmChapters() {
       cancelHelix();
       clearWaitTimer();
       queuedMobileStep = 0;
-      setNeedsResume(false);
       bridgeBusy = false;
       bridgeGeneration++;
       running = false;
@@ -481,7 +510,7 @@ export function FilmChapters() {
       helixPose = 0;
       forwardEnd.fill(false);
       setIntroTriggered(false);
-      setErrors([false, false, false]);
+
       node!.classList.add('film-resetting');
       node!.dataset.released = 'false';
       node!.dataset.playing = 'false';
@@ -512,18 +541,21 @@ export function FilmChapters() {
         node!.classList.remove('film-resetting');
       });
     }
-    resumeRef.current = () => {
-      if (released) return;
-      const video = activeVideo;
-      if (!video || video.ended) return;
-      setNeedsResume(false);
-      video.preload = 'auto';
-      // Explicit tap is another genuine mobile user activation.
-      if (video.error) video.load();
-      void video.play().catch(() => setNeedsResume(true));
-    };
+    function onStageTap(event: MouseEvent) {
+      if (released || !running || !(event.target instanceof Element)) return;
+      if (event.target.closest('a, button, nav')) return;
+      const current = activeVideo;
+      if (current && (current.paused || node!.dataset.mediaError)) {
+        if (current.error) current.load();
+        node!.dataset.mediaError = '';
+        void current.play().catch(() => {
+          if (!released && activeVideo === current) node!.dataset.mediaError = 'playback';
+        });
+      }
+    }
     const onSkip=()=>release();
     window.addEventListener('portfolio:restart-intro', restartIntro);
+    node.addEventListener('click', onStageTap);
     document.addEventListener('click',onNavigation,true);
     window.addEventListener('hashchange',onHashChange);
     skip?.addEventListener('click',onSkip);
@@ -550,8 +582,8 @@ export function FilmChapters() {
       if(bridgeRevealTimer)clearTimeout(bridgeRevealTimer);
       cancelHelix();
       clearWaitTimer();
-      resumeRef.current = null;
       bridgeGeneration++;
+      node!.removeEventListener('click', onStageTap);
       disposers.forEach(fn=>fn());
       window.removeEventListener('portfolio:restart-intro', restartIntro);
       document.removeEventListener('click',onNavigation,true);
@@ -588,7 +620,7 @@ export function FilmChapters() {
               poster={filmPosters[index]}
               preload={index < 2 ? 'auto' : 'metadata'}
               playsInline muted
-              onError={() => { setErrors(previous => previous.map((value, k) => index === k ? true : value)); setNeedsResume(true); }}
+              onError={() => { if (root.current) root.current.dataset.mediaError = 'network'; }}
             />
           ))}
           {filmSources.map((source,index) => (
@@ -598,7 +630,7 @@ export function FilmChapters() {
               data-src={'/films/0' + (index + 1) + '-' + (index === 0 ? 'goggles-on' : index === 1 ? 'dissolve' : 'shatter') + '-reverse.mp4'}
               preload="none"
               playsInline muted
-              onError={() => { setErrors(previous => previous.map((value, k) => index === k ? true : value)); setNeedsResume(true); }}
+              onError={() => { if (root.current) root.current.dataset.mediaError = 'network'; }}
             />
           ))}
         </div>
@@ -648,17 +680,6 @@ export function FilmChapters() {
           </span>
           <Link href="#work" className="film-explore-all">ALL PROJECTS ↘</Link>
         </div>
-        {needsResume && (
-          <button type="button" className="film-resume-clip"
-            onClick={() => resumeRef.current?.()}>
-            <span aria-hidden="true">▶</span> TAP TO CONTINUE FILM
-          </button>
-        )}
-        {errors.some(Boolean) && (
-          <p className="film-media-warning" role="status">
-            This clip could not load on your browser. Tap Continue Film to retry, or use Skip Intro.
-          </p>
-        )}
         <div className="film-dots" aria-hidden="true">
           <span className={scene === 0 ? 'active' : ''}>01</span>
           <span className={scene === 1 ? 'active' : ''}>02</span>
