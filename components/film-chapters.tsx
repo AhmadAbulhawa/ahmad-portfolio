@@ -25,7 +25,7 @@ export function FilmChapters(){
  useEffect(()=>{
   const node=root.current;if(!node)return;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-  let raf=0,current=0,target=0,lastActive=-1,observer:IntersectionObserver|undefined,visible=true;
+  let raf=0,current=0,target=0,lastActive=-1,visible=true;
   const update=()=>{
    const rect=node.getBoundingClientRect();
    target=clamp(-rect.top/Math.max(1,rect.height-innerHeight));
@@ -77,7 +77,7 @@ export function FilmChapters(){
    if(chapter!==lastActive){lastActive=chapter;}
    if(Math.abs(target-current)>.0009)raf=requestAnimationFrame(render);
   };
-  observer=new IntersectionObserver(([entry])=>{
+  const observer=new IntersectionObserver(([entry])=>{
    visible=entry.isIntersecting;
    if(visible)update();
    else {cancelAnimationFrame(raf);raf=0;}
@@ -88,7 +88,7 @@ export function FilmChapters(){
   const onVisibility=()=>{if(!document.hidden)update()};
   document.addEventListener('visibilitychange',onVisibility);
   update();
-  return()=>{cancelAnimationFrame(raf);observer?.disconnect();window.removeEventListener('scroll',update);window.removeEventListener('resize',update);document.removeEventListener('visibilitychange',onVisibility);};
+  return()=>{cancelAnimationFrame(raf);observer.disconnect();window.removeEventListener('scroll',update);window.removeEventListener('resize',update);document.removeEventListener('visibilitychange',onVisibility);};
  },[]);
  return <section ref={root} className="film-journey" id="intro" aria-label="Ahmad's cinematic project story">
   <div className="film-sticky">
@@ -104,7 +104,7 @@ export function FilmChapters(){
    </div>
    <div className="film-quote">
     <span className="film-micro">01 / DESIGN PHILOSOPHY</span>
-    <blockquote>“Design isn't just what you see.<br/><em>It's what you make possible.</em>”</blockquote>
+    <blockquote>“Design isn&apos;t just what you see.<br/><em>It&apos;s what you make possible.</em>”</blockquote>
     <p>From meaningful interfaces to intelligent products — each project is a new way to solve something real.</p>
    </div>
    <div className="film-break">

@@ -4,7 +4,6 @@ import { Arrow } from '@/components/icons';
 import { Motion } from '@/components/motion';
 import { FirnlightMotion } from '@/components/firnlight-motion';
 import { FilmChapters } from '@/components/film-chapters';
-import { CinematicGoggles, FloatingProjects } from '@/components/cinematic-objects';
 import { VideoPlayer } from '@/components/video-player';
 import { Contact } from '@/components/shell';
 import { munjizClips } from '@/lib/films';
