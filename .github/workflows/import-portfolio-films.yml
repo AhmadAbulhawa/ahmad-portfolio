@@ -1,0 +1,32 @@
+name: Store original cinematic footage
+on:
+  push:
+    branches: [portfolio-3d-v2]
+    paths:
+      - '.github/workflows/import-portfolio-films.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  store-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Import and checksum-verify the three original quality MP4s
+        run: node scripts/import-portfolio-films.mjs
+      - name: Commit videos without recompression
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/films lib/film-sources.ts lib/film-posters.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "Self-host three checksum-verified original 1080p cinematic films"
+            git push origin HEAD:portfolio-3d-v2
+          fi
