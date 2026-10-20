@@ -139,18 +139,19 @@ export function FilmChapters() {
       if (released || running) return;
       const video = reverse ? reversed.current[i] : videos.current[i];
       if (!video) return;
+      const targetVideo: HTMLVideoElement = video;
       running = true;
       node!.dataset.playing = 'true';
       node!.dataset.direction = reverse ? 'reverse' : 'forward';
-      activeVideo = video;
+      activeVideo = targetVideo;
       [...videos.current, ...reversed.current].forEach(v => {
-        if (v && v !== video) v.pause();
+        if (v && v !== targetVideo) v.pause();
       });
-      video.playbackRate = i === 2 ? 1.5 : 1;
+      targetVideo.playbackRate = i === 2 ? 1.5 : 1;
       const desired = !reverse && i === 1 ? 1.8 : 0;
       const start = () => {
-        if (released || position !== i || activeVideo !== video) return;
-        void video.play().catch(()=>{
+        if (released || position !== i || activeVideo !== targetVideo) return;
+        void targetVideo.play().catch(()=>{
           if (released) return;
           running = false;
           activeVideo = null;
@@ -159,15 +160,15 @@ export function FilmChapters() {
         });
       };
       function ready() {
-        if (video.readyState < 1) {
-          video.addEventListener('loadedmetadata',ready,{once:true});
+        if (targetVideo.readyState < 1) {
+          targetVideo.addEventListener('loadedmetadata',ready,{once:true});
           return;
         }
-        if (Math.abs(video.currentTime - desired) > .12) {
+        if (Math.abs(targetVideo.currentTime - desired) > .12) {
           const onSeeked=()=>start();
-          video.addEventListener('seeked',onSeeked,{once:true});
-          try { video.currentTime=desired; }
-          catch { video.removeEventListener('seeked',onSeeked); start(); }
+          targetVideo.addEventListener('seeked',onSeeked,{once:true});
+          try { targetVideo.currentTime=desired; }
+          catch { targetVideo.removeEventListener('seeked',onSeeked); start(); }
         } else start();
       }
       ready();
