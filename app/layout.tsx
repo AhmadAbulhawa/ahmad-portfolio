@@ -53,8 +53,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             if (location.pathname !== '/' && location.pathname !== '/index.html') return;
             history.scrollRestoration = 'manual';
             var navigation = performance.getEntriesByType('navigation')[0];
-            if (navigation && navigation.type === 'reload') {
-              document.documentElement.dataset.portfolioReload = 'true';
+            var isReload = navigation && navigation.type === 'reload';
+            // Incoming /#work, /#about, etc. must start at the cinematic intro.
+            // Strip the fragment in the head, before the browser's native anchor jump.
+            // Clicks on the menu *after* hydration still navigate to those sections.
+            if (location.hash || isReload) {
+              if (isReload) document.documentElement.dataset.portfolioReload = 'true';
               history.replaceState(history.state, '', location.pathname + location.search);
               window.scrollTo(0, 0);
               window.addEventListener('pageshow', function () {
