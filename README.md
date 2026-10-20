@@ -47,3 +47,7 @@ Set `NEXT_PUBLIC_SITE_URL` to the final approved HTTPS origin before production 
 The preview-branch rebuild and validation commands are documented in [docs/CINEMATIC-REBUILD.md](docs/CINEMATIC-REBUILD.md). It retains static Cloudflare Pages export, original cinematic media, and real project content. Work is confined to `portfolio-3d-v2`; production `main` is unchanged.
 
 The experimental identity-scroll sequence is not part of this branch. The original portrait-based About section is retained. This documentation update also marks the restored preview baseline for a fresh branch deployment.
+
+## Production deployment marker
+
+The production branch now contains the approved `portfolio-3d-v2` website and its image-free About section. This documentation-only commit is intended to emit a fresh push event for the production branch's Cloudflare Pages Git integration; verify the resulting Pages deployment in Cloudflare before considering the site updated.
