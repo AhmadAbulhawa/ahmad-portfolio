@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Arrow } from '@/components/icons';
 import { Motion } from '@/components/motion';
 import { FirnlightMotion } from '@/components/firnlight-motion';
+import { FilmChapters } from '@/components/film-chapters';
 import { CinematicGoggles, FloatingProjects } from '@/components/cinematic-objects';
 import { VideoPlayer } from '@/components/video-player';
 import { Contact } from '@/components/shell';
@@ -16,42 +17,7 @@ export default function Home() {
       <Motion />
       <main id="main-content">
         <FirnlightMotion />
-        <section className="firn-journey" aria-labelledby="hero-title" id="intro">
-          <div className="firn-stage">
-            <div className="firn-art" aria-hidden="true">
-              <div className="firn-portrait" />
-              <div className="firn-snow firn-snow--near" />
-              <div className="firn-snow firn-snow--far" />
-              <div className="firn-vignette" />
-            </div>
-            <div className="firn-topline">
-              <span>AHMAD ABULHAWA — PORTFOLIO / 2026</span>
-              <span>SCROLL-DRIVEN EXPERIENCE</span>
-            </div>
-            <div className="firn-headline">
-              <p className="firn-kicker">FULL-STACK DEVELOPER <span> / </span> AI ENGINEERING</p>
-              <h1 id="hero-title">Ahmad<span className="firn-last">Abulhawa.</span></h1>
-              <div className="firn-subline">
-                <p>Building intelligent products.<br />Crafting unforgettable experiences.</p>
-                <span className="firn-scroll-label">SCROLL TO EXPLORE <span aria-hidden="true">↓</span></span>
-              </div>
-            </div>
-            <div className="firn-reveal" aria-hidden="true">
-              <span>01 / THE INTRO</span>
-              <p>IDEAS COME<br /><em>TO LIFE.</em></p>
-              <span>DISCOVER THE WORK ↓</span>
-            </div>
-            <CinematicGoggles />
-            <FloatingProjects />
-            <a className="firn-skip" href="#work">Skip intro <span aria-hidden="true">↗</span></a>
-          </div>
-        </section>
-        <div className="firn-chapter">
-          <span>02 — THE WORK</span>
-          <p>REAL PROJECTS.<br /><em>REAL PROBLEMS SOLVED.</em></p>
-          <span>FOUR PROJECTS. ONE CREATIVE JOURNEY. ↓</span>
-        </div>
-
+        <FilmChapters />
         <section className="work wrap section" data-motion-section id="work" aria-labelledby="work-title">
           <div className="section-top">
             <div className="section-label">
