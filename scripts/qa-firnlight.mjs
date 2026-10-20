@@ -26,6 +26,15 @@ for (const scenario of cases) {
     await page.waitForTimeout(800);
     await page.screenshot({path:'qa-screenshots/'+scenario.name+'-'+label+'.png'});
   }
+  if (scenario.name === 'iphone') {
+    await page.evaluate(() => window.scrollTo(0,0));
+    await page.getByRole('button',{name:'Open navigation'}).click();
+    await page.screenshot({path:'qa-screenshots/iphone-menu-open.png'});
+    const expanded = await page.getByRole('button',{name:'Close navigation'}).getAttribute('aria-expanded');
+    assert.equal(expanded,'true');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.getByRole('button',{name:'Open navigation'}).getAttribute('aria-expanded'),'false');
+  }
   const report={scenario:scenario.name,imageBytes:bytes,errors,href:page.url()};
   console.log(JSON.stringify(report));
   assert.deepEqual(errors,[],'Page JavaScript exceptions detected');
