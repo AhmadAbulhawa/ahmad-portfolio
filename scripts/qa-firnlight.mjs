@@ -27,7 +27,7 @@ for (const setup of setups) {
  assert.ok(menu.startsWith('rgba(') || menu==='transparent','Navigation must have transparent background: '+menu);
  const artwork=await page.locator('.film-card-art-full').first().evaluate(el=>getComputedStyle(el).backgroundSize);
  const cardWidth=await page.locator('.film-glass-card').first().evaluate(el=>el.getBoundingClientRect().width);
- if(setup.name==='desktop')assert.ok(cardWidth>=innerWidth*.45,'Laptop hero card must be wide and prominent');
+ if(setup.name==='desktop')assert.ok(cardWidth>=sizes.viewport*.45,'Laptop hero card must be wide and prominent');
  const cismateArt=await page.locator('.film-glass-card[aria-label="Explore CISmate project"] .film-card-art-full').evaluate(el=>getComputedStyle(el).backgroundImage);
  assert.ok(cismateArt.includes('cismate-login.jpeg'),'CISmate card must show the real login screenshot');
 
