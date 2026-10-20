@@ -11,6 +11,6 @@ Creative reference: https://www.scrolltide.co/templates/firnlight. This is an or
 
 This proof uses a real layered CSS 3D illusion with stills and native scrolling. It does NOT falsely represent the owner's image as actual filmed goggle-motion frames. True photorealistic pose changes would require a separately produced frame sequence.
 
-A high-resolution snow image replacement is required because the initial 4KB source was incorrectly compressed. Review face framing on mobile separately.
+The initial 4KB asset has been replaced with a clean 940×520, ~73KB WebP portrait derived from the user's approved snow image, cropped to remove baked-in page typography. Check its framing on mobile and desktop during visual QA.
 
 Validation: npm ci && npm run lint && npm run typecheck && npm run build.

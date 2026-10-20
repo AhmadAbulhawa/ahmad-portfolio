@@ -3302,3 +3302,16 @@ body:not(:has(.firn-journey)) .firn-mobile-panel {
   .firn-skip{bottom:11px;}
   .firn-topline span:first-child{font-size:7px;letter-spacing:.11em;}
 }
+
+
+/* High-resolution portrait is now a clean image with no embedded UI text. */
+.firn-portrait {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+@media(max-width:900px) {
+  .firn-portrait {
+    -webkit-mask-image: linear-gradient(to bottom,#000 0%,#000 62%,transparent 80%);
+    mask-image: linear-gradient(to bottom,#000 0%,#000 62%,transparent 80%);
+  }
+}
