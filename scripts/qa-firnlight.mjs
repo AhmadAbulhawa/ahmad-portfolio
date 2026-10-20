@@ -105,7 +105,7 @@ for (const setup of setups) {
  await down();
  assert.equal(await section.getAttribute('data-scene'),'6');
  await page.waitForTimeout(1350);
- assert.ok((await cards.nth(3).evaluate(el=>el.style.transform)).includes('rotateY(0.00deg)'));
+ assert.match(await cards.nth(3).evaluate(el=>el.style.transform),/rotateY\(0(?:\.0+)?deg\)/,'CISmate must reach a frontal straight-on orientation');
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-cismate-login.png'});
  await page.waitForTimeout(1250);
  await up();
