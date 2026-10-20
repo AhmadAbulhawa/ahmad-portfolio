@@ -18,6 +18,10 @@ export function IdentitySequence() {
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let frame = 0;
+    const smoothstep = (min: number, max: number, value: number) => {
+      const t = Math.max(0, Math.min(1, (value - min) / (max - min)));
+      return t * t * (3 - 2 * t);
+    };
 
     const measure = () => {
       frame = 0;
@@ -31,6 +35,15 @@ export function IdentitySequence() {
       root.style.setProperty('--identity-counterturn', `${(24 - progress * 192).toFixed(2)}deg`);
       root.style.setProperty('--identity-shift', `${((progress - 0.5) * 65).toFixed(2)}px`);
       root.style.setProperty('--identity-scale', (0.86 + progress * 0.27).toFixed(3));
+      // Crossfades follow actual scroll progress, rather than jumping at act boundaries.
+      // The entrance and exit share a single reversible timeline.
+      const first = 1 - smoothstep(0.22, 0.39, progress);
+      const second = smoothstep(0.26, 0.43, progress) *
+        (1 - smoothstep(0.58, 0.75, progress));
+      const final = smoothstep(0.63, 0.79, progress);
+      root.style.setProperty('--identity-first', first.toFixed(3));
+      root.style.setProperty('--identity-second', second.toFixed(3));
+      root.style.setProperty('--identity-final', final.toFixed(3));
       root.style.setProperty('--identity-rail', (progress * 100).toFixed(2) + '%');
     };
     const requestMeasure = () => {
@@ -41,6 +54,10 @@ export function IdentitySequence() {
         cancelAnimationFrame(frame);
         frame = 0;
         root.dataset.act = '2';
+        root.style.setProperty('--identity-first', '0');
+        root.style.setProperty('--identity-second', '0');
+        root.style.setProperty('--identity-final', '1');
+        root.style.setProperty('--identity-rail', '100%');
         root.style.removeProperty('--identity-turn');
         root.style.removeProperty('--identity-counterturn');
         root.style.removeProperty('--identity-shift');
@@ -61,7 +78,7 @@ export function IdentitySequence() {
   }, []);
 
   return (
-    <div ref={rootRef} className="identity-scroll" data-act="0" aria-label="A cinematic introduction to the person behind the work">
+    <div ref={rootRef} className="identity-scroll" data-act="0" role="group" aria-label="Scroll-controlled story about Ahmad and his engineering philosophy">
       <div className="identity-sticky">
         <div className="identity-atmosphere" aria-hidden="true" />
         <div className="identity-grid" aria-hidden="true" />
