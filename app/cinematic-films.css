@@ -165,3 +165,52 @@
  .film-helix{perspective:1100px;}
  .film-glass-card.is-selected{box-shadow:0 0 0 2px #87ccf7,0 26px 80px #000c;}
 }
+
+
+/* V10 — visibly centered principal project; others DESCEND behind it on a
+   circular staircase. Artwork is letterboxed, never cropped or stretched. */
+.film-glass-card{transition:transform 1050ms cubic-bezier(.22,1,.36,1),opacity 1050ms ease,border-color .25s,box-shadow .25s;background:linear-gradient(160deg,rgba(14,29,49,.96),rgba(7,13,27,.97));}
+.film-card-art{
+  background-size:contain!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+  background-color:#091626!important;
+  border:1px solid rgba(133,185,240,.20);
+  image-rendering:auto;
+  flex:1 1 auto;
+}
+.film-card-info{flex:0 0 auto;overflow:visible;}
+.film-gallery .film-glass-card.is-selected{border-color:#ffd3a7;box-shadow:0 0 0 2px rgba(106,194,249,.58),0 30px 95px #000c;}
+/* Transparent iridescent frosted navigation instead of the opaque white pill. */
+body:has(.film-journey) .firn-header{position:fixed;z-index:90;color:#effaff;}
+body:has(.film-journey) .firn-header-inner{
+  background:rgba(6,12,24,.16)!important;
+  backdrop-filter:blur(15px) saturate(130%);
+  -webkit-backdrop-filter:blur(15px) saturate(130%);
+  border:1px solid rgba(146,193,233,.31);
+  box-shadow:0 10px 35px rgba(0,0,0,.13);
+}
+body:has(.film-journey) .firn-header :is(.firn-brand,.firn-desktop-nav a,.firn-resume,.firn-menu-toggle){color:#edf7ff;text-shadow:0 2px 10px #030914;}
+body:has(.film-journey) .firn-brand-dot{color:#d09afa;}
+body:has(.film-journey) .firn-mobile-panel{
+  background:rgba(4,9,21,.76)!important;
+  color:#e9f7ff!important;
+  backdrop-filter:blur(27px) saturate(130%);
+  -webkit-backdrop-filter:blur(27px) saturate(130%);
+  border:1px solid rgba(133,188,239,.22);
+}
+body:has(.film-journey) .firn-mobile-panel :is(a,p){color:#e8f6ff;}
+body:has(.film-journey) .firn-mobile-panel a>span{color:#a1c2f6;}
+/* Forward and reversed full-resolution footage: only the active direction
+   appears; reverse files run on their own real-time clock, NOT scroll scrubs. */
+.film-journey[data-direction="reverse"] .film-video-0,
+.film-journey[data-direction="reverse"] .film-video-1,
+.film-journey[data-direction="reverse"] .film-video-2{opacity:0;}
+.film-journey[data-direction="reverse"][data-chapter="0"] .film-video-reverse-0,
+.film-journey[data-direction="reverse"][data-chapter="1"] .film-video-reverse-1,
+.film-journey[data-direction="reverse"][data-chapter="2"] .film-video-reverse-2{opacity:1;}
+.film-journey[data-direction="forward"] .film-video-reverse-0,
+.film-journey[data-direction="forward"] .film-video-reverse-1,
+.film-journey[data-direction="forward"] .film-video-reverse-2{opacity:0;}
+.film-journey[data-bridge="cover"] .film-bridge{opacity:1;}
+.film-journey[data-bridge="reveal"] .film-bridge{opacity:0;transition-duration:.57s;}
