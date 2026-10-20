@@ -19,6 +19,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install FFmpeg for poster extraction (video remains unmodified)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Import and checksum-verify the three original quality MP4s
         run: node scripts/import-portfolio-films.mjs
       - name: Commit videos without recompression
