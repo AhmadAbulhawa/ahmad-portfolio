@@ -1,0 +1,34 @@
+name: Preserve reversible cinematic films
+on:
+  push:
+    branches: [portfolio-3d-v2]
+    paths:
+      - '.github/workflows/build-cinematic-reverse.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  reverse-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install video toolchain
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Verify source checksums and create high-quality reverse playback clips
+        run: node scripts/build-cinematic-reverse.mjs
+      - name: Commit reverse-only playback assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/films/*-reverse.mp4
+          if ! git diff --cached --quiet; then
+            git commit -m "Add original-quality cinematic reverse playback for scroll-backwards"
+            git push origin HEAD:portfolio-3d-v2
+          fi
