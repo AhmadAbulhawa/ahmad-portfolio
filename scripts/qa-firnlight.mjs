@@ -18,6 +18,10 @@ for (const setup of setups) {
  const reversed=page.locator('[class*="film-video-reverse-"]');
  assert.equal(await originals.count(),3,'Original films missing');
  assert.equal(await reversed.count(),3,'Three reverse 1080p films must be present');
+ if (setup.name === 'iphone') {
+   assert.ok(await reversed.evaluateAll(videos=>videos.every(v=>!v.getAttribute('src'))),
+     'Reverse 1080p videos should not consume decoders on initial mobile load');
+ }
  await page.waitForTimeout(500);
  assert.equal(await section.getAttribute('data-scene'),'0');
  assert.ok(await originals.nth(0).evaluate(v=>v.paused),'No autoplay before scroll');
@@ -85,8 +89,15 @@ for (const setup of setups) {
  assert.equal(await originals.nth(1).evaluate(v=>v.playbackRate),1,'Second film must be normal speed');
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-dissolve.png'});
  await ended(1);
+ // Emulate iOS/WebKit, where an offscreen 1080p video is not "canplay"
+ // until play() has been requested. The old bridge waited forever.
+ await originals.nth(2).evaluate(v => {
+   Object.defineProperty(v, 'readyState', {configurable:true,get:()=>0});
+ });
  await down();
  await page.waitForFunction(() => document.querySelector('.film-journey')?.dataset.scene === '2',{timeout:4500});
+ assert.equal(await section.getAttribute('data-playing'),'true','Film three must start despite missing canplay (iOS)');
+ await originals.nth(2).evaluate(v => {delete v.readyState;});
  assert.equal(await section.getAttribute('data-scene'),'2','Third film follows a frame-aligned direct cut');
  assert.equal(await section.getAttribute('data-bridge'),'', 'No dark cover may hide early frames of shatter clip');
  const thirdBegin = await originals.nth(2).evaluate(v => v.currentTime);

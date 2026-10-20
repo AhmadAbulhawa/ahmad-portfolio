@@ -258,9 +258,22 @@ export function FilmChapters() {
     function playChapter(i: number, reverse: boolean) {
       if (released || running) return;
       if (i === 0 && !reverse) setIntroTriggered(true);
-      if (i === 1 && !reverse) videos.current[2]?.setAttribute('preload','auto');
+      if (i === 1 && !reverse) {
+        const third = videos.current[2];
+        if (third) {
+          third.preload = 'auto';
+          // Keep the source loaded but paused; the visible poster is the
+          // matching geometry until the next explicit swipe starts clip 03.
+          if (mobile && third.networkState === HTMLMediaElement.NETWORK_EMPTY) third.load();
+        }
+      }
       if (i === 2 && reverse) reversed.current[1]?.setAttribute('preload','auto');
       const video = reverse ? reversed.current[i] : videos.current[i];
+      // Allocate mobile decoder/network slots only for forward clips at first.
+      // Loading all six 1080p streams simultaneously exhausts WebKit players.
+      if (reverse && video && !video.getAttribute('src') && video.dataset.src) {
+        video.src = video.dataset.src;
+      }
       if (!video) return;
       setNeedsResume(false);
       const targetVideo: HTMLVideoElement = video;
@@ -273,79 +286,62 @@ export function FilmChapters() {
       });
       targetVideo.playbackRate = i === 2 ? 1.5 : 1;
       const desired = !reverse && i === 1 ? 1.8 : 0;
-      const start = () => {
+      function attemptPlay() {
         if (released || position !== i || activeVideo !== targetVideo) return;
+        targetVideo.preload = 'auto';
         showStallFor(targetVideo);
-        void targetVideo.play().catch(()=>{
-          if (released) return;
-          // On mobile the muted full-HD clip may need a second direct tap
-          // after an asynchronous seek; DO NOT release or skip the scene.
-          node!.dataset.mediaError = 'playback';
+        // Immediately invoke play() from the scroll/touchend gesture for a
+        // no-seek film. Waiting for metadata/canplay here loses iOS activation.
+        void targetVideo.play().catch(() => {
+          if (released || activeVideo !== targetVideo) return;
           clearWaitTimer();
-          setNeedsResume(true);
+          node!.dataset.mediaError = 'playback';
+          setNeedsResume(true); // retry by a direct finger tap
         });
-      };
-      function ready() {
-        if (targetVideo.readyState < 1) {
-          showStallFor(targetVideo);
-          targetVideo.preload = 'auto';
-          targetVideo.addEventListener('loadedmetadata',ready,{once:true});
-          // Explicit load prevents mobile data-saver/low-memory WebKit
-          // from waiting indefinitely for a metadata-only hidden video.
-          targetVideo.load();
-          return;
-        }
-        if (Math.abs(targetVideo.currentTime - desired) > .12) {
-          const onSeeked=()=>start();
-          targetVideo.addEventListener('seeked',onSeeked,{once:true});
-          try { targetVideo.currentTime=desired; }
-          catch { targetVideo.removeEventListener('seeked',onSeeked); start(); }
-        } else start();
       }
-      ready();
+      if (desired === 0) {
+        // Never seek a brand-new media player back to 0 before it has loaded.
+        // A premature seek can wait indefinitely on low-memory mobile Safari.
+        if (targetVideo.readyState >= 1 && targetVideo.currentTime > .12) {
+          try { targetVideo.currentTime = 0; } catch { /* not seekable */ }
+        }
+        attemptPlay();
+      } else {
+        // The dissolve clip's 1.8s trim needs one initial seek. Try the seek
+        // at metadata readiness, but do not wait indefinitely for 'seeked'.
+        const seekAndPlay = () => {
+          if (released || activeVideo !== targetVideo) return;
+          if (targetVideo.readyState >= 1 && Math.abs(targetVideo.currentTime - desired) > .12) {
+            try { targetVideo.currentTime = desired; } catch { /* attempt playback */ }
+          }
+          attemptPlay();
+        };
+        if (targetVideo.readyState >= 1) {
+          seekAndPlay();
+        } else {
+          targetVideo.preload = 'auto';
+          targetVideo.addEventListener('loadedmetadata', seekAndPlay, { once: true });
+          showStallFor(targetVideo);
+          targetVideo.load();
+        }
+      }
     }
 
-    // The original MP4s have pixel-aligned goggles in the last frame of film
-    // 02 and first frame of film 03. An old dark wipe was starting clip 03
-    // behind the cover, revealing it ~0.8 seconds late: apparent position jump.
-    // Pre-decode/seek the first frame BEFORE switching. Cut directly, without
-    // camera zoom, transform, wipe, time skip or lower-resolution replacement.
-    // The same exact frame-matched procedure runs backward (reverse 03 -> 02).
+    // iOS/WebKit does not promise a 'canplay' notification for a hidden,
+    // metadata-only 1080p MP4 until play() is requested. Waiting for it in
+    // the 02 -> 03 handoff permanently locked the intro on actual phones.
+    //
+    // Both owner's original endpoints already match geometrically. The
+    // extracted poster for clip 03 is its exact first frame, so we can
+    // switch the poster FIRST, then call play() within the user's swipe
+    // activation. Never seek/scrub hidden playback or skip any chapter.
     function bridge(next: number, reverse: boolean) {
-      bridgeBusy = true;
-      const generation = ++bridgeGeneration;
-      const incoming = reverse ? reversed.current[next] : videos.current[next];
-      const expectedStart = !reverse && next === 1 ? 1.8 : 0;
-      if (!incoming) {
-        bridgeBusy = false;
-        return;
-      }
-      const matchFrame = () => {
-        if (released || generation !== bridgeGeneration) return;
-        if (incoming.readyState < 2) {
-          incoming.preload = 'auto';
-          incoming.addEventListener('canplay', matchFrame, { once: true });
-          return;
-        }
-        if (Math.abs(incoming.currentTime - expectedStart) > .07) {
-          incoming.addEventListener('seeked', matchFrame, { once: true });
-          try { incoming.currentTime = expectedStart; }
-          catch {
-            incoming.removeEventListener('seeked', matchFrame);
-            // Browser will seek in playChapter once loaded.
-            setPosition(next);
-            playChapter(next, reverse);
-            bridgeBusy = false;
-          }
-          return;
-        }
-        // Only NOW change visible chapter; playChapter plays from this frame.
-        node!.dataset.bridge = '';
-        setPosition(next);
-        playChapter(next, reverse);
-        bridgeBusy = false;
-      };
-      matchFrame();
+      if (released || running) return;
+      bridgeGeneration++;
+      bridgeBusy = false;
+      node!.dataset.bridge = '';
+      setPosition(next);
+      playChapter(next,reverse);
     }
 
     function advance(direction: number) {
@@ -504,11 +500,12 @@ export function FilmChapters() {
     }
     resumeRef.current = () => {
       if (released) return;
-      if (bridgeBusy) return;
       const video = activeVideo;
       if (!video || video.ended) return;
       setNeedsResume(false);
       video.preload = 'auto';
+      // Explicit tap is another genuine mobile user activation.
+      if (video.error) video.load();
       void video.play().catch(() => setNeedsResume(true));
     };
     const onSkip=()=>release();
@@ -577,17 +574,17 @@ export function FilmChapters() {
               poster={filmPosters[index]}
               preload={index < 2 ? 'auto' : 'metadata'}
               playsInline muted
-              onError={() => setErrors(previous => previous.map((value, k) => index === k ? true : value))}
+              onError={() => { setErrors(previous => previous.map((value, k) => index === k ? true : value)); setNeedsResume(true); }}
             />
           ))}
           {filmSources.map((source,index) => (
             <video key={source.role + '-reverse'}
               ref={node => { reversed.current[index] = node; }}
               className={'film-video film-video-reverse-' + index}
-              src={'/films/0' + (index + 1) + '-' + (index === 0 ? 'goggles-on' : index === 1 ? 'dissolve' : 'shatter') + '-reverse.mp4'}
-              preload="metadata"
+              data-src={'/films/0' + (index + 1) + '-' + (index === 0 ? 'goggles-on' : index === 1 ? 'dissolve' : 'shatter') + '-reverse.mp4'}
+              preload="none"
               playsInline muted
-              onError={() => setErrors(previous => previous.map((value, k) => index === k ? true : value))}
+              onError={() => { setErrors(previous => previous.map((value, k) => index === k ? true : value)); setNeedsResume(true); }}
             />
           ))}
         </div>
@@ -637,7 +634,7 @@ export function FilmChapters() {
           </span>
           <Link href="#work" className="film-explore-all">ALL PROJECTS ↘</Link>
         </div>
-        {needsResume && !errors.some(Boolean) && (
+        {needsResume && (
           <button type="button" className="film-resume-clip"
             onClick={() => resumeRef.current?.()}>
             <span aria-hidden="true">▶</span> TAP TO CONTINUE FILM
@@ -645,7 +642,7 @@ export function FilmChapters() {
         )}
         {errors.some(Boolean) && (
           <p className="film-media-warning" role="status">
-            A cinematic clip is temporarily unavailable. You can still access the case studies below.
+            This clip could not load on your browser. Tap Continue Film to retry, or use Skip Intro.
           </p>
         )}
         <div className="film-dots" aria-hidden="true">
