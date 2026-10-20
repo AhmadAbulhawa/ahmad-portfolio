@@ -26,6 +26,11 @@ for (const setup of setups) {
  const menu=await page.locator('.firn-header-inner').evaluate(el=>getComputedStyle(el).backgroundColor);
  assert.ok(menu.startsWith('rgba(') || menu==='transparent','Navigation must have transparent background: '+menu);
  const artwork=await page.locator('.film-card-art-full').first().evaluate(el=>getComputedStyle(el).backgroundSize);
+ const cardWidth=await page.locator('.film-glass-card').first().evaluate(el=>el.getBoundingClientRect().width);
+ if(setup.name==='desktop')assert.ok(cardWidth>=innerWidth*.45,'Laptop hero card must be wide and prominent');
+ const cismateArt=await page.locator('.film-glass-card[aria-label="Explore CISmate project"] .film-card-art-full').evaluate(el=>getComputedStyle(el).backgroundImage);
+ assert.ok(cismateArt.includes('cismate-login.jpeg'),'CISmate card must show the real login screenshot');
+
  assert.equal(artwork,'contain','Project media must be entirely visible, no crop');
  const down=async()=>{
    await page.evaluate(()=>window.dispatchEvent(new WheelEvent('wheel',{deltaY:140,cancelable:true,bubbles:true})));
@@ -43,6 +48,7 @@ for (const setup of setups) {
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-hero.png'});
  await down();
  assert.equal(await section.getAttribute('data-scene'),'0','First input only starts first film');
+ assert.ok(await page.locator('.film-sentence .film-typed-letter').count()>15,'First scroll writes each headline letter');
  assert.equal(await section.getAttribute('data-playing'),'true');
  assert.equal(await originals.nth(0).evaluate(v=>v.playbackRate),1);
  await down(); await down(); await down();
@@ -50,6 +56,7 @@ for (const setup of setups) {
  await ended(0);
  await down();
  assert.equal(await section.getAttribute('data-scene'),'1','Second film starts after first ends');
+ assert.ok(await page.locator('.film-sentence .film-typed-letter').count()>12,'Design quote writes on second scroll');
  assert.equal(await originals.nth(1).evaluate(v=>v.playbackRate),1,'Second film must be normal speed');
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-dissolve.png'});
  await ended(1);
@@ -83,7 +90,7 @@ for (const setup of setups) {
  const past=await cards.nth(0).evaluate(el=>Number(el.dataset.helixRelative));
  assert.ok(past<-.98&&past> -1.02,'Prior project must move above and behind, not wrap below');
  const oldOpacity=await cards.nth(0).evaluate(el=>Number(el.style.opacity));
- assert.equal(oldOpacity,0,'Previous project should be hidden above the staircase');
+ assert.ok(oldOpacity>=0.5&&oldOpacity<1,'Previous frame should remain dimly visible at the side like the reference');
  const future=await cards.nth(2).evaluate(el=>({x:el.style.transform,relative:Number(el.dataset.helixRelative)}));
  assert.ok(future.relative>.98,'Upcoming project should be one descending stair lower');
 
@@ -126,7 +133,7 @@ for (const setup of setups) {
    assert.ok(page.url().includes('#work'),'Work link navigated');
  }
  assert.deepEqual(errors,[],'No page JS exceptions');
- console.log(JSON.stringify({scenario:setup.name,originals:3,reverse:3,fullWidth:sizes,transparentMenu:menu,uncroppedArt:artwork,errors}));
+ console.log(JSON.stringify({scenario:setup.name,originals:3,reverse:3,fullWidth:sizes,cardWidth,transparentMenu:menu,uncroppedArt:artwork,errors}));
  await ctx.close();
 }
 await browser.close();

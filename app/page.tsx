@@ -180,10 +180,10 @@ export default function Home() {
           <Link prefetch={false} className="cis-card firn-feature" data-motion-project href="/projects/cismate/">
             <div className="cis-preview">
               <Image
-                src="/projects/cismate-planner-thumb.webp"
-                alt="CISmate Flutter app: semester planning preferences, course targets, and schedule controls"
-                width={255}
-                height={400}
+                src="/projects/cismate-login.jpeg"
+                alt="CISmate Flutter application: original glass-panel login screen with email and password"
+                width={1280}
+                height={803}
                 loading="lazy"
               />
               <Image

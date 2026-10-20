@@ -9,7 +9,7 @@ const projects = [
   { name: 'Munjiz', tag: 'AI / PRODUCT DESIGN', slug: 'munjiz', image: '/projects/munjiz-arrival.webp' },
   { name: 'Garage Tahmeen', tag: 'FRONTEND / MOTION', slug: 'garage-tahmeen', image: '/projects/garage-tahmeen-drive.webp' },
   { name: 'AqarAI', tag: 'SPATIAL AI', slug: 'aqar-ai', image: '/projects/aqar-poster.webp' },
-  { name: 'CISmate', tag: 'MOBILE / STUDENT PLANNING', slug: 'cismate', image: '/projects/cismate-planner.webp' },
+  { name: 'CISmate', tag: 'MOBILE / STUDENT PLANNING', slug: 'cismate', image: '/projects/cismate-login.jpeg' },
 ] as const;
 
 const chapters = [
@@ -27,33 +27,53 @@ const clamp = (n: number) => Math.max(0, Math.min(1, n));
  * User scrolling never directly sets this position.
  * +1 climbs to the next card; -1 follows exactly the same path backwards.
  */
+/**
+ * Cinematic full-bleed project cinema: a large horizontal leading plane and
+ * asymmetric secondary panes circling it like the owner's image reference.
+ * Scroll changes only the target integer: the rAF scene motion remains 1.2s.
+ */
 function drawHelix(cards: (HTMLAnchorElement | null)[], position: number) {
   const mobile = window.innerWidth < 700;
-  const radius = mobile ? Math.min(window.innerWidth * .44, 170) : Math.min(window.innerWidth * .23, 305);
-  const step = mobile ? 107 : 152;
+  const radius = mobile ? Math.min(window.innerWidth * .43, 170) : Math.min(window.innerWidth * .395, 720);
+  const step = mobile ? 105 : 132;
   cards.forEach((card, index) => {
     if (!card) return;
-    const relative = index - position; // Signed: never modulo / teleport.
-    const radians = relative * .96;
+    const relative = index - position; // Signed means exact reverse path, no modulo skips.
+    const angle = relative * 1.10;
     const distance = Math.abs(relative);
-    const x = Math.sin(radians) * radius * .43;
+    const x = Math.sin(angle) * radius;
     const y = relative * step;
-    const z = (Math.cos(radians) - 1) * radius * .66 - distance * (mobile ? 82 : 100);
-    const angle = -Math.sin(radians) * 37;
-    const size = Math.max(.54, 1 - distance * .16);
-    const alpha = relative < 0
-      ? Math.max(0, 1 - distance * 1.10)
-      : Math.max(.56, 1 - distance * .13);
-    // At an integer position the selected panel is x=0, y=0,
-    // z=0, rotateY=0 and scale=1, literally facing the screen.
+    const z = (Math.cos(angle) - 1) * radius * .29 - distance * (mobile ? 66 : 95);
+    const rotation = -Math.sin(angle) * (mobile ? 30 : 62);
+    const scale = Math.max(mobile ? .57 : .62, 1 - distance * (mobile ? .15 : .13));
+    // Unlike the previous invisible/stacked panes, keep nearby side planes
+    // visible like the reference's translucent frames at left and right.
+    const alpha = distance < .01 ? 1 : Math.max(.20, 1 - distance * .32);
     card.style.transform =
       'translate3d(calc(-50% + ' + x.toFixed(2) + 'px),calc(-50% + ' +
       y.toFixed(2) + 'px),' + z.toFixed(2) + 'px) rotateY(' +
-      angle.toFixed(2) + 'deg) scale(' + size.toFixed(3) + ')';
+      rotation.toFixed(2) + 'deg) scale(' + scale.toFixed(3) + ')';
     card.style.opacity = alpha.toFixed(3);
     card.style.zIndex = String(1000 - Math.round(distance * 100));
     card.dataset.helixRelative = relative.toFixed(3);
   });
+}
+
+function WrittenPhrase({ value, tone = 'plain', delay = 0 }: {
+  value: string; tone?: 'plain' | 'accent' | 'project'; delay?: number;
+}) {
+  return (
+    <span className={'film-typed film-typed-' + tone} aria-label={value}>
+      {Array.from(value).map((char, index) => (
+        <span
+          key={index}
+          className="film-typed-letter"
+          aria-hidden="true"
+          style={{ animationDelay: (delay + index * 50) + 'ms' }}
+        >{char === ' ' ? '\u00a0' : char}</span>
+      ))}
+    </span>
+  );
 }
 
 export function FilmChapters() {
@@ -62,6 +82,7 @@ export function FilmChapters() {
   const reversed = useRef<(HTMLVideoElement | null)[]>([]);
   const cards = useRef<(HTMLAnchorElement | null)[]>([]);
   const [scene, setScene] = useState(0);
+  const [introTriggered, setIntroTriggered] = useState(false);
   const [errors, setErrors] = useState<boolean[]>([false, false, false]);
 
   useEffect(() => {
@@ -190,6 +211,7 @@ export function FilmChapters() {
 
     function playChapter(i: number, reverse: boolean) {
       if (released || running) return;
+      if (i === 0 && !reverse) setIntroTriggered(true);
       const video = reverse ? reversed.current[i] : videos.current[i];
       if (!video) return;
       const targetVideo: HTMLVideoElement = video;
@@ -416,11 +438,17 @@ export function FilmChapters() {
         <div className="film-ambient" aria-hidden="true" />
         <div className="film-bridge" aria-hidden="true" />
         {!gallery && (
-          <div className="film-sentence" key={currentChapter} aria-live="polite">
+          <div className={'film-sentence' + (currentChapter === 0 && !introTriggered ? ' film-sentence-idle' : '')}
+            key={currentChapter + '-' + (introTriggered ? 'written' : 'idle')} aria-live="polite">
             <span className="film-micro">{content.eyebrow}</span>
-            <h1>{content.line}<br /><em>{content.emphasis}</em></h1>
+            <h1>
+              {currentChapter === 0 && !introTriggered
+                ? <><span className="film-static-intro">AHMAD</span><br /><em>ABULHAWA.</em></>
+                : <><WrittenPhrase value={content.line} /><br />
+                    <em><WrittenPhrase value={content.emphasis} tone="accent" delay={content.line.length * 50 + 190} /></em></>}
+            </h1>
             {content.description && <p>{content.description}</p>}
-            <span className="film-next">{currentChapter === 0 ? 'SCROLL TO START THE STORY ↓' : 'SCROLL TO CONTINUE ↓'}</span>
+            <span className="film-next">{currentChapter === 0 && !introTriggered ? 'SCROLL TO WRITE THE STORY ↓' : 'SCROLL TO CONTINUE ↓'}</span>
           </div>
         )}
         <div className="film-gallery" aria-hidden={!gallery}>
@@ -447,7 +475,10 @@ export function FilmChapters() {
               </Link>
             ))}
           </div>
-          <span className="film-gallery-hint">{projects[currentProject].name} <span>— SELECTED PROJECT {currentProject + 1} OF 4</span></span>
+          <span className="film-gallery-hint">
+            <span key={currentProject} className="film-project-typed"><WrittenPhrase value={projects[currentProject].name} tone="project" /></span>
+            <span className="film-project-counter">— SELECTED PROJECT {currentProject + 1} OF 4</span>
+          </span>
           <Link href="#work" className="film-explore-all">ALL PROJECTS ↘</Link>
         </div>
         {errors.some(Boolean) && (

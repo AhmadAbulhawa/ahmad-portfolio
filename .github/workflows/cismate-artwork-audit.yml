@@ -4,7 +4,7 @@ on:
     branches: [portfolio-3d-v2]
     paths: ['.github/workflows/cismate-artwork-audit.yml']
 permissions:
-  contents: read
+  contents: write
 jobs:
   visual-audit:
     runs-on: ubuntu-latest
@@ -36,6 +36,18 @@ jobs:
               d.text((20+(idx%5)*236,y+410),f'{num}.jpeg {Image.open(f"cismate-screenshots/{num}.jpeg").size}',fill='#d5eafe')
           sheet.save('cismate-screenshots/contact-sheet.jpg',quality=90)
           PY
+      - name: Import original login screenshot unchanged into the portfolio
+        run: |
+          mkdir -p public/projects
+          cp cismate-screenshots/1.jpeg public/projects/cismate-login.jpeg
+          test "$(git hash-object public/projects/cismate-login.jpeg)" = "fc76d5be683277e843a05e61098d203fc66db5c2"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/projects/cismate-login.jpeg
+          if ! git diff --cached --quiet; then
+            git commit -m "Use authentic CISmate login screenshot from app repository"
+            git push origin HEAD:portfolio-3d-v2
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: cismate-owner-screenshots
