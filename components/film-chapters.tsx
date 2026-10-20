@@ -370,7 +370,55 @@ export function FilmChapters() {
     const onHashChange=()=>{
       if(!released && location.hash && location.hash!=='#intro')release();
     };
+    // AHMAD in the navbar should genuinely restart the intro from frame zero
+    // even if the user skipped it and is already on the homepage.
+    function restartIntro() {
+      if (bridgeTimer) clearTimeout(bridgeTimer);
+      if (bridgeRevealTimer) clearTimeout(bridgeRevealTimer);
+      bridgeTimer = null;
+      bridgeRevealTimer = null;
+      cancelHelix();
+      bridgeBusy = false;
+      running = false;
+      released = false;
+      lockedUntil = 0;
+      activeVideo = null;
+      helixPose = 0;
+      forwardEnd.fill(false);
+      setIntroTriggered(false);
+      setErrors([false, false, false]);
+      node!.classList.add('film-resetting');
+      node!.dataset.released = 'false';
+      node!.dataset.playing = 'false';
+      node!.dataset.direction = 'forward';
+      node!.dataset.bridge = '';
+      node!.dataset.finished = '';
+      node!.dataset.mediaError = '';
+      node!.dataset.helixMoving = 'false';
+      delete document.documentElement.dataset.filmReleased;
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      for (const [i, v] of videos.current.entries()) {
+        if (!v) continue;
+        v.pause();
+        v.playbackRate = i === 2 ? 1.5 : 1;
+        try { v.currentTime = i === 1 ? 1.8 : 0; } catch { /* not ready yet */ }
+      }
+      for (const v of reversed.current) {
+        if (!v) continue;
+        v.pause();
+        try { v.currentTime = 0; } catch { /* not ready yet */ }
+      }
+      drawHelix(cards.current, 0);
+      setPosition(0);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        node!.classList.remove('film-resetting');
+      });
+    }
     const onSkip=()=>release();
+    window.addEventListener('portfolio:restart-intro', restartIntro);
     document.addEventListener('click',onNavigation,true);
     window.addEventListener('hashchange',onHashChange);
     skip?.addEventListener('click',onSkip);
@@ -385,12 +433,19 @@ export function FilmChapters() {
     node.dataset.playing='false';
     node.dataset.direction='forward';
     setPosition(0);
+    // Browsers can restore scroll after layout; a hard reload is always
+    // the beginning of the film, not a remembered work-card / car video.
+    if (document.documentElement.dataset.portfolioReload === 'true') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
+    }
 
     return()=>{
       if(bridgeTimer)clearTimeout(bridgeTimer);
       if(bridgeRevealTimer)clearTimeout(bridgeRevealTimer);
       cancelHelix();
       disposers.forEach(fn=>fn());
+      window.removeEventListener('portfolio:restart-intro', restartIntro);
       document.removeEventListener('click',onNavigation,true);
       window.removeEventListener('hashchange',onHashChange);
       skip?.removeEventListener('click',onSkip);

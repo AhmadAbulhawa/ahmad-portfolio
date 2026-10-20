@@ -149,6 +149,33 @@ for (const setup of setups) {
    assert.equal(await section.getAttribute('data-released'),'true','Desktop menu must bypass intro gate');
    assert.ok(page.url().includes('#work'),'Work link navigated');
  }
+ // Refresh from a deeper section must wipe the URL fragment and scroll state.
+ await page.reload({ waitUntil: 'domcontentloaded' });
+ await page.waitForTimeout(650);
+ assert.equal(await page.evaluate(() => location.hash), '', 'Hard refresh must remove stale work/about anchor');
+ assert.ok((await page.evaluate(() => window.scrollY)) < 3, 'Hard refresh must start from the very top');
+ assert.equal(await section.getAttribute('data-scene'), '0', 'Reload must reset cinematic state to scene 0');
+ assert.equal(await originals.first().evaluate(v => v.paused), true, 'Reload must show paused first video');
+ assert.ok((await originals.first().evaluate(v => v.currentTime)) < .1, 'Reload begins at first video frame');
+ await page.screenshot({path:'qa-screenshots/'+setup.name+'-reload-first-frame.png'});
+ // Manual Skip, then AHMAD must restart the complete sequence, not just scroll.
+ await page.locator('.film-skip').click();
+ await page.waitForTimeout(320);
+ assert.equal(await section.getAttribute('data-released'),'true');
+ if (setup.name === 'iphone') {
+   await page.getByRole('button',{name:'Open navigation'}).click();
+   await page.getByRole('link',{name:'Ahmad Abulhawa home'}).click();
+ } else {
+   await page.getByRole('link',{name:'Ahmad Abulhawa home'}).click();
+ }
+ await page.waitForTimeout(550);
+ assert.equal(await section.getAttribute('data-released'),'false','AHMAD home must re-arm intro');
+ assert.equal(await section.getAttribute('data-scene'),'0','AHMAD home must rewind all cinematic states');
+ assert.ok((await page.evaluate(()=>scrollY))<3,'AHMAD home must return to top');
+ assert.ok(await originals.first().evaluate(v=>v.paused&&v.currentTime<.12),'AHMAD must restore paused frame zero');
+ const locked=await page.evaluate(()=>document.body.style.overflow);
+ assert.equal(locked,'hidden','Intro gate must be re-locked when AHMAD returns home');
+ await page.screenshot({path:'qa-screenshots/'+setup.name+'-brand-restarted.png'});
  assert.deepEqual(errors,[],'No page JS exceptions');
  console.log(JSON.stringify({scenario:setup.name,originals:3,reverse:3,fullWidth:sizes,cardWidth,transparentMenu:menu,uncroppedArt:artwork,errors}));
  await ctx.close();

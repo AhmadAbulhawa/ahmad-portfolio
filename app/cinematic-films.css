@@ -359,3 +359,45 @@ body:has(.film-journey) .firn-mobile-panel a>span{color:#a1c2f6;}
 @media (prefers-reduced-motion: reduce){
  .film-typed-letter,.film-sentence p,.film-sentence .film-next{animation:none!important;opacity:1;transform:none;filter:none;}
 }
+
+
+/* V13 — fast navigation on top of full-HD films: keep the mobile panel
+   translucent without compositing a costly full-screen 27px backdrop blur. */
+@media (max-width: 880px) {
+  body:has(.film-journey) .firn-mobile-panel {
+    background:rgba(4,9,21,.96)!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    transform:translate3d(0,-7px,0);
+    transition:opacity .16s ease,transform .16s ease,visibility .16s;
+    overscroll-behavior:contain;
+    contain:layout paint;
+  }
+  body:has(.film-journey) .firn-mobile-panel.is-open {
+    transform:translate3d(0,0,0);
+    pointer-events:auto;
+  }
+  body:has(.film-journey) .firn-mobile-panel:not(.is-open) {
+    pointer-events:none;
+  }
+  body:has(.film-journey) .firn-header-inner {
+    backdrop-filter:blur(7px) saturate(115%);
+    -webkit-backdrop-filter:blur(7px) saturate(115%);
+  }
+  body:has(.firn-mobile-panel.is-open) .firn-header-inner {
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  .firn-menu-lines i {transition:transform .16s ease;}
+}
+.film-journey.film-resetting .film-video:not(.film-video-0) {
+  opacity:0!important;
+  transition:none!important;
+}
+.film-journey.film-resetting .film-video-0 {
+  opacity:1!important;
+  transition:none!important;
+}
+@media (prefers-reduced-motion:reduce){
+  body:has(.film-journey) .firn-mobile-panel{transition:none!important;}
+}

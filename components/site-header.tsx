@@ -25,16 +25,29 @@ export function SiteHeader({ cv }: { cv?: string }) {
     document.addEventListener('keydown', onKeyDown);
     return () => {
       document.body.style.overflow =
-        document.documentElement.dataset.filmReleased === 'true' ? '' : previous;
+        document.querySelector('.film-journey') && document.documentElement.dataset.filmReleased !== 'true'
+          ? 'hidden' : previous;
       document.removeEventListener('keydown', onKeyDown);
     };
   }, [open]);
   const close = () => setOpen(false);
 
+  const returnToIntro = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    close();
+    // Next's same-route Link is a no-op: explicitly reset the video player,
+    // the scroll lock, and every gallery state without reloading large MP4s.
+    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+      event.preventDefault();
+      history.replaceState(history.state, '', window.location.pathname + window.location.search);
+      window.dispatchEvent(new Event('portfolio:restart-intro'));
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  };
+
   return (
     <header className="firn-header" aria-label="Site header">
       <div className="firn-header-inner">
-        <Link href="/" className="firn-brand" aria-label="Ahmad Abulhawa home" onClick={close}>AHMAD<span className="firn-brand-dot">.</span></Link>
+        <Link href="/" className="firn-brand" aria-label="Ahmad Abulhawa home" onClick={returnToIntro}>AHMAD<span className="firn-brand-dot">.</span></Link>
         <nav className="firn-desktop-nav" aria-label="Primary">
           {items.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
         </nav>

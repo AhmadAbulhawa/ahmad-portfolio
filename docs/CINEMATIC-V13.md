@@ -1,0 +1,6 @@
+# Cinematic V13: reliable return to intro and mobile navigation responsiveness
+- The document head sets scroll restoration to manual and resets the window scroll and stale #hash when a page reloads on the homepage. FilmChapters reinforces first-frame scroll after its mount.
+- Clicking the branded AHMAD link while already on homepage dispatches a synchronous intro-restart event, resets all clips and reverse clips to their original loading frames, rewinds the gallery's internal helix index, cancels pending timeouts, clears scene/history state, re-locks the body, and scrolls to 0 without a full navigation or downloading videos again. On project-detail routes, Next Link navigates home normally.
+- The mobile menu retains a translucent dark sheet without a 27px full-screen GPU-intensive blur, transitions now last 160ms, and header blur is suppressed only while the menu is open. Closing the menu retains the intro lock correctly.
+- QA covers refresh from anchored work/about screens and AHMAD after Skip Intro for mobile and desktop, in addition to existing cinematic regression testing.
+- User's original films, scroll-to-chapter sequencing, selected project artwork, colors and 3D gallery are unchanged.

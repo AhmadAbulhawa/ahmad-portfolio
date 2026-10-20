@@ -48,6 +48,24 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={manrope.variable}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function () {
+          try {
+            if (location.pathname !== '/' && location.pathname !== '/index.html') return;
+            history.scrollRestoration = 'manual';
+            var navigation = performance.getEntriesByType('navigation')[0];
+            if (navigation && navigation.type === 'reload') {
+              document.documentElement.dataset.portfolioReload = 'true';
+              history.replaceState(history.state, '', location.pathname + location.search);
+              window.scrollTo(0, 0);
+              window.addEventListener('pageshow', function () {
+                window.scrollTo(0, 0);
+                requestAnimationFrame(function () { window.scrollTo(0, 0); });
+              }, { once: true });
+            }
+          } catch (_error) { /* browser does not support restoration settings */ }
+        })();` }} />
+      </head>
       <body id="top">
         <a className="skip-link" href="#main-content">
           Skip to content
