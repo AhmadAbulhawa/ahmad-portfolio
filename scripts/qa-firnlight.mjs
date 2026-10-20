@@ -90,12 +90,29 @@ for (const setup of setups) {
  const past=await cards.nth(0).evaluate(el=>Number(el.dataset.helixRelative));
  assert.ok(past<-.98&&past> -1.02,'Prior project must move above and behind, not wrap below');
  const oldOpacity=await cards.nth(0).evaluate(el=>Number(el.style.opacity));
- assert.ok(oldOpacity>=0.5&&oldOpacity<1,'Previous frame should remain dimly visible at the side like the reference');
+ if(setup.name==='desktop') assert.ok(oldOpacity>=0.5&&oldOpacity<1,'Desktop should show dim side planes like reference');
+ else assert.equal(oldOpacity,0,'Mobile should keep previous hidden to avoid clutter');
  const future=await cards.nth(2).evaluate(el=>({x:el.style.transform,relative:Number(el.dataset.helixRelative)}));
  assert.ok(future.relative>.98,'Upcoming project should be one descending stair lower');
 
  await page.waitForTimeout(1150);
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-glass-stair.png'});
+ // Verify the authentic CisMate login image fully visible on the last stop.
+ await page.waitForTimeout(1250);
+ await down();
+ assert.equal(await section.getAttribute('data-scene'),'5');
+ await page.waitForTimeout(1250);
+ await down();
+ assert.equal(await section.getAttribute('data-scene'),'6');
+ await page.waitForTimeout(1350);
+ assert.ok((await cards.nth(3).evaluate(el=>el.style.transform)).includes('rotateY(0.00deg)'));
+ await page.screenshot({path:'qa-screenshots/'+setup.name+'-cismate-login.png'});
+ await page.waitForTimeout(1250);
+ await up();
+ assert.equal(await section.getAttribute('data-scene'),'5');
+ await page.waitForTimeout(1250);
+ await up();
+ assert.equal(await section.getAttribute('data-scene'),'4');
  await page.waitForTimeout(1250);
  await up();
  assert.equal(await section.getAttribute('data-scene'),'3','Scroll up returns first project');

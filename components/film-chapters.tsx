@@ -41,14 +41,18 @@ function drawHelix(cards: (HTMLAnchorElement | null)[], position: number) {
     const relative = index - position; // Signed means exact reverse path, no modulo skips.
     const angle = relative * 1.10;
     const distance = Math.abs(relative);
-    const x = Math.sin(angle) * radius;
+    const x = Math.sin(angle) * radius * (mobile ? .43 : 1);
     const y = relative * step;
-    const z = (Math.cos(angle) - 1) * radius * .29 - distance * (mobile ? 66 : 95);
-    const rotation = -Math.sin(angle) * (mobile ? 30 : 62);
-    const scale = Math.max(mobile ? .57 : .62, 1 - distance * (mobile ? .15 : .13));
-    // Unlike the previous invisible/stacked panes, keep nearby side planes
-    // visible like the reference's translucent frames at left and right.
-    const alpha = distance < .01 ? 1 : Math.max(.20, 1 - distance * .32);
+    const z = mobile
+      ? (Math.cos(angle) - 1) * radius * .66 - distance * 82
+      : (Math.cos(angle) - 1) * radius * .29 - distance * 95;
+    const rotation = -Math.sin(angle) * (mobile ? 37 : 62);
+    const scale = Math.max(mobile ? .54 : .62, 1 - distance * (mobile ? .16 : .13));
+    // Laptop: large editorial frame with visible planes left and right.
+    // Mobile: retain the tighter descending staircase the owner approved.
+    const alpha = mobile
+      ? (relative < 0 ? Math.max(0, 1 - distance * 1.10) : Math.max(.56, 1 - distance * .13))
+      : (distance < .01 ? 1 : Math.max(.20, 1 - distance * .32));
     card.style.transform =
       'translate3d(calc(-50% + ' + x.toFixed(2) + 'px),calc(-50% + ' +
       y.toFixed(2) + 'px),' + z.toFixed(2) + 'px) rotateY(' +
