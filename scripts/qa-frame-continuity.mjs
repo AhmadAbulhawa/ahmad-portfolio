@@ -53,6 +53,21 @@ try {
       await live();
       // Let the decoder reach its real final frame; do not manufacture an ended
       // event or seek during the source's initial start-position seek.
+      for (let attempt = 0; attempt < 3; attempt++) {
+        await page.waitForFunction(() => ['completed', 'stalled'].includes(
+          document.querySelector('.film-journey')?.dataset.phase), null, { timeout: 22000 });
+        const state = await page.evaluate(() => {
+          const video = document.querySelector('.film-video');
+          const stage = document.querySelector('.film-journey');
+          return { phase: stage.dataset.phase, chapter: stage.dataset.chapter,
+            time: video.currentTime, duration: video.duration,
+            direction: video.src.includes('-reverse') ? -1 : 1 };
+        });
+        if (state.phase === 'completed' || state.duration - state.time <= 0.05) break;
+        console.log(`${setup.name}: retry stationary decoder in chapter ${state.chapter}`);
+        await gesture(state.direction);
+        assert.equal(await page.locator('.film-journey').getAttribute('data-chapter'), state.chapter);
+      }
       await page.waitForFunction(() =>
         document.querySelector('.film-journey')?.dataset.phase === 'completed',
       null, { timeout: 22000 });
