@@ -154,20 +154,6 @@ export default function Home() {
             </article>
           </section>
           <section id="about" className="about section" aria-labelledby="about-title">
-            <div className="about-portrait">
-              <Image
-                src="/projects/ahmad-firnlight-hero.webp"
-                alt="Ahmad in the snow, wearing iridescent ski goggles"
-                width={1920}
-                height={1080}
-                loading="lazy"
-              />
-              <span className="portrait-caption">
-                A DIFFERENT PERSPECTIVE.
-                <br />
-                THE SAME ATTENTION TO DETAIL.
-              </span>
-            </div>
             <div className="about-editorial">
               <span className="section-label">02 / THE PERSON BEHIND THE PIXELS</span>
               <h2 id="about-title">
