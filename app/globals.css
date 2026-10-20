@@ -3001,3 +3001,16 @@ body { background: #0a0d12; }
   .firn-vignette,.firn-reveal {display:none;}
   .firn-mobile-panel {transition:none;}
 }
+
+
+/* Preserve comfortable header spacing on case-study and error routes. */
+body:not(:has(.firn-journey)) .firn-header {
+  position: relative;
+  top: 16px;
+  left: auto;
+  transform: none;
+  margin: 0 auto 45px;
+}
+body:not(:has(.firn-journey)) .firn-mobile-panel {
+  position: fixed;
+}
