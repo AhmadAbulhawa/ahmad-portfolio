@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Arrow } from '@/components/icons';
 import { Motion } from '@/components/motion';
 import { FirnlightMotion } from '@/components/firnlight-motion';
+import { CinematicGoggles, FloatingProjects } from '@/components/cinematic-objects';
 import { VideoPlayer } from '@/components/video-player';
 import { Contact } from '@/components/shell';
 import { munjizClips } from '@/lib/films';
@@ -40,33 +41,18 @@ export default function Home() {
               <p>IDEAS COME<br /><em>TO LIFE.</em></p>
               <span>DISCOVER THE WORK ↓</span>
             </div>
-            <div className="firn-showcase" aria-hidden="true">
-              <div className="firn-showcase-halo" />
-              <div className="firn-cinema-card firn-cinema-card--left">
-                <div className="firn-card-image firn-card-image--aqar" />
-                <span>AQARAI / INTELLIGENT DESIGN</span>
-              </div>
-              <div className="firn-cinema-card firn-cinema-card--center">
-                <div className="firn-card-image firn-card-image--munjiz" />
-                <span>MUNJIZ / AI WORKFLOWS</span>
-              </div>
-              <div className="firn-cinema-card firn-cinema-card--right">
-                <div className="firn-card-image firn-card-image--garage" />
-                <span>GARAGE TAHMEEN / MOTION</span>
-              </div>
-              <p className="firn-showcase-title">THE WORK <em>BEHIND THE VISION.</em></p>
-              <span className="firn-showcase-count">03 / 04 — SELECTED PROJECTS</span>
-            </div>
+            <CinematicGoggles />
+            <FloatingProjects />
             <a className="firn-skip" href="#work">Skip intro <span aria-hidden="true">↗</span></a>
           </div>
         </section>
-        <div className="firn-chapter" aria-hidden="true">
+        <div className="firn-chapter">
           <span>02 — THE WORK</span>
           <p>REAL PROJECTS.<br /><em>REAL PROBLEMS SOLVED.</em></p>
           <span>FOUR PROJECTS. ONE CREATIVE JOURNEY. ↓</span>
         </div>
 
-        <section className="work wrap section" id="work" aria-labelledby="work-title">
+        <section className="work wrap section" data-motion-section id="work" aria-labelledby="work-title">
           <div className="section-top">
             <div className="section-label">
               <span className="tiny-cross">+</span> SELECTED WORK / 01—04
@@ -219,7 +205,7 @@ export default function Home() {
           </article>
         </section>
 
-        <section className="also wrap" aria-labelledby="also-title" data-reveal>
+        <section className="also wrap" data-motion-section aria-labelledby="also-title" data-reveal>
           <div className="also-intro">
             <p className="section-label">BEYOND THE BROWSER</p>
             <h2 id="also-title">
@@ -260,7 +246,7 @@ export default function Home() {
           </Link>
         </section>
 
-        <section className="about wrap section" id="about" aria-labelledby="about-title">
+        <section className="about wrap section" data-motion-section id="about" aria-labelledby="about-title">
           <div className="section-label">
             <span className="tiny-cross">+</span> THE PERSON BEHIND THE PIXELS
           </div>
@@ -311,7 +297,7 @@ export default function Home() {
             <h3>A practical toolkit.</h3>
             <p>Technologies I build with, and tools I continue to explore.</p>
           </div>
-          <div className="skills-grid">
+          <div className="skills-grid" data-motion-section>
             {skillGroups.map((group, i) => (
               <div className="skill-group" key={group.name}>
                 <span className="skill-index">0{i + 1}</span>

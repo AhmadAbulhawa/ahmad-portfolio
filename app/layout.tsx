@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { Header, Footer } from '@/components/shell';
 import './globals.css';
+import './cinematic-v4.css';
 const manrope = localFont({
   src: '../public/fonts/manrope-latin.woff2',
   display: 'swap',
