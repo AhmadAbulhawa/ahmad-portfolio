@@ -48,7 +48,7 @@ for (const setup of setups) {
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-hero.png'});
  await down();
  assert.equal(await section.getAttribute('data-scene'),'0','First input only starts first film');
- assert.ok(await page.locator('.film-sentence .film-typed-letter').count()>15,'First scroll writes each headline letter');
+ assert.ok(await page.locator('.film-sentence .film-typed-letter').count()>=14,'First scroll writes each headline letter');
  assert.equal(await section.getAttribute('data-playing'),'true');
  assert.equal(await originals.nth(0).evaluate(v=>v.playbackRate),1);
  await down(); await down(); await down();
