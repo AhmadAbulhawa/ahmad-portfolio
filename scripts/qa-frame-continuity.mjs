@@ -237,9 +237,9 @@ try {
     arm('02-dissolve-reverse.mp4');
     await finish();
     await transition('02-dissolve-reverse.mp4', -1);
-    arm('01-goggles-on-reverse.mp4');
+    arm('01-goggles-on-aligned-reverse.mp4');
     await finish();
-    await transition('01-goggles-on-reverse.mp4', -1);
+    await transition('01-goggles-on-aligned-reverse.mp4', -1);
     await finish();
     await gesture(-1);
     await page.waitForFunction(() =>

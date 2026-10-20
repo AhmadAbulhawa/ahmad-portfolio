@@ -1,0 +1,42 @@
+[
+  {
+    "file": "01-goggles-on-aligned-reverse.mp4",
+    "sha256": "72cf0d80f65c8c90274e0ffc0eeb560d19ca90da140943eaaaefb87f2d49d31d",
+    "bytes": 5570981
+  },
+  {
+    "file": "01-goggles-on-aligned.mp4",
+    "sha256": "ddb7705494f465313dd26326311b0b4ac102ae7b6af65966f7f3b8f6da358cc0",
+    "bytes": 4986711
+  },
+  {
+    "file": "01-goggles-on-reverse.mp4",
+    "sha256": "8b52f278471c0ac90efeb5d53b9ca3ca1f8a5521627380ca2c412486c25c3898",
+    "bytes": 5079134
+  },
+  {
+    "file": "01-goggles-on.mp4",
+    "sha256": "9bd9dd8e2b91bcbe3cd81df6b79a17ee817864c044e4cdfeca2d907bbd296a50",
+    "bytes": 3631555
+  },
+  {
+    "file": "02-dissolve-reverse.mp4",
+    "sha256": "fb9e32d38c60f9f136012a5567666aaf1bfd2269bc525e6120459d8441d14d16",
+    "bytes": 9471239
+  },
+  {
+    "file": "02-dissolve.mp4",
+    "sha256": "af22e46683cbf354362f0396a40b2c6ec65f5f46428650c82d7e48e9f9cd3314",
+    "bytes": 7361309
+  },
+  {
+    "file": "03-shatter-reverse.mp4",
+    "sha256": "7a62f97669e216fcfafbbd094aa444c93c84cc55f47af1c6fbcb8f7d4c852634",
+    "bytes": 20883817
+  },
+  {
+    "file": "03-shatter.mp4",
+    "sha256": "1629989e38a8869e6e1ac80689ffac1cfd2e7aea45e0caa6ee4a5be9a567bba2",
+    "bytes": 15122002
+  }
+]

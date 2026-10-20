@@ -4,14 +4,12 @@ export class FrameHandoff {
   private paint = 0;
   private generation = 0;
   private visible = false;
-  private blend: Animation | undefined;
   private removeFallback: (() => void) | undefined;
 
   constructor(
     private video: HTMLVideoElement,
     private canvas: HTMLCanvasElement,
     private poster?: HTMLImageElement,
-    private incoming?: HTMLCanvasElement,
   ) {}
 
   private cancel() {
@@ -19,19 +17,16 @@ export class FrameHandoff {
     if (this.frame !== undefined) this.video.cancelVideoFrameCallback(this.frame);
     this.frame = undefined;
     cancelAnimationFrame(this.paint);
-    this.blend?.cancel();
-    this.blend = undefined;
-    if (this.incoming) this.incoming.style.opacity = '0';
     this.removeFallback?.();
     this.removeFallback = undefined;
   }
 
-  private capture(target = this.canvas) {
+  private capture() {
     if (this.video.readyState < 2 || !this.video.videoWidth) return false;
-    const context = target.getContext('2d', { alpha: false });
+    const context = this.canvas.getContext('2d', { alpha: false });
     if (!context) return false;
-    if (target.width !== this.video.videoWidth) target.width = this.video.videoWidth;
-    if (target.height !== this.video.videoHeight) target.height = this.video.videoHeight;
+    if (this.canvas.width !== this.video.videoWidth) this.canvas.width = this.video.videoWidth;
+    if (this.canvas.height !== this.video.videoHeight) this.canvas.height = this.video.videoHeight;
     context.drawImage(this.video, 0, 0);
     return true;
   }
@@ -55,7 +50,7 @@ export class FrameHandoff {
     this.video.style.opacity = '1';
   }
 
-  prepare(start: number, blend = false) {
+  prepare(start: number) {
     const generation = this.generation;
     const source = this.video.src;
     const ready = () =>
@@ -78,41 +73,17 @@ export class FrameHandoff {
       this.visible = true;
       this.video.style.opacity = '1';
       if (this.poster) this.poster.style.opacity = '0';
-      // Preserve the outgoing pixels until the incoming decoder is paintable.
-      // Overwriting this hold with the next source caused the recorded pose jump.
-      const dissolve = blend && this.canvas.dataset.frame === 'held' && this.incoming &&
-        !matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const surface = dissolve ? this.incoming! : this.canvas;
       // Paint the verified incoming first frame once before exposing the native
       // surface, whose compositor may still contain the pre-seek image.
-      if (this.capture(surface)) {
+      if (this.capture()) {
         this.canvas.dataset.frame = 'presenting';
-        surface.style.opacity = '1';
+        this.canvas.style.opacity = '1';
         const presentation = this.generation;
         this.paint = requestAnimationFrame(() => {
           this.paint = requestAnimationFrame(() => {
             if (presentation !== this.generation) return;
-            if (dissolve) {
-              surface.style.opacity = '0';
-              // Use a half-second opacity transition only where
-              // the source poses differ. No video transform or re-encoding.
-              this.canvas.dataset.frame = 'blending';
-              this.blend = this.canvas.animate([{ opacity: 1 }, { opacity: 0 }], {
-                duration: 500, easing: 'ease', fill: 'forwards',
-              });
-              this.blend.onfinish = () => {
-                if (presentation !== this.generation) return;
-                this.canvas.style.opacity = '0';
-                this.blend?.cancel();
-                this.blend = undefined;
-                this.canvas.dataset.frame = 'live';
-                // Release the temporary full-resolution first-frame surface.
-                surface.width = surface.height = 1;
-              };
-            } else {
-              this.canvas.dataset.frame = 'live';
-              this.canvas.style.opacity = '0';
-            }
+            this.canvas.dataset.frame = 'live';
+            this.canvas.style.opacity = '0';
           });
         });
       } else {
@@ -158,6 +129,5 @@ export class FrameHandoff {
   destroy() {
     this.cancel();
     this.canvas.width = this.canvas.height = 1;
-    if (this.incoming) this.incoming.width = this.incoming.height = 1;
   }
 }

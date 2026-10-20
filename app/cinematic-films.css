@@ -37,8 +37,7 @@
   object-position: 50% 43%;
   pointer-events: none;
 }
-.film-hold,
-.film-incoming {
+.film-hold {
   opacity: 0;
 }
 .film-shade {

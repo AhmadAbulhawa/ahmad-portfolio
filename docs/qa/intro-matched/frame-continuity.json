@@ -1,0 +1,317 @@
+[
+  {
+    "viewport": "desktop",
+    "file": "02-dissolve.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "02-dissolve.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "02-dissolve.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "03-shatter.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "03-shatter.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "03-shatter.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "03-shatter-reverse.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "03-shatter-reverse.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "03-shatter-reverse.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "02-dissolve-reverse.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "02-dissolve-reverse.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "02-dissolve-reverse.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "01-goggles-on-aligned-reverse.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "01-goggles-on-aligned-reverse.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "desktop",
+    "file": "01-goggles-on-aligned-reverse.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "02-dissolve.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "02-dissolve.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "02-dissolve.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "03-shatter.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "03-shatter.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "03-shatter.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "03-shatter-reverse.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "03-shatter-reverse.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "03-shatter-reverse.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "02-dissolve-reverse.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "02-dissolve-reverse.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "02-dissolve-reverse.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "01-goggles-on-aligned-reverse.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "01-goggles-on-aligned-reverse.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile",
+    "file": "01-goggles-on-aligned-reverse.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "02-dissolve.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "02-dissolve.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "02-dissolve.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "03-shatter.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "03-shatter.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "03-shatter.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "03-shatter-reverse.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "03-shatter-reverse.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "03-shatter-reverse.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "02-dissolve-reverse.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "02-dissolve-reverse.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "02-dissolve-reverse.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "01-goggles-on-aligned-reverse.mp4",
+    "sample": 0,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "01-goggles-on-aligned-reverse.mp4",
+    "sample": 1,
+    "mean": 0,
+    "changed": 0
+  },
+  {
+    "viewport": "mobile-fallback",
+    "file": "01-goggles-on-aligned-reverse.mp4",
+    "sample": 2,
+    "mean": 0,
+    "changed": 0
+  }
+]

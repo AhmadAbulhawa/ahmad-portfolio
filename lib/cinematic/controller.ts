@@ -10,7 +10,7 @@ export type Phase =
 export type Direction = 1 | -1;
 type FramePresentation = {
   hold(): void;
-  prepare(start: number, blend?: boolean): void;
+  prepare(start: number): void;
   reset(): void;
   destroy(): void;
   isShowing?(): boolean;
@@ -23,7 +23,8 @@ export type Snapshot = {
   hasFrame: boolean;
 };
 export const FILMS = [
-  { file: '01-goggles-on', start: 0, rate: 1 },
+  // This derivative ends on film 02's actual opening frame in both directions.
+  { file: '01-goggles-on-aligned', start: 0, rate: 1 },
   // A short breath before the first visible disappearance; no hidden playback.
   { file: '02-dissolve', start: 1.5, rate: 1 },
   { file: '03-shatter', start: 0, rate: 1.5 },
@@ -156,11 +157,6 @@ export class CinematicController {
     });
   }
   private load(chapter: number, direction: Direction, reset = false) {
-    // The originals have different face/goggle poses at the 01/02 boundary.
-    // Retain its former dissolve; 02/03 and same-film reversals are matched cuts.
-    const blend = this.state.phase === 'completed' &&
-      ((this.state.chapter === 0 && chapter === 1) ||
-        (this.state.chapter === 1 && chapter === 0));
     if (reset) this.frames?.reset();
     else this.frames?.hold();
     this.generation++;
@@ -175,7 +171,7 @@ export class CinematicController {
     this.publish({ chapter, direction, phase: 'loading', progress: 0, hasFrame: false });
     if (!warm) this.prepareSource(chapter, direction);
     this.prepared = undefined;
-    this.frames?.prepare(direction === 1 ? FILMS[chapter].start : 0, blend);
+    this.frames?.prepare(direction === 1 ? FILMS[chapter].start : 0);
   }
   private prepareSource(chapter: number, direction: Direction) {
     this.seekTarget = direction === 1 ? FILMS[chapter].start : 0;

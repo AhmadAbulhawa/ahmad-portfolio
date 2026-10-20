@@ -15,7 +15,9 @@
     "test": "node --experimental-transform-types --test tests/*.test.mjs",
     "qa:cinematic": "node scripts/qa-cinematic.mjs",
     "qa:frames": "node scripts/qa-frame-continuity.mjs",
-    "qa:resilience": "node scripts/qa-resilience.mjs"
+    "qa:resilience": "node scripts/qa-resilience.mjs",
+    "qa:intro": "node scripts/qa-intro-handoff.mjs",
+    "media:intro": "node scripts/build-cinematic-intro.mjs"
   },
   "dependencies": {
     "gsap": "^3.14.2",

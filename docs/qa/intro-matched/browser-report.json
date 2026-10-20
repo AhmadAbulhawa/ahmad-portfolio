@@ -1,0 +1,54 @@
+{
+  "browser": "chromium",
+  "results": [
+    {
+      "viewport": "desktop",
+      "passed": true,
+      "realPlayback": true,
+      "touchInput": "desktop wheel",
+      "errors": []
+    },
+    {
+      "viewport": "mobile",
+      "passed": true,
+      "realPlayback": true,
+      "touchInput": "Chromium protocol touch sequence",
+      "errors": []
+    }
+  ],
+  "stallRecoveries": [],
+  "screenshots": [
+    "desktop-intro.png",
+    "desktop-intro-started.png",
+    "desktop-philosophy.png",
+    "desktop-philosophy-final.png",
+    "desktop-transformation.png",
+    "desktop-transformation-final.png",
+    "desktop-gallery-01.png",
+    "desktop-gallery-04.png",
+    "desktop-work.png",
+    "desktop-about.png",
+    "desktop-skills.png",
+    "desktop-contact.png",
+    "desktop-case-munjiz.png",
+    "desktop-case-garage-tahmeen.png",
+    "desktop-case-aqar-ai.png",
+    "desktop-case-cismate.png",
+    "mobile-intro.png",
+    "mobile-intro-started.png",
+    "mobile-philosophy.png",
+    "mobile-philosophy-final.png",
+    "mobile-transformation.png",
+    "mobile-transformation-final.png",
+    "mobile-gallery-01.png",
+    "mobile-gallery-04.png",
+    "mobile-work.png",
+    "mobile-about.png",
+    "mobile-skills.png",
+    "mobile-contact.png",
+    "mobile-case-munjiz.png",
+    "mobile-case-garage-tahmeen.png",
+    "mobile-case-aqar-ai.png",
+    "mobile-case-cismate.png"
+  ]
+}

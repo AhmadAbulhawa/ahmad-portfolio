@@ -278,7 +278,7 @@ try {
     await finishFilm();
     await gesture(-1);
     await chapter(0);
-    assert.match(await video.getAttribute('src'), /goggles-on-reverse/);
+    assert.match(await video.getAttribute('src'), /goggles-on-aligned-reverse/);
     await finishFilm();
     await gesture(-1);
     await phase('idle');

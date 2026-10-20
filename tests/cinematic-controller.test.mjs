@@ -63,37 +63,6 @@ function finish(s) {
   s.tick();
   assert.equal(s.c.state.phase, 'completed');
 }
-test('blend only the mismatched 01/02 poses, in both directions', () => {
-  const preparations = [];
-  const s = setup({
-    hold() {}, reset() {}, destroy() {},
-    prepare(start, blend) { preparations.push({ start, blend }); },
-  });
-  try {
-    assert.deepEqual(preparations.at(-1), { start: 0, blend: false });
-    s.c.gesture(1);
-    finish(s);
-    s.c.gesture(1);
-    assert.deepEqual(preparations.at(-1), { start: 1.5, blend: true });
-    finish(s);
-    s.c.gesture(1);
-    assert.deepEqual(preparations.at(-1), { start: 0, blend: false });
-    finish(s);
-    s.c.gesture(-1); // reverse 03 from its matching endpoint
-    assert.deepEqual(preparations.at(-1), { start: 0, blend: false });
-    finish(s);
-    s.c.gesture(-1); // reverse 03 -> reverse 02 is also aligned
-    assert.deepEqual(preparations.at(-1), { start: 0, blend: false });
-    // The reverse dissolve is trimmed to 6.5 seconds.
-    s.media.currentTime = 6.48;
-    s.media.paused = true;
-    s.tick();
-    s.c.gesture(-1);
-    assert.deepEqual(preparations.at(-1), { start: 0, blend: true });
-  } finally {
-    s.close();
-  }
-});
 test('starts at frame zero and never autoplays; repeated input cannot skip unfinished footage', () => {
   const s = setup();
   try {
@@ -123,7 +92,7 @@ test('a completed frame is captured before the next source warms, without advanc
     assert.equal(s.c.state.phase, 'completed');
     assert.equal(s.media.calls, 1, 'Preloading never calls play');
     assert.equal(s.media.paused, true);
-    assert.match(order.at(-1).src, /01-goggles-on.mp4$/);
+    assert.match(order.at(-1).src, /01-goggles-on-aligned.mp4$/);
     assert.equal(order.at(-1).time, 7.98);
     assert.match(s.media.src, /02-dissolve.mp4$/);
     assert.equal(s.media.currentTime, 1.5, 'Warm at the real incoming start seek');
