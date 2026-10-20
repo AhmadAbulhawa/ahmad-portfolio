@@ -54,7 +54,7 @@ export function VideoPlayer({ src, poster, width, height, label, description, pr
             if (node && node.paused && !error) {
               void node.play().catch(() => { /* native controls remain available */ });
             }
-          }} src={src} poster={poster} width={width} height={height} controls playsInline autoPlay
+          }} src={src} poster={poster} width={width} height={height} controls playsInline muted loop autoPlay
             preload="metadata" aria-label={label} onError={() => setError(true)} />
           {error && <p className="media-note" role="alert">Playback unavailable. <a href={src} download>Download this clip ↗</a></p>}
         </>

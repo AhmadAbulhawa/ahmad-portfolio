@@ -6,7 +6,7 @@ import { FirnlightMotion } from '@/components/firnlight-motion';
 import { VideoPlayer } from '@/components/video-player';
 import { Contact } from '@/components/shell';
 import { munjizClips } from '@/lib/films';
-import { cv, person, projects, skillGroups, garageClips } from '@/lib/content';
+import { person, projects, skillGroups, garageClips } from '@/lib/content';
 
 export default function Home() {
   const [garage, munjiz, aqar] = projects;

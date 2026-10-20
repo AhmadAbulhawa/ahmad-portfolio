@@ -9,8 +9,8 @@ This is an original implementation, not a copy of the paid Scrolltide source.
 - Videos now play inline on click; the previous full-screen video dialog is gone.
 - Source case studies, real project text, contact links and CV are preserved.
 - No scroll hijacking; reduced-motion accessible fallback; scroll animation only runs while a user scrolls.
-- Placeholder visual referenced at /projects/ahmad-firnlight-hero.webp (must be added before review).
-- The animated action in Firnlight's original film was not copied: a real multi-frame wardrobe/goggle animation would require an approved frame sequence or filmed footage.
+- Approved snow portrait visual is embedded at /projects/ahmad-firnlight-hero.webp (compressed static WebP preview).
+- Unused first-iteration ThreeUI shader prototype was retired from this branch. The animated action in Firnlight's original film was not copied: a real multi-frame wardrobe/goggle animation would require an approved frame sequence or filmed footage.
 
 Validation: npm ci && npm run lint && npm run typecheck && npm run build.
 Test on real iOS Safari and desktop browsers before merging main.
