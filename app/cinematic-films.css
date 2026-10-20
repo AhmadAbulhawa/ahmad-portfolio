@@ -164,3 +164,23 @@
   .film-gallery{display:none;}
   .film-sentence{animation:none;}
 }
+
+
+/* QA-polished desktop sizing: preserve 1080p stream while reducing its visual crop. */
+@media(min-width: 701px) {
+  .film-video {
+    width:min(79vw,1190px);
+    height:min(69svh,680px);
+  }
+  .film-ambient {
+    background:linear-gradient(90deg,#030409 0%,rgba(3,4,9,.43) 23%,transparent 45%,transparent 77%,#030409 100%),
+               linear-gradient(0deg,#030409 0%,rgba(3,4,9,.95) 9%,rgba(3,4,9,.10) 55%,rgba(3,4,9,.18) 100%);
+  }
+  .film-sentence {inset:auto 7% 12% 7%;max-width:68%;}
+  .film-sentence h1 {font-size:clamp(48px,7vw,100px);}
+}
+/* Use the actual iridescent lens palette across the full film typography. */
+.film-sentence h1 {background:var(--prism);background-clip:text;-webkit-background-clip:text;color:transparent;}
+.film-sentence h1 em {background:var(--prism);background-clip:text;-webkit-background-clip:text;color:transparent;}
+.film-sentence {text-shadow:0 3px 19px #030409;}
+.film-sentence p {color:#a6d9fc;}

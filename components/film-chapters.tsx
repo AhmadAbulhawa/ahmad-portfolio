@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { filmSources } from '@/lib/film-sources';
+import { filmPosters } from '@/lib/film-posters';
 
 const projects = [
   { name: 'Munjiz', tag: 'AI / PRODUCT DESIGN', slug: 'munjiz', image: '/projects/munjiz-arrival.webp' },
@@ -170,6 +171,7 @@ export function FilmChapters() {
               ref={node => { videos.current[index] = node; }}
               className={'film-video film-video-' + index}
               src={clip.src}
+              poster={filmPosters[index]}
               muted
               playsInline
               preload={index === 0 ? 'auto' : 'metadata'}
