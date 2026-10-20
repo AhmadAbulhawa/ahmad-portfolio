@@ -41,3 +41,7 @@ The owner-supplied CV is included unchanged at `public/ahmad-abulhawa-cv.pdf`. D
 - [Desktop approval screenshots and final visual QA](docs/qa/README.md)
 
 Set `NEXT_PUBLIC_SITE_URL` to the final approved HTTPS origin before production build. No domain is guessed. No website deployment or publication is authorized by this implementation.
+
+## Current cinematic implementation
+
+The preview-branch rebuild and validation commands are documented in [docs/CINEMATIC-REBUILD.md](docs/CINEMATIC-REBUILD.md). It retains static Cloudflare Pages export, original cinematic media, and real project content. Work is confined to `portfolio-3d-v2`; production `main` is unchanged.

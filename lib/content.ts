@@ -184,7 +184,7 @@ export const projects: Project[] = [
       'Connecting visual generation to room measurements and selected products, rather than treating every design request as an unconstrained image prompt.',
     response:
       'The source separates room analysis, inventory selection, placement planning, render manifests, and compliance checks. These are engineering safeguards, not a claim of perfect visual fidelity.',
-    next: 'garage-tahmeen',
+    next: 'cismate',
   },
 ];
 export const skillGroups = [

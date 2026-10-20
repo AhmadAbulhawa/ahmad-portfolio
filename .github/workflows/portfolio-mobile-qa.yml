@@ -1,4 +1,4 @@
-name: Cinematic mobile visual QA
+name: Cinematic browser regression and visual QA
 on:
   push:
     branches: [portfolio-3d-v2]
@@ -6,6 +6,10 @@ on:
 jobs:
   visual:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -13,16 +17,22 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
       - run: npm run build
-      - name: Test mobile and desktop rendering
+      - name: Test actual playback, touch gestures, gallery, navigation and case studies
+        env:
+          QA_BROWSER: ${{ matrix.browser }}
+          PORTFOLIO_QA_OUTPUT: work/qa
         run: |
-          python3 -m http.server 3000 --directory out >/tmp/preview-server.log 2>&1 &
-          sleep 3
-          node scripts/qa-firnlight.mjs
+          python3 -m http.server 3000 --directory out > /tmp/portfolio-preview.log 2>&1 &
+          node scripts/qa-cinematic.mjs
+      - name: Test loading, rejected playback, WebGL fallback and every actual card link
+        if: matrix.browser == 'chromium'
+        run: node scripts/qa-resilience.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: firnlight-mobile-desktop-screenshots
-          path: qa-screenshots/
+          name: cinematic-${{ matrix.browser }}-evidence
+          path: work/qa/
           if-no-files-found: warn

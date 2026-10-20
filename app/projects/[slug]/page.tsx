@@ -39,7 +39,12 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
   if (slug === 'cismate') return <Cismate />;
   const project = projects.find((p) => p.slug === slug);
   if (!project) notFound();
-  const next = projects.find((p) => p.slug === project.next)!;
+  const next = projects.find((p) => p.slug === project.next) ?? {
+    slug: 'cismate',
+    name: 'CISmate',
+    number: '04',
+    category: 'Academic planning application',
+  };
   return (
     <main id="main-content" className={`case-page case-${slug}`}>
       <section className="case-hero wrap">
@@ -176,6 +181,15 @@ function Cismate() {
             ))}
           </div>
         </div>
+      </section>
+      <section className="cis-login wrap" aria-label="Original CISmate login screen">
+        <Image
+          src="/projects/cismate-login.jpeg"
+          width={1280}
+          height={803}
+          alt="Authentic CISmate application login screen"
+          preload
+        />
       </section>
       <section className="cis-gallery wrap" aria-label="Authentic CISmate application screenshots">
         <figure>

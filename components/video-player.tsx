@@ -62,7 +62,7 @@ export function VideoPlayer({ src, poster, width, height, label, description, pr
         <button type="button" className="media-trigger firn-inline-play" onClick={playInline} aria-label={'Play video inline: ' + label}>
           <Poster src={poster} alt={label} width={width} height={height} priority={priority} />
           <span className="play-badge"><Play /><span>{badge ?? 'PLAY FILM'}</span></span>
-          <span className="media-corner">{duration ?? 'WATCH'} ↗</span>
+          <span className="media-corner">{duration ?? 'WATCH'} →</span>
         </button>
       )}
       <span className="sr-only">{description}</span>

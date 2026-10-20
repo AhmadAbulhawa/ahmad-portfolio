@@ -4,10 +4,9 @@ import { Arrow } from '@/components/icons';
 import { Motion } from '@/components/motion';
 import { FilmChapters } from '@/components/film-chapters';
 import { VideoPlayer } from '@/components/video-player';
+import { TechnologySystem } from '@/components/technology-system';
 import { Contact } from '@/components/shell';
-import { munjizClips } from '@/lib/films';
 import { person, projects, skillGroups, garageClips } from '@/lib/content';
-
 export default function Home() {
   const [garage, munjiz, aqar] = projects;
   return (
@@ -15,266 +14,209 @@ export default function Home() {
       <Motion />
       <main id="main-content">
         <FilmChapters />
-        <section className="work wrap section" data-motion-section id="work" aria-labelledby="work-title">
-          <div className="section-top">
-            <div className="section-label">
-              <span className="tiny-cross">+</span> SELECTED WORK / 01—04
+        <div data-portfolio-content>
+          <section id="work" className="work wrap section" aria-labelledby="work-title">
+            <div className="section-top">
+              <span className="section-label">01 / SELECTED WORK</span>
+              <span className="section-aside">FOUR PROJECTS. FOUR DIFFERENT PERSPECTIVES.</span>
             </div>
-            <span className="section-aside">Different problems. One attention to detail.</span>
-          </div>
-          <h2 className="section-title" id="work-title" data-reveal>
-            Built to work.
-            <br />
-            <em>Made to feel.</em>
-          </h2>
-          <article className="project garage-project firn-feature" data-motion-project aria-labelledby="garage-title" data-reveal>
-            {garageClips[0] ? (
-              <VideoPlayer {...garageClips[0]} />
-            ) : (
-              <Link prefetch={false} className="garage-editorial" href="/projects/garage-tahmeen/">
-                <div className="editorial-top">
-                  <span>GARAGE TAHMEEN</span>
-                  <span>FRONTEND STUDY / 01</span>
+            <div className="work-heading">
+              <h2 className="section-title" id="work-title">
+                Built to work.
+                <br />
+                <em>Made to feel.</em>
+              </h2>
+              <p>
+                Expressive interfaces.
+                <br />
+                Intelligent systems.
+                <br />
+                Real things, thoughtfully built.
+              </p>
+            </div>
+            <article className="work-feature" data-reveal>
+              <div className="work-project-top">
+                <span className="section-label">01 / INTERACTIVE AUTOMOTIVE</span>
+                <span className="section-label">NEXT.JS · TYPESCRIPT · GSAP</span>
+              </div>
+              {garageClips[0] && <VideoPlayer {...garageClips[0]} />}
+              <div className="work-feature-info">
+                <h3>
+                  <Link prefetch={false} href="/projects/garage-tahmeen/">
+                    Garage Tahmeen <Arrow diagonal />
+                  </Link>
+                </h3>
+                <div>
+                  <p>{garage.intro}</p>
+                  <Link prefetch={false} className="text-link" href="/projects/garage-tahmeen/">
+                    Explore the case study <Arrow />
+                  </Link>
                 </div>
-                <div className="garage-words">
-                  <span>SCROLL.</span>
-                  <span>STORY.</span>
-                  <span className="outline-word">MOTION.</span>
+              </div>
+            </article>
+            <div className="work-editorial-pair">
+              <article className="work-portrait" data-reveal>
+                <div className="work-project-top">
+                  <span className="section-label">02 / AI & PRODUCT DESIGN</span>
                 </div>
-                <div className="garage-editorial-bottom">
-                  <span>
-                    A study in cinematic
-                    <br />
-                    frontend engineering.
-                  </span>
-                  <span className="round-arrow">
+                <Link
+                  prefetch={false}
+                  className="project-art munjiz-art"
+                  href="/projects/munjiz/"
+                  aria-label="Explore Munjiz case study"
+                >
+                  <span className="art-caption">AMBITION, MADE TANGIBLE.</span>
+                  <Image
+                    src="/projects/munjiz-arrival.webp"
+                    alt="Original Munjiz brand presentation — illuminated Arabic studio tower"
+                    width={464}
+                    height={848}
+                    loading="lazy"
+                  />
+                  <span className="art-arrow">
                     <Arrow diagonal />
                   </span>
-                </div>
-              </Link>
-            )}
-            <div className="project-info">
-              <div className="project-name">
-                <span className="project-index">01</span>
-                <div>
-                  <p className="project-category">{garage.category}</p>
-                  <h3 id="garage-title">
-                    <Link prefetch={false} href="/projects/garage-tahmeen/">
-                      Garage Tahmeen <Arrow diagonal />
+                </Link>
+                <div className="work-pair-info">
+                  <h3>
+                    <Link href="/projects/munjiz/">
+                      Munjiz <Arrow diagonal />
                     </Link>
                   </h3>
+                  <p>{munjiz.intro}</p>
+                  <div className="tags">
+                    <span>Next.js</span>
+                    <span>FastAPI</span>
+                    <span>PostgreSQL</span>
+                  </div>
                 </div>
-              </div>
-              <div className="project-summary">
-                <p>{garage.intro}</p>
-                <div className="tags">
-                  <span>Next.js</span>
-                  <span>TypeScript</span>
-                  <span>GSAP</span>
+              </article>
+              <article className="work-spatial" data-reveal>
+                <div className="work-project-top">
+                  <span className="section-label">03 / SPATIAL INTELLIGENCE</span>
                 </div>
-                <Link prefetch={false} className="text-link" href="/projects/garage-tahmeen/">
-                  Explore the case study <Arrow />
-                </Link>
-              </div>
-            </div>
-          </article>
-
-          <article
-            className="project munjiz-project firn-feature" data-motion-project
-            id="munjiz"
-            aria-labelledby="munjiz-title"
-            data-reveal
-          >
-            <div className="munjiz-text">
-              <span className="section-label">02 / FULL-STACK & AI</span>
-              <h3 id="munjiz-title">
-                Munjiz<span className="accent">.</span>
-              </h3>
-              <p className="munjiz-statement">
-                Big ideas.
-                <br />
-                <em>A clear next step.</em>
-              </p>
-              <p className="body-copy">
-                An Arabic-first student platform connecting thoughtful interface design with
-                structured AI workflows.
-              </p>
-              <div className="project-points">
-                <span>
-                  01 <b>Arabic RTL experiences</b>
-                </span>
-                <span>
-                  02 <b>Typed, connected workflows</b>
-                </span>
-                <span>
-                  03 <b>AI-assisted student work</b>
-                </span>
-              </div>
-              <div className="tags">
-                <span>Next.js</span>
-                <span>FastAPI</span>
-                <span>PostgreSQL</span>
-              </div>
-              <Link prefetch={false} className="text-link" href="/projects/munjiz/">
-                Inside the project <Arrow />
-              </Link>
-            </div>
-            <div className="munjiz-visual">
-              {munjiz.media && <VideoPlayer {...munjizClips[1]} />}
-              <p className="media-note">
-                SELECTED SCENE · ORIGINAL PORTRAIT RECORDING
-                <br />
-                Platform capabilities are detailed in the case study.
-              </p>
-            </div>
-          </article>
-
-          <article className="project aqar-project firn-feature" data-motion-project aria-labelledby="aqar-title" data-reveal>
-            <div className="aqar-top">
-              <span className="section-label">03 / SPATIAL INTELLIGENCE</span>
-              <span className="section-label">A ROOM. RECONSIDERED.</span>
-            </div>
-            {aqar.media && <VideoPlayer {...aqar.media} />}
-            <p className="media-note aqar-note">
-              Owner-supplied interior visualization. Not an application screen recording.
-            </p>
-            <div className="project-info">
-              <div className="project-name">
-                <span className="project-index">03</span>
-                <div>
-                  <p className="project-category">{aqar.category}</p>
-                  <h3 id="aqar-title">
-                    <Link prefetch={false} href="/projects/aqar-ai/">
+                <div className="spatial-art">
+                  <VideoPlayer {...aqar.media!} />
+                  <span className="spatial-caption">
+                    FROM ROOM
+                    <br />
+                    TO <em>POSSIBILITY.</em>
+                  </span>
+                </div>
+                <div className="work-pair-info">
+                  <h3>
+                    <Link href="/projects/aqar-ai/">
                       AqarAI <Arrow diagonal />
                     </Link>
                   </h3>
+                  <p>{aqar.intro}</p>
+                  <Link prefetch={false} className="text-link" href="/projects/aqar-ai/">
+                    Inside the project <Arrow />
+                  </Link>
                 </div>
-              </div>
-              <div className="project-summary">
+              </article>
+            </div>
+            <article className="work-cismate" data-reveal>
+              <div className="cis-copy">
+                <span className="section-label">04 / ACADEMIC PLANNING</span>
+                <h3>
+                  <Link href="/projects/cismate/">
+                    CISmate <Arrow diagonal />
+                  </Link>
+                </h3>
                 <p>
-                  From room context to product selection and image generation. AI workflows with a
-                  real-world frame of reference.
+                  A clearer academic path. A Flutter planner connecting prerequisite-aware
+                  scheduling, course information, and AI assistance.
                 </p>
                 <div className="tags">
-                  <span>React</span>
-                  <span>Python</span>
-                  <span>AI workflows</span>
+                  <span>Flutter</span>
+                  <span>Dart</span>
+                  <span>Spring Boot</span>
                 </div>
-                <Link prefetch={false} className="text-link" href="/projects/aqar-ai/">
-                  Explore the case study <Arrow />
+                <Link prefetch={false} className="text-link" href="/projects/cismate/">
+                  Explore the application <Arrow />
                 </Link>
               </div>
-            </div>
-          </article>
-        </section>
-
-        <section className="also wrap" data-motion-section aria-labelledby="also-title" data-reveal>
-          <div className="also-intro">
-            <p className="section-label">BEYOND THE BROWSER</p>
-            <h2 id="also-title">
-              A different screen.
-              <br />
-              The same curiosity.
-            </h2>
-          </div>
-          <Link prefetch={false} className="cis-card firn-feature" data-motion-project href="/projects/cismate/">
-            <div className="cis-preview">
+              <Link
+                prefetch={false}
+                className="cis-art"
+                href="/projects/cismate/"
+                aria-label="Explore CISmate case study"
+              >
+                <Image
+                  src="/projects/cismate-login.jpeg"
+                  alt="The real CISmate login screen with email and password fields"
+                  width={1280}
+                  height={803}
+                  loading="lazy"
+                />
+              </Link>
+            </article>
+          </section>
+          <section id="about" className="about section" aria-labelledby="about-title">
+            <div className="about-portrait">
               <Image
-                src="/projects/cismate-login.jpeg"
-                alt="CISmate Flutter application: original glass-panel login screen with email and password"
-                width={1280}
-                height={803}
+                src="/projects/ahmad-firnlight-hero.webp"
+                alt="Ahmad in the snow, wearing iridescent ski goggles"
+                width={1920}
+                height={1080}
                 loading="lazy"
               />
-              <Image
-                src="/projects/cismate-schedule-thumb.webp"
-                alt="CISmate generated schedule showing course selections and prerequisite warnings"
-                width={254}
-                height={401}
-                loading="lazy"
-              />
-            </div>
-            <div className="cis-copy">
-              <span className="section-label">MOBILE · ACADEMIC PLANNING</span>
-              <h3>
-                CISmate <Arrow diagonal />
-              </h3>
-              <p>
-                A Flutter academic planner with prerequisite-aware scheduling and an AI assistant.
-              </p>
-              <span className="text-link">
-                View project <Arrow />
+              <span className="portrait-caption">
+                A DIFFERENT PERSPECTIVE.
+                <br />
+                THE SAME ATTENTION TO DETAIL.
               </span>
             </div>
-          </Link>
-        </section>
-
-        <section className="about wrap section" data-motion-section id="about" aria-labelledby="about-title">
-          <div className="section-label">
-            <span className="tiny-cross">+</span> THE PERSON BEHIND THE PIXELS
-          </div>
-          <div className="about-grid">
-            <div>
-              <h2 id="about-title" className="section-title" data-reveal>
-                Curious by nature.
+            <div className="about-editorial">
+              <span className="section-label">02 / THE PERSON BEHIND THE PIXELS</span>
+              <h2 id="about-title">
+                Curious
                 <br />
-                <em>Precise by choice.</em>
+                by nature.
+                <br />
+                <em>
+                  Precise
+                  <br />
+                  by choice.
+                </em>
               </h2>
+              <div className="about-prose">
+                <p>
+                  I’m Ahmad, a Full-Stack Developer and AI Engineer, and a Computer Information
+                  Systems graduate from the University of Jordan.
+                </p>
+                <p>
+                  My work sits between expressive frontend engineering and useful software:
+                  considered interfaces, carefully timed motion, connected applications, and
+                  AI-powered products.
+                </p>
+                <p>
+                  I like understanding how things work, refining the details, and making ambitious
+                  ideas feel effortless to use.
+                </p>
+                <a
+                  className="text-link"
+                  href={person.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  More about me <Arrow diagonal />
+                </a>
+              </div>
               <div className="education">
-                <span className="education-mark" aria-hidden="true">
-                  ↗
-                </span>
-                <div>
-                  <strong>University of Jordan</strong>
-                  <span>Computer Information Systems</span>
+                <span>UNIVERSITY OF JORDAN</span>
+                <span>
+                  Computer Information Systems
+                  <br />
                   <small>Graduated June 2026</small>
-                </div>
+                </span>
               </div>
             </div>
-            <div className="about-copy">
-              <p>
-                I’m Ahmad, a recent Computer Information Systems graduate who enjoys making the web
-                feel a little more considered.
-              </p>
-              <p>
-                My interests sit between creative frontend engineering and useful software:
-                responsive interfaces, carefully timed animation, full-stack applications, and
-                AI-powered products.
-              </p>
-              <p>
-                I like understanding how things work, refining the details, and learning what it
-                takes to make an ambitious idea feel effortless to use.
-              </p>
-              <a
-                className="text-link"
-                href={person.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                More about me on LinkedIn <Arrow diagonal />
-                <span className="sr-only"> (opens in a new tab)</span>
-              </a>
-            </div>
-          </div>
-          <div className="skills-heading">
-            <h3>A practical toolkit.</h3>
-            <p>Technologies I build with, and tools I continue to explore.</p>
-          </div>
-          <div className="skills-grid" data-motion-section>
-            {skillGroups.map((group, i) => (
-              <div className="skill-group" key={group.name}>
-                <span className="skill-index">0{i + 1}</span>
-                <h4>{group.name}</h4>
-                <ul>
-                  {group.items.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
-        <Contact />
+          </section>
+          <TechnologySystem groups={skillGroups} />
+          <Contact />
+        </div>
       </main>
     </>
   );

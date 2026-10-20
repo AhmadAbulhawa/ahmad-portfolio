@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { Header, Footer } from '@/components/shell';
 import './globals.css';
-import './cinematic-v4.css';
 import './cinematic-films.css';
 const manrope = localFont({
   src: '../public/fonts/manrope-latin.woff2',
@@ -14,7 +13,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 export const metadata: Metadata = {
   ...(siteUrl ? { metadataBase: new URL(siteUrl), alternates: { canonical: '/' } } : {}),
   title: {
-    default: 'Ahmad Abulhawa — Creative Frontend & AI Developer',
+    default: 'Ahmad Abulhawa — Full-Stack Developer & AI Engineer',
     template: '%s — Ahmad Abulhawa',
   },
   description:
