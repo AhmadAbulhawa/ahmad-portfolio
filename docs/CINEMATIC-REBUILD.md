@@ -49,7 +49,7 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
-python3 -m http.server 3000 --directory out
+node scripts/serve-export.mjs
 CHROMIUM_PATH=/usr/bin/chromium npm run qa:cinematic
 # With Playwright-managed browsers installed:
 QA_BROWSER=webkit npm run qa:cinematic
@@ -64,3 +64,7 @@ Physical iPhone Safari is not available here. Local WebKit installation was bloc
 Clean `npm ci`, lint, TypeScript, all **10** controller regressions, the full **desktop and mobile Chromium** journey, and the separate resilience suite passed. The latter holds the first video response, rejects a play request, disables WebGL, and clicks each of the four real selected-card links. Extra **320 × 568** and **667 × 375** checks passed without overflow, with Skip Intro inside the viewport. Desktop/mobile full section and case-page screenshots are available in [the visual evidence index](qa/rebuild/README.md).
 
 Touch QA also exposed and fixed compatibility clicks after swiping a glass link: a valid vertical gesture cancels only its own touchend default action. Taps remain native. Pointer input belongs to the centered project; surrounding CSS3D planes cannot intercept that project's link. Short landscape layouts constrain the frame by available height.
+
+### WebKit CI follow-up
+
+CI could install WebKit even though the local execution network could not. Its first run reported `MEDIA_ERR_SRC_NOT_SUPPORTED` while loading/seeking the second MP4 from Python’s simple HTTP server, which does not implement media byte ranges. QA now uses `scripts/serve-export.mjs`, including `Accept-Ranges`, valid 206 responses, suffix/explicit ranges, HEAD handling, and 416 responses, matching Cloudflare’s media delivery contract. This corrects the test server without transcoding the original films. WebKit results are tracked on the PR.

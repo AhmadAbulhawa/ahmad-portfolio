@@ -25,7 +25,7 @@ jobs:
           QA_BROWSER: ${{ matrix.browser }}
           PORTFOLIO_QA_OUTPUT: work/qa
         run: |
-          python3 -m http.server 3000 --directory out > /tmp/portfolio-preview.log 2>&1 &
+          node scripts/serve-export.mjs > /tmp/portfolio-preview.log 2>&1 &
           node scripts/qa-cinematic.mjs
       - name: Test loading, rejected playback, WebGL fallback and every actual card link
         if: matrix.browser == 'chromium'
