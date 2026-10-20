@@ -272,9 +272,21 @@ export function FilmChapters() {
         scheduleWriting();
       }
     }
+    // Browser restoration, Next router hydration, and native hash anchoring can
+    // all run AFTER the first render. Until the visitor explicitly navigates,
+    // keep the intro at its opening frame and at the top of the viewport.
+    function enforceIntroEntry() {
+      if (disposed || isReleased) return;
+      if (location.hash) {
+        history.replaceState(history.state, '', location.pathname + location.search);
+      }
+      if (window.scrollY > 1 || window.scrollX > 1) {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      }
+    }
     function pageshow() {
       if (!isReleased) {
-        scrollTo({ top: 0, behavior: 'instant' });
+        enforceIntroEntry();
         player.resume();
         scheduleWriting();
       }
@@ -289,9 +301,12 @@ export function FilmChapters() {
     window.addEventListener('portfolio:restart-intro', restart);
     window.addEventListener('portfolio:step', onStep);
     window.addEventListener('pageshow', pageshow);
-    // Full-page entry always begins at the intro, even from /#work or /#contact.
-    // Same-page menu clicks still use destination() and can skip the intro.
-    scrollTo({ top: 0, behavior: 'instant' });
+    window.addEventListener('scroll', enforceIntroEntry, { passive: true });
+    window.addEventListener('hashchange', enforceIntroEntry);
+    window.addEventListener('popstate', enforceIntroEntry);
+    // Run now and once after the first layout, guarding late native anchor jumps.
+    enforceIntroEntry();
+    resetFrame = requestAnimationFrame(enforceIntroEntry);
     return () => {
       disposed = true;
       cancelAnimationFrame(resetFrame);
@@ -306,6 +321,9 @@ export function FilmChapters() {
       document.removeEventListener('click', navigation, true);
       document.removeEventListener('visibilitychange', visibility);
       window.removeEventListener('pageshow', pageshow);
+      window.removeEventListener('scroll', enforceIntroEntry);
+      window.removeEventListener('hashchange', enforceIntroEntry);
+      window.removeEventListener('popstate', enforceIntroEntry);
       window.removeEventListener('portfolio:restart-intro', restart);
       window.removeEventListener('portfolio:step', onStep);
     };
