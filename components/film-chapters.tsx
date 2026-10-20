@@ -289,8 +289,9 @@ export function FilmChapters() {
     window.addEventListener('portfolio:restart-intro', restart);
     window.addEventListener('portfolio:step', onStep);
     window.addEventListener('pageshow', pageshow);
-    if (location.hash && location.hash !== '#intro') destination(location.hash.slice(1));
-    else scrollTo({ top: 0, behavior: 'instant' });
+    // Full-page entry always begins at the intro, even from /#work or /#contact.
+    // Same-page menu clicks still use destination() and can skip the intro.
+    scrollTo({ top: 0, behavior: 'instant' });
     return () => {
       disposed = true;
       cancelAnimationFrame(resetFrame);
