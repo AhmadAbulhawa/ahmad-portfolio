@@ -5,16 +5,18 @@ import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import { CinematicController, type Snapshot } from '@/lib/cinematic/controller';
 import { FrameHandoff } from '@/lib/cinematic/frame-handoff';
+import { WheelIntent } from '@/lib/cinematic/wheel-intent';
 import { Arrow } from './icons';
 const SpiralGallery = dynamic(() => import('./spiral-gallery'), { ssr: false });
 const initial: Snapshot = { chapter: 0, phase: 'idle', direction: 1, progress: 0, hasFrame: false };
+const introduction = [
+  'FULL-STACK DEVELOPER · AI ENGINEER',
+  'AHMAD',
+  'ABULHAWA.',
+  'Thoughtful code. Unforgettable experiences.',
+];
 const chapters = [
-  [
-    'FULL-STACK DEVELOPER · AI ENGINEER',
-    'AHMAD',
-    'ABULHAWA.',
-    'Thoughtful code. Unforgettable experiences.',
-  ],
+  ['THE STORY BEGINS', 'A NEW', 'PERSPECTIVE.', 'Thoughtful code. A different way to see what’s possible.'],
   [
     'THE DESIGN PHILOSOPHY',
     'DESIGN WITH',
@@ -30,11 +32,13 @@ export function FilmChapters() {
   const controller = useRef<CinematicController | null>(null);
   const galleryStep = useRef(0);
   const galleryBusy = useRef(false);
+  const pendingGalleryStep = useRef<1 | -1 | 0>(0);
   const [snapshot, setSnapshot] = useState(initial);
   const [project, setProject] = useState(0);
   const [released, setReleased] = useState(false);
   const gallery = snapshot.phase === 'gallery';
-  const content = chapters[Math.min(snapshot.chapter, 2)];
+  const welcome = snapshot.chapter === 0 && snapshot.phase === 'idle';
+  const content = welcome ? introduction : chapters[Math.min(snapshot.chapter, 2)];
 
   useEffect(() => {
     const node = root.current,
@@ -43,7 +47,7 @@ export function FilmChapters() {
     if (!node || !media || !canvas) return;
     let disposed = false;
     let isReleased = false;
-    let burstTime = 0;
+    const wheelIntent = new WheelIntent();
     let touchY = 0,
       touchX = 0;
     let resetFrame = 0;
@@ -54,7 +58,7 @@ export function FilmChapters() {
         if (disposed) return;
         // A fresh gesture is needed after completion, including trackpad momentum.
         if (state.phase === 'completed' && previousPhase !== 'completed')
-          burstTime = performance.now();
+          wheelIntent.blockMomentum(performance.now());
         previousPhase = state.phase;
         setSnapshot(state);
         node.dataset.phase = state.phase;
@@ -75,6 +79,7 @@ export function FilmChapters() {
       if (isReleased) return;
       isReleased = true;
       galleryBusy.current = false;
+      pendingGalleryStep.current = 0;
       gateContent(false);
       setReleased(true);
       player.release();
@@ -96,12 +101,16 @@ export function FilmChapters() {
         galleryStep.current = 3;
         setProject(3);
         galleryBusy.current = false;
+        pendingGalleryStep.current = 0;
         player.returnToGallery();
         node!.dataset.released = 'false';
         return;
       }
       if (player.state.phase === 'gallery') {
-        if (galleryBusy.current) return;
+        if (galleryBusy.current) {
+          pendingGalleryStep.current = direction;
+          return;
+        }
         if (direction < 0 && galleryStep.current === 0) {
           player.reverseFromGallery();
           return;
@@ -122,10 +131,9 @@ export function FilmChapters() {
       if (isReleased && (scrollY > 2 || event.deltaY > 0)) return;
       if (event.ctrlKey || Math.abs(event.deltaY) < Math.abs(event.deltaX)) return;
       if (event.cancelable) event.preventDefault();
-      const now = performance.now();
-      const fresh = now - burstTime > 180;
-      burstTime = now;
-      if (fresh && Math.abs(event.deltaY) > 8) step(event.deltaY > 0 ? 1 : -1);
+      const pixels = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? innerHeight : 1);
+      const direction = wheelIntent.read(pixels, performance.now(), player.state.phase === 'gallery');
+      if (direction) step(direction);
     }
     function touchStart(event: TouchEvent) {
       touchY = event.touches[0]?.clientY ?? 0;
@@ -187,6 +195,7 @@ export function FilmChapters() {
       player.reset();
       galleryStep.current = 0;
       galleryBusy.current = false;
+      pendingGalleryStep.current = 0;
       setProject(0);
       isReleased = false;
       setReleased(false);
@@ -274,7 +283,10 @@ export function FilmChapters() {
           <span>CREATIVE DEVELOPMENT / AI</span>
         </div>
         {!gallery && (
-          <div key={`${snapshot.chapter}-${snapshot.direction}`} className="film-sentence">
+          <div
+            key={`${welcome ? 'welcome' : snapshot.chapter}-${snapshot.direction}`}
+            className="film-sentence"
+          >
             <span className="section-label film-micro">{content[0]}</span>
             <h1>
               <span>{content[1]}</span>
@@ -298,6 +310,9 @@ export function FilmChapters() {
               selected={project}
               onSettled={() => {
                 galleryBusy.current = false;
+                const direction = pendingGalleryStep.current;
+                pendingGalleryStep.current = 0;
+                if (direction) send(direction);
               }}
             />
             <div className="gallery-controls">

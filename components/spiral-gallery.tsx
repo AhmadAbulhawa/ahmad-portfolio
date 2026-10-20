@@ -62,7 +62,7 @@ export default function SpiralGallery({
       position = initialSelection.current,
       source = position,
       target = position,
-      started = -1,
+      started = 0,
       moving = false,
       frame = 0,
       visible = true;
@@ -165,9 +165,8 @@ export default function SpiralGallery({
       frame = 0;
       if (!visible || document.hidden) return;
       if (moving) {
-        if (started < 0) started = now;
-        const t = Math.min(1, (now - started) / (mobile ? 650 : 1100));
-        const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        const t = Math.min(1, (now - started) / (mobile ? 360 : 420));
+        const ease = 1 - Math.pow(1 - t, 3);
         position = source + (target - source) * ease;
         draw();
         if (t === 1) {
@@ -191,9 +190,14 @@ export default function SpiralGallery({
     };
     controls.current = {
       target(value) {
+        if (value === position && !moving) {
+          container.dataset.moving = 'false';
+          settled.current();
+          return;
+        }
         source = position;
         target = value;
-        started = -1;
+        started = performance.now();
         moving = !reduced;
         container.dataset.moving = String(moving);
         if (reduced) {

@@ -163,11 +163,21 @@ try {
     assert.equal(await section.getAttribute('data-phase'), 'idle');
     assert.ok(await video.evaluate((v) => v.paused && v.currentTime < 0.12));
     await shot('intro');
-    await gesture();
+    assert.match(await page.locator('.film-sentence h1').innerText(), /AHMAD/);
+    if (!setup.hasTouch) {
+      for (const delta of [2, 4, 7]) {
+        await page.mouse.wheel(0, delta);
+        await page.waitForTimeout(16);
+      }
+    } else await gesture();
+    await page.waitForFunction(() =>
+      document.querySelector('.film-sentence h1')?.textContent.includes('PERSPECTIVE.'));
     await chapter(0);
     assert.equal(await video.evaluate((v) => v.playbackRate), 1);
     await gesture();
     await chapter(0);
+    await page.waitForTimeout(550);
+    await shot('intro-started');
     await finishFilm();
     await gesture();
     await chapter(1);
@@ -210,6 +220,19 @@ try {
     await settledProject(0);
     assert.equal(await page.locator('.glass-project').count(), 4);
     await shot('gallery-01');
+    // A second intentional input during movement is remembered once. Both
+    // cards must land promptly rather than discard input for a full second.
+    const responsiveStart = performance.now();
+    await gesture();
+    await page.waitForFunction(() =>
+      Math.abs(Number(document.querySelectorAll('.glass-project')[1]?.dataset.relative)) < 0.98,
+    null, { timeout: 250 });
+    await page.getByRole('button', { name: 'Next project', exact: true }).click();
+    await settledProject(2);
+    assert.ok(performance.now() - responsiveStart < 1500, 'Two project moves respond promptly');
+    await gesture(-1);
+    await page.getByRole('button', { name: 'Previous project', exact: true }).click();
+    await settledProject(0);
     for (let i = 0; i < 4; i++) {
       const card = page.locator('.glass-project').nth(i);
       assert.ok(Math.abs(Number(await card.getAttribute('data-facing'))) < 0.0001);
