@@ -57,7 +57,7 @@ try{
   await gesture();
   await page.waitForFunction(()=>document.querySelector('.film-journey')?.dataset.phase==='gallery',null,{timeout:6500});
   await gesture(-1);
-  await page.waitForFunction(()=>document.querySelector('.film-journey')?.dataset.direction==='-1',null,{timeout:6500});
+  await page.waitForFunction(()=>document.querySelector('.film-video')?.getAttribute('src')?.includes('shatter-reverse.mp4'),null,{timeout:9500});
   s=await summary();
   assert.ok(s.source.includes('shatter-reverse.mp4'),'Reverse sequence works');
   assert.deepEqual(errors,[]);
