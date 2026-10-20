@@ -1,0 +1,100 @@
+{
+  "browser": "chromium",
+  "results": [
+    {
+      "viewport": "desktop",
+      "passed": true,
+      "realPlayback": true,
+      "touchInput": "desktop wheel",
+      "errors": []
+    },
+    {
+      "viewport": "mobile",
+      "passed": true,
+      "realPlayback": true,
+      "touchInput": "Chromium protocol touch sequence",
+      "errors": []
+    }
+  ],
+  "screenshots": [
+    "desktop-intro.webp",
+    "desktop-philosophy.webp",
+    "desktop-philosophy-final.webp",
+    "desktop-transformation.webp",
+    "desktop-gallery-01.webp",
+    "desktop-gallery-04.webp",
+    "desktop-work.webp",
+    "desktop-about.webp",
+    "desktop-skills.webp",
+    "desktop-contact.webp",
+    "desktop-case-munjiz.webp",
+    "desktop-case-garage-tahmeen.webp",
+    "desktop-case-aqar-ai.webp",
+    "desktop-case-cismate.webp",
+    "mobile-intro.webp",
+    "mobile-philosophy.webp",
+    "mobile-philosophy-final.webp",
+    "mobile-transformation.webp",
+    "mobile-gallery-01.webp",
+    "mobile-gallery-04.webp",
+    "mobile-work.webp",
+    "mobile-about.webp",
+    "mobile-skills.webp",
+    "mobile-contact.webp",
+    "mobile-case-munjiz.webp",
+    "mobile-case-garage-tahmeen.webp",
+    "mobile-case-aqar-ai.webp",
+    "mobile-case-cismate.webp"
+  ],
+  "additional_visuals": [
+    "compact-320-intro.webp",
+    "compact-667-intro.webp",
+    "desktop-about-editorial.webp",
+    "desktop-case-aqar-ai-full.webp",
+    "desktop-case-cismate-full.webp",
+    "desktop-case-garage-tahmeen-full.webp",
+    "desktop-case-munjiz-full.webp",
+    "desktop-contact-full.webp",
+    "desktop-technology-field.webp",
+    "desktop-work-aqar.webp",
+    "desktop-work-cismate.webp",
+    "desktop-work-garage.webp",
+    "desktop-work-munjiz.webp",
+    "mobile-about-editorial.webp",
+    "mobile-case-aqar-ai-full.webp",
+    "mobile-case-cismate-full.webp",
+    "mobile-case-garage-tahmeen-full.webp",
+    "mobile-case-munjiz-full.webp",
+    "mobile-contact-full.webp",
+    "mobile-technology-field.webp",
+    "mobile-work-aqar.webp",
+    "mobile-work-cismate.webp",
+    "mobile-work-garage.webp",
+    "mobile-work-munjiz.webp"
+  ],
+  "controller_tests": 10,
+  "resilience_checks": {
+    "passed": true,
+    "checks": [
+      "Delayed video response stays gated, then plays the same film to completion",
+      "Rejected play recovers on a real wheel gesture without a bypass button",
+      "WebGL unavailable: CSS3D gallery renders, all four real card links open, reduced-motion controls work"
+    ]
+  },
+  "compact_viewports": [
+    {
+      "width": 320,
+      "height": 568,
+      "passed": true
+    },
+    {
+      "width": 667,
+      "height": 375,
+      "passed": true
+    }
+  ],
+  "physical_iphone_tested": false,
+  "local_webkit_tested": false,
+  "webkit_limit": "Playwright download host blocked by execution network policy (HTTP 403)",
+  "source_commit": "8f07022ec12010fb5b72d7f9b98a4cf8ce0ad47a"
+}

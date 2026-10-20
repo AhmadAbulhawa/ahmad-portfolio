@@ -58,3 +58,9 @@ QA_BROWSER=webkit npm run qa:cinematic
 Controller tests cover no autoplay, no skipped unfinished films, missing completion events, fully buffered last-frame recovery, false/early ended events, active seeks, stalled/rejected playback, stale promises, reverse playback, background recovery, and cleanup. Browser QA plays the original videos, tests desktop wheel and Chromium protocol touch sequences (synthetic events for the WebKit CI path), interrupts and resumes playback, suppresses ended delivery, checks all gallery stops and reverse films, navigates each menu destination, resets/reloads, checks technology keyboard controls, visits every case study, and captures screenshots.
 
 Physical iPhone Safari is not available here. Local WebKit installation was blocked by a network-policy 403 from the Playwright download host. The GitHub workflow has separate Chromium and WebKit jobs; local Chromium results do not establish physical Safari compatibility, device thermal performance, or successful remote CI/deployment. See the accompanying QA report for executed results.
+
+### Executed results
+
+Clean `npm ci`, lint, TypeScript, all **10** controller regressions, the full **desktop and mobile Chromium** journey, and the separate resilience suite passed. The latter holds the first video response, rejects a play request, disables WebGL, and clicks each of the four real selected-card links. Extra **320 × 568** and **667 × 375** checks passed without overflow, with Skip Intro inside the viewport. Desktop/mobile full section and case-page screenshots are available in [the visual evidence index](qa/rebuild/README.md).
+
+Touch QA also exposed and fixed compatibility clicks after swiping a glass link: a valid vertical gesture cancels only its own touchend default action. Taps remain native. Pointer input belongs to the centered project; surrounding CSS3D planes cannot intercept that project's link. Short landscape layouts constrain the frame by available height.
