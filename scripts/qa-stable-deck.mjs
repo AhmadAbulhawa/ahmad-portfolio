@@ -13,15 +13,22 @@ try{
   const gesture=async(d=1)=>{
     await page.waitForTimeout(370);
     if(cfg.touch){
-      // WebKit does not permit new Touch() via a page script; Playwright's
-      // dispatchEvent serializes the touch data in a compatible format.
-      const section=page.locator('.film-journey');
-      await section.dispatchEvent('touchstart',{
-        touches:[{clientX:195,clientY:480}],changedTouches:[{clientX:195,clientY:480}]
-      });
-      await section.dispatchEvent('touchend',{
-        touches:[],changedTouches:[{clientX:195,clientY:480-d*165}]
-      });
+      // Cross-engine simulated touch properties. Some WebKit builds forbid
+      // constructing Touch(), while Chromium's TouchInit requires a DOM target.
+      await page.evaluate(d=>{
+        const node=document.querySelector('.film-journey');
+        const send=(type,y,last)=>{
+          const event=new Event(type,{bubbles:true,cancelable:true});
+          const touch={clientX:195,clientY:y};
+          Object.defineProperties(event,{
+            touches:{value:last?[]:[touch]},
+            changedTouches:{value:[touch]}
+          });
+          node.dispatchEvent(event);
+        };
+        send('touchstart',480,false);
+        send('touchend',480-d*165,true);
+      },d);
     } else await page.mouse.wheel(0,140*d);
   };
   const summary=()=>page.evaluate(()=>{
