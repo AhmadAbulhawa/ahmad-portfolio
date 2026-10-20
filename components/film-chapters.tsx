@@ -21,28 +21,38 @@ const chapters = [
 const SCENE_COUNT = 7; // three film chapters + four discrete project stops
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 
-function placeCards(cards: (HTMLAnchorElement | null)[], selected: number, reduced: boolean) {
+/**
+ * Render one continuous non-wrapping helix path.
+ * A fractional index is used ONLY by the internal 1200ms animation clock.
+ * User scrolling never directly sets this position.
+ * +1 climbs to the next card; -1 follows exactly the same path backwards.
+ */
+function drawHelix(cards: (HTMLAnchorElement | null)[], position: number) {
   const mobile = window.innerWidth < 700;
-  const radius = mobile ? 165 : 300;
+  const radius = mobile ? Math.min(window.innerWidth * .44, 170) : Math.min(window.innerWidth * .23, 305);
+  const step = mobile ? 107 : 152;
   cards.forEach((card, index) => {
     if (!card) return;
-    const level = (index - selected + projects.length) % projects.length;
-    // Frontal, full-sized hero frame. Three progressively lower, smaller,
-    // receding steps on a true circular 3D staircase behind the hero.
-    // Exactly ZERO lateral displacement, tilt and depth for the selected card.
-    const angle = level * 1.08;
-    const x = level === 0 ? 0 : Math.sin(angle) * radius * .42;
-    const y = level * (mobile ? 116 : 153);
-    const z = level === 0 ? 0 : -level * (mobile ? 120 : 148);
-    const ry = level === 0 ? 0 : -angle * 180 / Math.PI * .25;
-    const scale = level === 0 ? 1 : .91 - level * .045;
+    const relative = index - position; // Signed: never modulo / teleport.
+    const radians = relative * .96;
+    const distance = Math.abs(relative);
+    const x = Math.sin(radians) * radius * .86;
+    const y = relative * step;
+    const z = (Math.cos(radians) - 1) * radius * .66 - distance * (mobile ? 82 : 100);
+    const angle = -Math.sin(radians) * 37;
+    const size = Math.max(.54, 1 - distance * .16);
+    const alpha = relative < -.05
+      ? Math.max(0, .65 - distance * .36)
+      : Math.max(.43, 1 - distance * .16);
+    // At an integer position the selected panel is x=0, y=0,
+    // z=0, rotateY=0 and scale=1, literally facing the screen.
     card.style.transform =
-      'translate3d(calc(-50% + ' + x.toFixed(1) + 'px),calc(-50% + ' +
-      y.toFixed(1) + 'px),' + z.toFixed(1) + 'px) rotateY(' +
-      ry.toFixed(1) + 'deg) scale(' + scale.toFixed(3) + ')';
-    card.style.zIndex = String(1000 - level * 100);
-    card.style.opacity = level === 0 ? '1' : level === 1 ? '.94' : level === 2 ? '.82' : '.68';
-    card.style.transitionDuration = reduced ? '0ms' : '1050ms';
+      'translate3d(calc(-50% + ' + x.toFixed(2) + 'px),calc(-50% + ' +
+      y.toFixed(2) + 'px),' + z.toFixed(2) + 'px) rotateY(' +
+      angle.toFixed(2) + 'deg) scale(' + size.toFixed(3) + ')';
+    card.style.opacity = alpha.toFixed(3);
+    card.style.zIndex = String(1000 - Math.round(distance * 100));
+    card.dataset.helixRelative = relative.toFixed(3);
   });
 }
 
@@ -72,18 +82,60 @@ export function FilmChapters() {
     let touchY = 0;
     let touchX = 0;
     let activeVideo: HTMLVideoElement | null = null;
+    let helixFrame = 0;
+    let helixPose = 0;
+    let helixBusy = false;
     const disposers: Array<() => void> = [];
+    const helixDuration = reduce.matches ? 0 : 1200;
+    function cancelHelix() {
+      cancelAnimationFrame(helixFrame);
+      helixFrame = 0;
+      helixBusy = false;
+    }
+    function tweenHelix(destination: number) {
+      cancelHelix();
+      const source = helixPose;
+      if (helixDuration === 0 || Math.abs(destination - source) < .0001) {
+        helixPose = destination;
+        drawHelix(cards.current, destination);
+        return;
+      }
+      helixBusy = true;
+      node!.dataset.helixMoving = 'true';
+      let started = -1;
+      const tick = (time: number) => {
+        if (released) { cancelHelix(); return; }
+        if (started < 0) started = time;
+        const t = Math.min(1, (time - started) / helixDuration);
+        // Symmetric ease-in-out, identical trajectory forward and backward.
+        const eased = t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+        helixPose = source + (destination-source)*eased;
+        drawHelix(cards.current, helixPose);
+        if (t < 1) {
+          helixFrame = requestAnimationFrame(tick);
+        } else {
+          helixPose = destination;
+          drawHelix(cards.current, destination);
+          helixFrame = 0;
+          helixBusy = false;
+          node!.dataset.helixMoving = 'false';
+        }
+      };
+      helixFrame = requestAnimationFrame(tick);
+    }
 
     function setPosition(next: number) {
       position = next;
       node!.dataset.scene = String(next);
       node!.dataset.chapter = String(Math.min(next, 3));
       setScene(next);
-      if (next >= 3) placeCards(cards.current, next - 3, reduce.matches);
+      if (next >= 3) tweenHelix(next - 3);
+      else if (helixBusy) cancelHelix();
     }
     function release() {
       if (released) return;
       released = true;
+      cancelHelix();
       bridgeBusy = false;
       if (bridgeTimer) clearTimeout(bridgeTimer);
       if (bridgeRevealTimer) clearTimeout(bridgeRevealTimer);
@@ -197,8 +249,8 @@ export function FilmChapters() {
     }
 
     function advance(direction: number) {
-      if (released || running || bridgeBusy || performance.now()<lockedUntil) return;
-      lockedUntil=performance.now()+(position>=3?1150:850);
+      if (released || running || bridgeBusy || helixBusy || performance.now()<lockedUntil) return;
+      lockedUntil=performance.now()+(position>=3?1250:850);
       if (direction>0) {
         if (position < 3) {
           if (!forwardEnd[position]) {
@@ -302,7 +354,8 @@ export function FilmChapters() {
     window.addEventListener('touchend',onTouchEnd,{passive:true});
     document.addEventListener('keydown',onKey);
     document.addEventListener('visibilitychange',onVisibility);
-    placeCards(cards.current,0,reduce.matches);
+    drawHelix(cards.current,0);
+    node.dataset.helixMoving='false';
     node.dataset.playing='false';
     node.dataset.direction='forward';
     setPosition(0);
@@ -310,6 +363,7 @@ export function FilmChapters() {
     return()=>{
       if(bridgeTimer)clearTimeout(bridgeTimer);
       if(bridgeRevealTimer)clearTimeout(bridgeRevealTimer);
+      cancelHelix();
       disposers.forEach(fn=>fn());
       document.removeEventListener('click',onNavigation,true);
       window.removeEventListener('hashchange',onHashChange);

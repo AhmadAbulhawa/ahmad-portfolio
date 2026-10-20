@@ -261,3 +261,23 @@ body:has(.film-journey) .firn-mobile-panel a>span{color:#a1c2f6;}
   .film-card-info strong{font-size:clamp(17px,5.4vw,23px);}
   .film-card-info span{font-size:9px;}
 }
+
+
+/* V11 genuine stepped helix: Javascript animates an internal fractional
+   gallery index, NOT the user's scroll offset. Disable earlier independent
+   CSS transforms that compound easing / make cards jump when reindexed. */
+.film-helix{overflow:visible;perspective:1550px;transform-style:preserve-3d;}
+.film-glass-card {
+  top:39%;
+  transition:border-color .25s ease,box-shadow .25s ease!important;
+  transform-origin:50% 50%;
+  backface-visibility:hidden;
+}
+.film-gallery-hint{bottom:8%;left:5%;max-width:55%;}
+.film-explore-all{bottom:5%;}
+@media(max-width:700px){
+  .film-helix{perspective:1250px;}
+  .film-glass-card{top:39%;width:clamp(205px,58vw,270px);height:clamp(230px,34svh,305px);}
+  .film-gallery-hint{bottom:11%;max-width:57%;font-size:10px;}
+  .film-explore-all{bottom:5%;}
+}
