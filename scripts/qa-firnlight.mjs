@@ -26,6 +26,22 @@ for (const scenario of cases) {
     await page.waitForTimeout(800);
     await page.screenshot({path:'qa-screenshots/'+scenario.name+'-'+label+'.png'});
   }
+
+  // Verify the actual floating-gallery links, not just decorative screenshots.
+  const galleryPosition = await page.evaluate(() => {
+    const journey = document.querySelector('.firn-journey');
+    if (!journey) throw Error('Missing cinematic journey');
+    return journey.offsetTop + (journey.offsetHeight - innerHeight) * .79;
+  });
+  await page.evaluate(y => window.scrollTo(0, y), galleryPosition);
+  await page.waitForTimeout(900);
+  const gallery = page.locator('#floating-projects');
+  assert.equal(await gallery.evaluate(el => el.inert), false, scenario.name+' gallery must be interactive at the projects chapter');
+  assert.equal(await gallery.locator('a[href^="/projects/"]').count(),4, 'All four projects must be selectable');
+  await gallery.getByRole('link',{name:'Open Munjiz case study'}).click();
+  assert.match(page.url(), /\/projects\/munjiz\/?$/, 'Floating card must open its project');
+  await page.goto('http://127.0.0.1:3000/', {waitUntil:'networkidle'});
+
   if (scenario.name === 'iphone') {
     await page.evaluate(() => window.scrollTo(0,0));
     await page.getByRole('button',{name:'Open navigation'}).click();

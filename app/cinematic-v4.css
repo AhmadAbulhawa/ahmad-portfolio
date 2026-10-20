@@ -225,3 +225,72 @@ html[data-cinematic-motion="active"] .about .skills-grid {
   .firn-journey {height:auto;}
   [data-motion-project], [data-motion-section], .contact {transform:none!important;}
 }
+
+
+/* Post-screenshot visual QA: four equally accessible desktop panels, with intentional space for chapter type. */
+@media (min-width: 701px) {
+  .firn-tiles {
+    position:absolute;
+    inset:20% 5% 24%;
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:clamp(10px,1.2vw,22px);
+    align-items:center;
+    perspective:1100px;
+  }
+  .firn-tiles .firn-cinema-card {
+    position:relative;
+    inset:auto;
+    width:100%;
+    height:clamp(195px,23vw,340px);
+    padding:clamp(7px,.85vw,13px);
+    border-radius:clamp(9px,1.3vw,18px);
+    transform:
+      translate3d(0,calc((1 - var(--fx-screen))*32px),0)
+      rotateY(calc((1 - var(--fx-spin)) * 12deg))
+      rotateZ(calc((1 - var(--fx-spin)) * -3deg))
+      scale(calc(.88 + .12 * var(--fx-screen))) !important;
+  }
+  .firn-tiles .firn-cinema-card:nth-child(2) {transform:
+      translate3d(0,calc((1 - var(--fx-screen))*-25px),0)
+      rotateY(calc((1 - var(--fx-spin))*-12deg))
+      rotateZ(calc((1 - var(--fx-spin))*2deg))
+      scale(calc(.88 + .12*var(--fx-screen))) !important;
+  }
+  .firn-tiles .firn-cinema-card:nth-child(3) {transform:
+      translate3d(0,calc((1 - var(--fx-screen))*22px),0)
+      rotateY(calc((1 - var(--fx-spin))*10deg))
+      scale(calc(.88 + .12*var(--fx-screen))) !important;
+  }
+  .firn-tiles .firn-cinema-card:nth-child(4) {transform:
+      translate3d(0,calc((1 - var(--fx-screen))*-18px),0)
+      rotateY(calc((1 - var(--fx-spin))*-10deg))
+      scale(calc(.88 + .12*var(--fx-screen))) !important;
+  }
+  .firn-showcase--interactive .firn-showcase-title {
+    bottom:7%;left:6%;right:26%;
+    font-size:clamp(32px,4.2vw,76px);
+    text-align:left;
+  }
+  .floating-view-all {bottom:7%;right:6%;}
+}
+/* Actually dissolve to near-black, not grey over the snow stage. */
+.firn-art::after {
+  content:"";position:absolute;inset:0;
+  background:#05090f;opacity:var(--fx-dark);
+  pointer-events:none;z-index:5;
+}
+@media(max-width:700px) {
+  .firn-portrait {
+    height:clamp(235px,46svh,395px);
+    -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 74%,transparent 100%);
+    mask-image:linear-gradient(to bottom,#000 0%,#000 74%,transparent 100%);
+  }
+  .firn-showcase--interactive .firn-showcase-title {
+    bottom:20%;max-width:88%;
+    font-size:clamp(28px,7.2vw,43px);
+    line-height:1.05;
+    margin:auto;
+  }
+  .floating-view-all {bottom:7%;min-width:165px;text-align:center;}
+}
