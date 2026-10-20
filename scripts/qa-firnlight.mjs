@@ -76,7 +76,7 @@ for (const setup of setups) {
  await delay();
  await up();
  assert.equal(await section.getAttribute('data-scene'),'3','Scroll up returns first project');
- await delay();
+ await page.waitForTimeout(1220);
  await up();
  assert.equal(await section.getAttribute('data-scene'),'2','Scroll back from gallery starts reverse shatter');
  assert.equal(await section.getAttribute('data-direction'),'reverse');
