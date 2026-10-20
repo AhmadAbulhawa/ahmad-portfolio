@@ -19,7 +19,7 @@
   inset: 0;
   z-index: 4;
 }
-.film-video {
+.film-surface {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -28,6 +28,13 @@
   object-fit: cover;
   object-position: 50% 43%;
   pointer-events: none;
+}
+.film-video,
+.film-hold {
+  opacity: 0;
+}
+.film-hold[data-frame='live'] {
+  transition: opacity 90ms linear;
 }
 .film-shade {
   position: absolute;
@@ -374,11 +381,7 @@
   .film-stage {
     min-height: 540px;
   }
-  .film-video {
-    object-position: 50% 37%;
-  }
-  .film-journey[data-chapter='1'] .film-video,
-  .film-journey[data-chapter='2'] .film-video {
+  .film-surface {
     object-position: 50% 37%;
   }
   .film-coordinate {
@@ -542,6 +545,9 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .film-progress {
+    transition: none;
+  }
+  .film-hold[data-frame='live'] {
     transition: none;
   }
   .film-sentence h1 > span,

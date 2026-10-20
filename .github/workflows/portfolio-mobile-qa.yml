@@ -27,6 +27,11 @@ jobs:
         run: |
           node scripts/serve-export.mjs > /tmp/portfolio-preview.log 2>&1 &
           node scripts/qa-cinematic.mjs
+      - name: Verify last-frame continuity under delayed media, forward and reverse
+        env:
+          QA_BROWSER: ${{ matrix.browser }}
+          PORTFOLIO_QA_OUTPUT: work/qa
+        run: node scripts/qa-frame-continuity.mjs
       - name: Test loading, rejected playback, WebGL fallback and every actual card link
         if: matrix.browser == 'chromium'
         run: node scripts/qa-resilience.mjs

@@ -14,6 +14,7 @@
     "qa:desktop": "node scripts/qa-desktop.mjs",
     "test": "node --experimental-transform-types --test tests/*.test.mjs",
     "qa:cinematic": "node scripts/qa-cinematic.mjs",
+    "qa:frames": "node scripts/qa-frame-continuity.mjs",
     "qa:resilience": "node scripts/qa-resilience.mjs"
   },
   "dependencies": {

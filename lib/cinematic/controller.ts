@@ -8,6 +8,12 @@ export type Phase =
   | 'gallery'
   | 'released';
 export type Direction = 1 | -1;
+type FramePresentation = {
+  hold(): void;
+  prepare(start: number): void;
+  reset(): void;
+  destroy(): void;
+};
 export type Snapshot = {
   chapter: number;
   direction: Direction;
@@ -38,6 +44,7 @@ export class CinematicController {
     private video: HTMLVideoElement,
     private notify: (state: Snapshot) => void,
     private now = () => performance.now(),
+    private frames?: FramePresentation,
   ) {
     const on = (event: string, callback: () => void) => {
       video.addEventListener(event, callback);
@@ -61,6 +68,8 @@ export class CinematicController {
     this.reset();
   }
   private publish(patch: Partial<Snapshot>) {
+    if (Object.entries(patch).every(([key, value]) => this.state[key as keyof Snapshot] === value))
+      return;
     this.state = { ...this.state, ...patch };
     this.notify(this.state);
   }
@@ -133,7 +142,9 @@ export class CinematicController {
       phase: stalled ? 'stalled' : this.progressed ? 'playing' : 'loading',
     });
   }
-  private load(chapter: number, direction: Direction) {
+  private load(chapter: number, direction: Direction, reset = false) {
+    if (reset) this.frames?.reset();
+    else this.frames?.hold();
     this.generation++;
     this.publish({ phase: 'transitioning' });
     this.video.pause();
@@ -144,11 +155,11 @@ export class CinematicController {
     this.seekPending = direction === 1 && FILMS[chapter].start > 0;
     this.publish({ chapter, direction, phase: 'loading', progress: 0, hasFrame: false });
     const file = FILMS[chapter].file;
-    this.video.poster = `/films/${file}${direction === -1 ? '-end' : '-poster'}.jpg`;
     this.video.src = `/films/${file}${direction === -1 ? '-reverse' : ''}.mp4`;
     this.video.playbackRate = FILMS[chapter].rate;
     this.video.preload = 'auto';
     this.video.load();
+    this.frames?.prepare(direction === 1 ? FILMS[chapter].start : 0);
   }
   private play() {
     const generation = this.generation;
@@ -197,6 +208,7 @@ export class CinematicController {
       if (s.direction === -1) this.load(s.chapter, 1);
       else if (s.chapter < 2) this.load(s.chapter + 1, 1);
       else {
+        this.frames?.hold();
         this.publish({ phase: 'gallery', chapter: 3 });
         return;
       }
@@ -211,6 +223,7 @@ export class CinematicController {
     this.play();
   }
   returnToGallery() {
+    this.frames?.hold();
     this.generation++;
     this.stopWatchdog();
     this.publish({ chapter: 3, phase: 'gallery', direction: 1, progress: 1 });
@@ -221,6 +234,7 @@ export class CinematicController {
     this.play();
   }
   release() {
+    this.frames?.hold();
     this.generation++;
     this.stopWatchdog();
     this.publish({ phase: 'released' });
@@ -240,7 +254,7 @@ export class CinematicController {
     }
   }
   reset() {
-    this.load(0, 1);
+    this.load(0, 1, true);
     this.video.preload = 'metadata';
     this.publish({ phase: 'idle', hasFrame: false });
   }
@@ -249,6 +263,7 @@ export class CinematicController {
     this.generation++;
     this.stopWatchdog();
     this.listeners.forEach((f) => f());
+    this.frames?.destroy();
     this.video.pause();
     this.video.removeAttribute('src');
     this.video.load();

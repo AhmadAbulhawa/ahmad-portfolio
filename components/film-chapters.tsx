@@ -1,8 +1,10 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import { CinematicController, type Snapshot } from '@/lib/cinematic/controller';
+import { FrameHandoff } from '@/lib/cinematic/frame-handoff';
 import { Arrow } from './icons';
 const SpiralGallery = dynamic(() => import('./spiral-gallery'), { ssr: false });
 const initial: Snapshot = { chapter: 0, phase: 'idle', direction: 1, progress: 0, hasFrame: false };
@@ -24,6 +26,7 @@ const chapters = [
 export function FilmChapters() {
   const root = useRef<HTMLElement>(null);
   const video = useRef<HTMLVideoElement>(null);
+  const heldFrame = useRef<HTMLCanvasElement>(null);
   const controller = useRef<CinematicController | null>(null);
   const galleryStep = useRef(0);
   const galleryBusy = useRef(false);
@@ -36,7 +39,8 @@ export function FilmChapters() {
   useEffect(() => {
     const node = root.current,
       media = video.current;
-    if (!node || !media) return;
+    const canvas = heldFrame.current;
+    if (!node || !media || !canvas) return;
     let disposed = false;
     let isReleased = false;
     let burstTime = 0;
@@ -44,16 +48,21 @@ export function FilmChapters() {
       touchX = 0;
     let resetFrame = 0;
     let previousPhase = 'idle';
-    const player = new CinematicController(media, (state) => {
-      if (disposed) return;
-      // A fresh gesture is needed after completion, including trackpad momentum.
-      if (state.phase === 'completed' && previousPhase !== 'completed')
-        burstTime = performance.now();
-      previousPhase = state.phase;
-      setSnapshot(state);
-      node.dataset.phase = state.phase;
-      node.dataset.chapter = String(state.chapter);
-    });
+    const player = new CinematicController(
+      media,
+      (state) => {
+        if (disposed) return;
+        // A fresh gesture is needed after completion, including trackpad momentum.
+        if (state.phase === 'completed' && previousPhase !== 'completed')
+          burstTime = performance.now();
+        previousPhase = state.phase;
+        setSnapshot(state);
+        node.dataset.phase = state.phase;
+        node.dataset.chapter = String(state.chapter);
+      },
+      undefined,
+      new FrameHandoff(media, canvas),
+    );
     controller.current = player;
     const pageContent = document.querySelector<HTMLElement>('[data-portfolio-content]');
     const footer = document.querySelector<HTMLElement>('footer');
@@ -240,16 +249,25 @@ export function FilmChapters() {
       aria-label="Cinematic introduction"
     >
       <div className="film-stage">
+        <Image
+          className="film-surface film-poster"
+          src="/films/01-goggles-on-poster.jpg"
+          alt=""
+          fill
+          sizes="100vw"
+          priority
+          unoptimized
+          aria-hidden="true"
+        />
         <video
           ref={video}
-          className="film-video"
-          poster="/films/01-goggles-on-poster.jpg"
+          className="film-surface film-video"
           muted
           playsInline
           preload="metadata"
           aria-hidden="true"
-          style={{ opacity: gallery ? 0 : 1 }}
         />
+        <canvas ref={heldFrame} className="film-surface film-hold" aria-hidden="true" />
         <div className="film-shade" aria-hidden="true" />
         <div className="film-coordinate" aria-hidden="true">
           <span>A DIFFERENT PERSPECTIVE</span>
