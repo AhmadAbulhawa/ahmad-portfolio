@@ -8,6 +8,10 @@ export type Phase =
   | 'gallery'
   | 'released';
 export type Direction = 1 | -1;
+export type VideoPool = {
+  select(chapter: number, direction: Direction): HTMLVideoElement;
+  all(): HTMLVideoElement[];
+};
 type FramePresentation = {
   hold(): void;
   prepare(start: number): void;
@@ -48,27 +52,33 @@ export class CinematicController {
     private notify: (state: Snapshot) => void,
     private now = () => performance.now(),
     private frames?: FramePresentation,
+    private pool?: VideoPool,
   ) {
-    const on = (event: string, callback: () => void) => {
-      video.addEventListener(event, callback);
-      this.listeners.push(() => video.removeEventListener(event, callback));
-    };
-    on('loadedmetadata', () => this.seekStart());
-    on('loadeddata', () => {
-      this.seekStart();
-      this.inspect();
-    });
-    on('playing', () => {
-      const hasFrame = this.frames?.isShowing?.() ?? video.readyState >= 2;
-      if (this.active()) this.publish({ phase: hasFrame ? 'playing' : 'loading', hasFrame });
-    });
-    for (const event of ['timeupdate', 'pause', 'ended', 'seeked']) on(event, () => this.inspect());
-    for (const event of ['waiting', 'stalled', 'error'])
-      on(event, () => {
-        this.inspect();
-        if (this.active())
-          this.publish({ phase: event === 'error' || this.progressed ? 'stalled' : 'loading' });
+    // Listen only to the currently selected native player. Completed films
+    // stay mounted as frozen layers, but their late media events cannot
+    // alter the active chapter.
+    for (const element of pool?.all() ?? [video]) {
+      const on = (event: string, callback: () => void) => {
+        const guarded = () => {
+          if (this.video === element) callback();
+        };
+        element.addEventListener(event, guarded);
+        this.listeners.push(() => element.removeEventListener(event, guarded));
+      };
+      on('loadedmetadata', () => this.seekStart());
+      on('loadeddata', () => { this.seekStart(); this.inspect(); });
+      on('playing', () => {
+        const hasFrame = this.frames?.isShowing?.() ?? element.readyState >= 2;
+        if (this.active()) this.publish({ phase: hasFrame ? 'playing' : 'loading', hasFrame });
       });
+      for (const event of ['timeupdate', 'pause', 'ended', 'seeked']) on(event, () => this.inspect());
+      for (const event of ['waiting', 'stalled', 'error'])
+        on(event, () => {
+          this.inspect();
+          if (this.active())
+            this.publish({ phase: event === 'error' || this.progressed ? 'stalled' : 'loading' });
+        });
+    }
     this.reset();
   }
   private publish(patch: Partial<Snapshot>) {
@@ -176,6 +186,14 @@ export class CinematicController {
     this.seekTarget = direction === 1 ? FILMS[chapter].start : 0;
     this.seekPending = this.seekTarget > 0;
     this.prepared = { chapter, direction };
+    if (this.pool) {
+      this.video = this.pool.select(chapter, direction);
+      this.video.playbackRate = FILMS[chapter].rate;
+      this.video.preload = 'auto';
+      if (this.video.readyState === 0) this.video.load();
+      else this.seekStart();
+      return;
+    }
     const file = FILMS[chapter].file;
     this.video.src = `/films/${file}${direction === -1 ? '-reverse' : ''}.mp4`;
     this.video.playbackRate = FILMS[chapter].rate;
@@ -295,7 +313,9 @@ export class CinematicController {
     this.listeners.forEach((f) => f());
     this.frames?.destroy();
     this.video.pause();
-    this.video.removeAttribute('src');
-    this.video.load();
+    if (!this.pool) {
+      this.video.removeAttribute('src');
+      this.video.load();
+    }
   }
 }
