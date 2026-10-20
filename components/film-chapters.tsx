@@ -33,6 +33,7 @@ export function FilmChapters() {
   const root = useRef<HTMLElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const heldFrame = useRef<HTMLCanvasElement>(null);
+  const incomingFrame = useRef<HTMLCanvasElement>(null);
   const caption = useRef<HTMLDivElement>(null);
   const controller = useRef<CinematicController | null>(null);
   const galleryStep = useRef(0);
@@ -65,6 +66,7 @@ export function FilmChapters() {
     let previousPhase = 'idle';
     const presentation = new FrameHandoff(
       media, canvas, node.querySelector<HTMLImageElement>('.film-poster') ?? undefined,
+      incomingFrame.current ?? undefined,
     );
     function scheduleWriting() {
       if (!writingFrame && !disposed) writingFrame = requestAnimationFrame(paintWriting);
@@ -342,6 +344,7 @@ export function FilmChapters() {
           unoptimized
           aria-hidden="true"
         />
+        <canvas ref={incomingFrame} className="film-surface film-incoming" aria-hidden="true" />
         <canvas ref={heldFrame} className="film-surface film-hold" aria-hidden="true" />
         </div>
         <div className="film-shade" aria-hidden="true" />

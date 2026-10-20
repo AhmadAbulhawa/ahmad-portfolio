@@ -10,7 +10,7 @@ export type Phase =
 export type Direction = 1 | -1;
 type FramePresentation = {
   hold(): void;
-  prepare(start: number): void;
+  prepare(start: number, blend?: boolean): void;
   reset(): void;
   destroy(): void;
   isShowing?(): boolean;
@@ -156,6 +156,11 @@ export class CinematicController {
     });
   }
   private load(chapter: number, direction: Direction, reset = false) {
+    // The originals have different face/goggle poses at the 01/02 boundary.
+    // Retain its former dissolve; 02/03 and same-film reversals are matched cuts.
+    const blend = this.state.phase === 'completed' &&
+      ((this.state.chapter === 0 && chapter === 1) ||
+        (this.state.chapter === 1 && chapter === 0));
     if (reset) this.frames?.reset();
     else this.frames?.hold();
     this.generation++;
@@ -170,7 +175,7 @@ export class CinematicController {
     this.publish({ chapter, direction, phase: 'loading', progress: 0, hasFrame: false });
     if (!warm) this.prepareSource(chapter, direction);
     this.prepared = undefined;
-    this.frames?.prepare(direction === 1 ? FILMS[chapter].start : 0);
+    this.frames?.prepare(direction === 1 ? FILMS[chapter].start : 0, blend);
   }
   private prepareSource(chapter: number, direction: Direction) {
     this.seekTarget = direction === 1 ? FILMS[chapter].start : 0;
