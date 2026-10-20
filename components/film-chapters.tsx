@@ -101,6 +101,7 @@ export function FilmChapters() {
     let running = false;
     let released = false;
     let bridgeBusy = false;
+    let bridgeGeneration = 0;
     let bridgeTimer: ReturnType<typeof setTimeout> | null = null;
     let bridgeRevealTimer: ReturnType<typeof setTimeout> | null = null;
     let lockedUntil = 0;
@@ -162,6 +163,7 @@ export function FilmChapters() {
       released = true;
       cancelHelix();
       bridgeBusy = false;
+      bridgeGeneration++;
       if (bridgeTimer) clearTimeout(bridgeTimer);
       if (bridgeRevealTimer) clearTimeout(bridgeRevealTimer);
       node!.dataset.bridge = '';
@@ -216,6 +218,8 @@ export function FilmChapters() {
     function playChapter(i: number, reverse: boolean) {
       if (released || running) return;
       if (i === 0 && !reverse) setIntroTriggered(true);
+      if (i === 1 && !reverse) videos.current[2]?.setAttribute('preload','auto');
+      if (i === 2 && reverse) reversed.current[1]?.setAttribute('preload','auto');
       const video = reverse ? reversed.current[i] : videos.current[i];
       if (!video) return;
       const targetVideo: HTMLVideoElement = video;
@@ -253,25 +257,47 @@ export function FilmChapters() {
       ready();
     }
 
-    // A real short film wipe hides the mismatch of lens position between
-    // dissolve's final frame and shatter's first frame (both directions).
+    // The original MP4s have pixel-aligned goggles in the last frame of film
+    // 02 and first frame of film 03. An old dark wipe was starting clip 03
+    // behind the cover, revealing it ~0.8 seconds late: apparent position jump.
+    // Pre-decode/seek the first frame BEFORE switching. Cut directly, without
+    // camera zoom, transform, wipe, time skip or lower-resolution replacement.
+    // The same exact frame-matched procedure runs backward (reverse 03 -> 02).
     function bridge(next: number, reverse: boolean) {
       bridgeBusy = true;
-      node!.dataset.bridge = 'cover';
-      bridgeTimer = setTimeout(()=>{
-        if (released) return;
-        setPosition(next);
-        playChapter(next,reverse);
-        // Wait until the outgoing film has fully faded behind the dark mask.
-        bridgeRevealTimer = setTimeout(()=>{
-          if (released) return;
-          node!.dataset.bridge = 'reveal';
-          bridgeTimer = setTimeout(()=>{
-            node!.dataset.bridge = '';
+      const generation = ++bridgeGeneration;
+      const incoming = reverse ? reversed.current[next] : videos.current[next];
+      const expectedStart = !reverse && next === 1 ? 1.8 : 0;
+      if (!incoming) {
+        bridgeBusy = false;
+        return;
+      }
+      const matchFrame = () => {
+        if (released || generation !== bridgeGeneration) return;
+        if (incoming.readyState < 2) {
+          incoming.preload = 'auto';
+          incoming.addEventListener('canplay', matchFrame, { once: true });
+          return;
+        }
+        if (Math.abs(incoming.currentTime - expectedStart) > .07) {
+          incoming.addEventListener('seeked', matchFrame, { once: true });
+          try { incoming.currentTime = expectedStart; }
+          catch {
+            incoming.removeEventListener('seeked', matchFrame);
+            // Browser will seek in playChapter once loaded.
+            setPosition(next);
+            playChapter(next, reverse);
             bridgeBusy = false;
-          },570);
-        },540);
-      },320);
+          }
+          return;
+        }
+        // Only NOW change visible chapter; playChapter plays from this frame.
+        node!.dataset.bridge = '';
+        setPosition(next);
+        playChapter(next, reverse);
+        bridgeBusy = false;
+      };
+      matchFrame();
     }
 
     function advance(direction: number) {
@@ -379,6 +405,7 @@ export function FilmChapters() {
       bridgeRevealTimer = null;
       cancelHelix();
       bridgeBusy = false;
+      bridgeGeneration++;
       running = false;
       released = false;
       lockedUntil = 0;
@@ -444,6 +471,7 @@ export function FilmChapters() {
       if(bridgeTimer)clearTimeout(bridgeTimer);
       if(bridgeRevealTimer)clearTimeout(bridgeRevealTimer);
       cancelHelix();
+      bridgeGeneration++;
       disposers.forEach(fn=>fn());
       window.removeEventListener('portfolio:restart-intro', restartIntro);
       document.removeEventListener('click',onNavigation,true);

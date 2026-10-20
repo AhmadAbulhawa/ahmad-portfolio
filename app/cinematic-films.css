@@ -401,3 +401,22 @@ body:has(.film-journey) .firn-mobile-panel a>span{color:#a1c2f6;}
 @media (prefers-reduced-motion:reduce){
   body:has(.film-journey) .firn-mobile-panel{transition:none!important;}
 }
+
+
+/* V14 seamless handoff between owner-supplied scene 02 and scene 03.
+   Both source endpoints use the same goggles coordinates. Avoid a masked
+   jump by exposing the decoded first frame of the next clip immediately. */
+.film-journey .film-video-1,
+.film-journey .film-video-2,
+.film-journey .film-video-reverse-1,
+.film-journey .film-video-reverse-2 {
+  transition:opacity .09s linear;
+  transform:none!important;
+  object-position:50% 40%;
+}
+@media(max-width:700px){
+ .film-journey .film-video-1,
+ .film-journey .film-video-2,
+ .film-journey .film-video-reverse-1,
+ .film-journey .film-video-reverse-2 {object-position:center center;}
+}

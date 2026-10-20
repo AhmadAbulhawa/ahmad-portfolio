@@ -61,8 +61,11 @@ for (const setup of setups) {
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-dissolve.png'});
  await ended(1);
  await down();
- await page.waitForTimeout(1600);
- assert.equal(await section.getAttribute('data-scene'),'2','Third film starts after covered lens transition');
+ await page.waitForFunction(() => document.querySelector('.film-journey')?.dataset.scene === '2',{timeout:4500});
+ assert.equal(await section.getAttribute('data-scene'),'2','Third film follows a frame-aligned direct cut');
+ assert.equal(await section.getAttribute('data-bridge'),'', 'No dark cover may hide early frames of shatter clip');
+ const thirdBegin = await originals.nth(2).evaluate(v => v.currentTime);
+ assert.ok(thirdBegin < 1, 'Shatter video must be shown near its first frame, not after a hidden playback interval: '+thirdBegin);
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-shatter.png'});
  await ended(2);
  await down();
@@ -127,8 +130,9 @@ for (const setup of setups) {
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-reverse-shatter.png'});
  await ended(2,true);
  await up();
- await page.waitForTimeout(1750);
- assert.equal(await section.getAttribute('data-scene'),'1','Reverse transition must return through dissolve');
+ await page.waitForFunction(() => document.querySelector('.film-journey')?.dataset.scene === '1',{timeout:4500});
+ assert.equal(await section.getAttribute('data-scene'),'1','Reverse transition must return through the matching dissolve endpoint');
+ assert.equal(await section.getAttribute('data-bridge'),'', 'Reverse scene must also cut directly without an opaque wipe');
  assert.equal(await section.getAttribute('data-direction'),'reverse');
  await ended(1,true);
  await up();
