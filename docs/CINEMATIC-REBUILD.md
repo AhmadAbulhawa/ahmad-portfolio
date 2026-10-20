@@ -28,7 +28,7 @@ There is no global `touchmove` listener or body overflow mutation. Vertical touc
 
 ### Writing follows the film
 
-The welcome identity stays visible before playback. Each chapter’s headline and supporting sentence then type progressively from its actual media start to its actual media end. The writer reads `currentTime` relative to the source’s start and duration, so film 03’s 1.5× speed and the trimmed reverse clips retain the same synchronization. It waits for the correct first frame to be exposed, pauses with the film, and completes all letters on actual completion. Stable hidden glyphs reserve the final layout without reflow, full accessible labels stay available, and reduced motion shows the complete text. Animation-frame writes touch only glyphs whose visibility changed; they do not render React on every video frame.
+The welcome identity stays visible before playback. Each chapter’s headline and supporting sentence then reveal complete words progressively from its actual media start to its actual media end. The writer reads `currentTime` relative to the source’s start and duration, so film 03’s 1.5× speed and the trimmed reverse clips retain the same synchronization. It waits for the correct first frame to be exposed, pauses with the film, and finishes the last word on actual completion. Words appear in reading order with a short opacity/rise reveal instead of character typing. Reserved word positions keep the final layout stable, full accessible labels stay available, and reduced motion shows the complete text. Animation-frame writes touch only words whose reveal changed; they do not render React on every video frame.
 
 ## Film decisions
 

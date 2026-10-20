@@ -95,10 +95,12 @@
   line-height: 1;
   letter-spacing: -0.055em;
   font-weight: 400;
+  color: transparent;
+}
+.film-sentence h1 > em .film-word {
   background: linear-gradient(110deg, #8bd7e9 15%, #a7a1ee 65%, #d297d7);
   background-clip: text;
   -webkit-background-clip: text;
-  color: transparent;
 }
 .film-sentence > p {
   font-size: clamp(12px, 1.1vw, 17px);
@@ -106,11 +108,14 @@
   color: #ccd6de;
   max-width: 650px;
 }
-.film-glyph {
-  visibility: hidden;
+.film-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.12em);
 }
-.film-sentence[data-writing='static'] .film-glyph {
-  visibility: visible;
+.film-sentence[data-writing='static'] .film-word {
+  opacity: 1;
+  transform: none;
 }
 .film-cue {
   display: inline-block;

@@ -25,8 +25,9 @@ const chapters = [
   ],
   ['THE TRANSFORMATION', 'BREAK THE', 'EXPECTED.', 'A different perspective changes everything.'],
 ];
-const glyphs = (text: string) => Array.from(text).map((letter, index) => (
-  <span key={index} className="film-glyph" data-story-char="" aria-hidden="true">{letter}</span>
+const words = (text: string) => text.split(/(\s+)/).map((word, index) => (
+  /\s/.test(word) ? word :
+    <span key={index} className="film-word" data-story-word="" aria-hidden="true">{word}</span>
 ));
 export function FilmChapters() {
   const root = useRef<HTMLElement>(null);
@@ -57,7 +58,9 @@ export function FilmChapters() {
     let resetFrame = 0;
     let writingFrame = 0;
     let writingNode: HTMLElement | null = null;
-    let writingGroups: Array<{ node: HTMLElement; letters: HTMLElement[]; count: number }> = [];
+    let writingGroups: Array<{ node: HTMLElement; words: HTMLElement[] }> = [];
+    let writingWords: HTMLElement[] = [];
+    let wordOpacity: number[] = [];
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let previousPhase = 'idle';
     const presentation = new FrameHandoff(
@@ -80,22 +83,30 @@ export function FilmChapters() {
         writingNode = sentence;
         writingGroups = Array.from(sentence.querySelectorAll<HTMLElement>('[data-type-group]'))
           .map((group) => ({ node: group,
-            letters: Array.from(group.querySelectorAll<HTMLElement>('[data-story-char]')), count: 0 }));
+            words: Array.from(group.querySelectorAll<HTMLElement>('[data-story-word]')) }));
+        writingWords = writingGroups.flatMap((group) => group.words);
+        wordOpacity = writingWords.map(() => 0);
       }
       const complete = state.phase === 'completed' || state.phase === 'released';
       const showing = presentation.isShowing() && !media!.seeking;
       const start = state.direction === 1 ? FILMS[Math.min(state.chapter, 2)].start : 0;
       const progress = complete ? 1 : showing && Number.isFinite(media!.duration)
         ? Math.max(0, Math.min(1, (media!.currentTime - start) / (media!.duration - start))) : 0;
-      for (const group of writingGroups) {
-        const count = complete || reducedMotion ? group.letters.length : showing
-          ? Math.min(group.letters.length, 1 + Math.floor(progress * (group.letters.length - 1))) : 0;
-        if (count === group.count) continue;
-        for (let index = Math.min(group.count, count); index < Math.max(group.count, count); index++)
-          group.letters[index].style.visibility = index < count ? 'visible' : 'hidden';
-        group.count = count;
-        group.node.dataset.written = String(count);
-      }
+      // Read naturally across headline and supporting sentence. Each whole word
+      // fades into its reserved space; the last word finishes with the film.
+      const fade = Math.min(0.05, 0.65 / writingWords.length);
+      writingWords.forEach((word, index) => {
+        const begins = index / Math.max(1, writingWords.length - 1) * (1 - fade);
+        const opacity = complete || reducedMotion ? 1 : showing
+          ? Math.max(0, Math.min(1, (progress - begins) / fade)) : 0;
+        const value = Math.round(opacity * 1000) / 1000;
+        if (wordOpacity[index] === value) return;
+        word.style.opacity = String(value);
+        word.style.transform = `translateY(${(1 - value) * 0.12}em)`;
+        wordOpacity[index] = value;
+      });
+      for (const group of writingGroups)
+        group.node.dataset.written = String(group.words.filter((word) => word.style.opacity === '1').length);
       sentence.dataset.writingProgress = progress.toFixed(4);
       if (active && state.phase !== 'stalled' && !document.hidden) scheduleWriting();
     }
@@ -348,10 +359,10 @@ export function FilmChapters() {
           >
             <span className="section-label film-micro">{content[0]}</span>
             <h1 aria-label={`${content[1]} ${content[2]}`} data-type-group="heading">
-              <span>{glyphs(content[1])}</span>
-              <em>{glyphs(content[2])}</em>
+              <span>{words(content[1])}</span>
+              <em>{words(content[2])}</em>
             </h1>
-            <p aria-label={content[3]} data-type-group="description">{glyphs(content[3])}</p>
+            <p aria-label={content[3]} data-type-group="description">{words(content[3])}</p>
             <span className="film-cue" role="status">
               {snapshot.phase === 'stalled'
                 ? 'FILM PAUSED · SWIPE TO RESUME ↓'
