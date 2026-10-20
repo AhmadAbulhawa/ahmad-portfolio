@@ -255,3 +255,18 @@ test('a gesture re-arms a stationary WebKit decoder even when paused stays false
     s.close();
   }
 });
+
+test('initial buffering stays loading; buffering after media progress is stalled', () => {
+  const s = setup();
+  try {
+    s.c.gesture(1);
+    s.media.dispatchEvent(new Event('waiting'));
+    assert.equal(s.c.state.phase, 'loading');
+    s.media.currentTime = 2;
+    s.tick();
+    s.media.dispatchEvent(new Event('waiting'));
+    assert.equal(s.c.state.phase, 'stalled');
+  } finally {
+    s.close();
+  }
+});

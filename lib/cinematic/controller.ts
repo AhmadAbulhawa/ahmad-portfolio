@@ -55,7 +55,8 @@ export class CinematicController {
     for (const event of ['waiting', 'stalled', 'error'])
       on(event, () => {
         this.inspect();
-        if (this.active()) this.publish({ phase: 'stalled' });
+        if (this.active())
+          this.publish({ phase: event === 'error' || this.progressed ? 'stalled' : 'loading' });
       });
     this.reset();
   }

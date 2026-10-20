@@ -104,11 +104,18 @@ try {
             duration: v.duration,
             seeking: v.seeking,
           }));
-          if (
-            media.seeking ||
-            !Number.isFinite(media.duration) ||
-            media.time > media.duration - 0.5
-          ) {
+          if (media.seeking || !Number.isFinite(media.duration)) {
+            await page.waitForFunction(
+              () => {
+                const v = document.querySelector('.film-video');
+                return Number.isFinite(v?.duration) && !v.seeking;
+              },
+              null,
+              { timeout: 10000 },
+            );
+            continue;
+          }
+          if (media.duration - media.time <= 0.05) {
             await phase('completed');
             break;
           }
@@ -126,6 +133,7 @@ try {
         console.error(
           JSON.stringify({
             url: page.url(),
+            stallRecoveries: report.stallRecoveries,
             state: await section.getAttribute('data-phase').catch(() => null),
             media: await video
               .evaluate((v) => ({
