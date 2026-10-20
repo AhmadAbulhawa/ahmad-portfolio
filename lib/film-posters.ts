@@ -1,0 +1,6 @@
+/** Loading posters extracted from the owner-provided clips; the full-resolution MP4 sources are unchanged. */
+export const filmPosters = [
+  "https://d2jqrm6oza8nb6.cloudfront.net/datasets/ecc76382-19eb-4623-bb9c-61ae43f94739.jpg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNjU2Y2Q5OGQ3YjY1MTE3NSIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjYxMTU5N30.he3IobJFxf_MYwTjDyGiy6ABI1PiWpEpRF4ySuWFyFY",
+  "https://d2jqrm6oza8nb6.cloudfront.net/datasets/091f307a-fc23-4c35-8aa5-743a1fff1757.jpg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMDBiMzBiMzFjMGEzYzUzZiIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjYxMDYwOX0.wA3tyN_JB442ODTM3VaAFNwhF6_z_RG6II7rLoOrsTg",
+  "https://d2jqrm6oza8nb6.cloudfront.net/datasets/6bf93069-cdeb-4ab1-8bd4-672df5a79b02.jpg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMjBiMzAzZjhiM2JjNWFmZSIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjU5MDA3Mn0.iMLBqqKlXf0KVHw7tRyGL6VgemSbpnllBTNk6HNHWGw"
+] as const;
