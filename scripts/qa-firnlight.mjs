@@ -25,7 +25,7 @@ for (const setup of setups) {
  assert.ok(sizes.width>=sizes.viewport-2,'Video must fill screen width');
  const menu=await page.locator('.firn-header-inner').evaluate(el=>getComputedStyle(el).backgroundColor);
  assert.ok(menu.startsWith('rgba(') || menu==='transparent','Navigation must have transparent background: '+menu);
- const artwork=await page.locator('.film-card-art').first().evaluate(el=>getComputedStyle(el).backgroundSize);
+ const artwork=await page.locator('.film-card-art-full').first().evaluate(el=>getComputedStyle(el).backgroundSize);
  assert.equal(artwork,'contain','Project media must be entirely visible, no crop');
  const down=async()=>{
    await page.evaluate(()=>window.dispatchEvent(new WheelEvent('wheel',{deltaY:140,cancelable:true,bubbles:true})));

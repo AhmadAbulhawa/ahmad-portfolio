@@ -214,3 +214,50 @@ body:has(.film-journey) .firn-mobile-panel a>span{color:#a1c2f6;}
 .film-journey[data-direction="forward"] .film-video-reverse-2{opacity:0;}
 .film-journey[data-bridge="cover"] .film-bridge{opacity:1;}
 .film-journey[data-bridge="reveal"] .film-bridge{opacity:0;transition-duration:.57s;}
+
+
+/* V10 visual QA — remove compounding double perspective. Keep the selected
+   image full-sized, straight ahead; reveal the other three BELOW it like steps. */
+.film-gallery{perspective:none;}
+.film-helix{perspective:1350px;}
+.film-glass-card{
+  top:43%;
+  width:clamp(285px,33vw,450px);
+  height:clamp(280px,37svh,365px);
+  padding:11px;
+}
+.film-card-art{
+  position:relative;isolation:isolate;overflow:hidden;
+  background-size:cover!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+}
+.film-card-art::before{
+  content:"";position:absolute;inset:-8%;
+  background-image:inherit;
+  background-position:center;
+  background-size:cover;
+  filter:blur(19px) brightness(.36) saturate(1.2);
+}
+.film-card-art-full{
+  position:absolute;inset:0;z-index:1;
+  background-repeat:no-repeat;background-position:center;
+  background-size:contain;
+  filter:contrast(1.04) saturate(1.07);
+}
+.film-journey[data-chapter="3"] .film-ambient{
+  background:radial-gradient(ellipse at 50% 48%,rgba(1,3,11,.30) 0%,rgba(1,3,11,.52) 65%,rgba(1,3,11,.87) 100%),
+  linear-gradient(0deg,#030409 0%,rgba(3,4,9,.64) 12%,transparent 52%);
+}
+@media(max-width:700px){
+  .film-helix{perspective:1100px;}
+  .film-glass-card{
+    top:43%;
+    width:clamp(205px,60vw,275px);
+    height:clamp(245px,35svh,325px);
+    padding:9px;
+  }
+  .film-card-info{gap:4px;padding:3px 6px;}
+  .film-card-info strong{font-size:clamp(17px,5.4vw,23px);}
+  .film-card-info span{font-size:9px;}
+}

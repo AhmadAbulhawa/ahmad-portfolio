@@ -23,24 +23,25 @@ const clamp = (n: number) => Math.max(0, Math.min(1, n));
 
 function placeCards(cards: (HTMLAnchorElement | null)[], selected: number, reduced: boolean) {
   const mobile = window.innerWidth < 700;
-  const radius = mobile ? Math.min(window.innerWidth * .53, 180) : Math.min(window.innerWidth * .29, 365);
+  const radius = mobile ? 165 : 300;
   cards.forEach((card, index) => {
     if (!card) return;
-    // The selected project is FULLY frontal, level, centered, and closest to
-    // camera. Others descend behind it as steps of a 3D circular staircase.
     const level = (index - selected + projects.length) % projects.length;
-    const angle = level * 1.22;
-    const x = level === 0 ? 0 : Math.sin(angle) * radius * .46;
-    const y = level === 0 ? 0 : level * (mobile ? 105 : 132);
-    const z = level === 0 ? radius : Math.cos(angle) * radius * .46 - level * 86;
-    const ry = level === 0 ? 0 : -angle * 180 / Math.PI * .38;
-    const scale = level === 0 ? 1 : Math.max(.54, .78 - level * .07);
+    // Frontal, full-sized hero frame. Three progressively lower, smaller,
+    // receding steps on a true circular 3D staircase behind the hero.
+    // Exactly ZERO lateral displacement, tilt and depth for the selected card.
+    const angle = level * 1.08;
+    const x = level === 0 ? 0 : Math.sin(angle) * radius * .42;
+    const y = level * (mobile ? 116 : 153);
+    const z = level === 0 ? 0 : -level * (mobile ? 120 : 148);
+    const ry = level === 0 ? 0 : -angle * 180 / Math.PI * .25;
+    const scale = level === 0 ? 1 : .91 - level * .045;
     card.style.transform =
       'translate3d(calc(-50% + ' + x.toFixed(1) + 'px),calc(-50% + ' +
       y.toFixed(1) + 'px),' + z.toFixed(1) + 'px) rotateY(' +
       ry.toFixed(1) + 'deg) scale(' + scale.toFixed(3) + ')';
     card.style.zIndex = String(1000 - level * 100);
-    card.style.opacity = level === 0 ? '1' : level === 1 ? '.92' : level === 2 ? '.7' : '.45';
+    card.style.opacity = level === 0 ? '1' : level === 1 ? '.94' : level === 2 ? '.82' : '.68';
     card.style.transitionDuration = reduced ? '0ms' : '1050ms';
   });
 }
@@ -381,7 +382,9 @@ export function FilmChapters() {
                 className={'film-glass-card' + (gallery && index === currentProject ? ' is-selected' : '')}
                 tabIndex={gallery ? 0 : -1}
                 aria-label={'Explore ' + project.name + ' project'}>
-                <div className="film-card-art" style={{ backgroundImage: 'url(' + project.image + ')' }} />
+                <div className="film-card-art" style={{ backgroundImage: 'url(' + project.image + ')' }}>
+                  <div className="film-card-art-full" style={{ backgroundImage: 'url(' + project.image + ')' }} />
+                </div>
                 <div className="film-card-info">
                   <span>{project.tag}</span>
                   <strong>{project.name}</strong>
