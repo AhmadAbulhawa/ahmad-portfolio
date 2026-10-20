@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
-import { CinematicController, type Snapshot } from '@/lib/cinematic/controller';
+import { CinematicController, FILMS, type Snapshot } from '@/lib/cinematic/controller';
 import { FrameHandoff } from '@/lib/cinematic/frame-handoff';
 import { WheelIntent } from '@/lib/cinematic/wheel-intent';
 import { Arrow } from './icons';
@@ -25,10 +25,14 @@ const chapters = [
   ],
   ['THE TRANSFORMATION', 'BREAK THE', 'EXPECTED.', 'A different perspective changes everything.'],
 ];
+const glyphs = (text: string) => Array.from(text).map((letter, index) => (
+  <span key={index} className="film-glyph" data-story-char="" aria-hidden="true">{letter}</span>
+));
 export function FilmChapters() {
   const root = useRef<HTMLElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const heldFrame = useRef<HTMLCanvasElement>(null);
+  const caption = useRef<HTMLDivElement>(null);
   const controller = useRef<CinematicController | null>(null);
   const galleryStep = useRef(0);
   const galleryBusy = useRef(false);
@@ -51,7 +55,50 @@ export function FilmChapters() {
     let touchY = 0,
       touchX = 0;
     let resetFrame = 0;
+    let writingFrame = 0;
+    let writingNode: HTMLElement | null = null;
+    let writingGroups: Array<{ node: HTMLElement; letters: HTMLElement[]; count: number }> = [];
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let previousPhase = 'idle';
+    const presentation = new FrameHandoff(
+      media, canvas, node.querySelector<HTMLImageElement>('.film-poster') ?? undefined,
+    );
+    function scheduleWriting() {
+      if (!writingFrame && !disposed) writingFrame = requestAnimationFrame(paintWriting);
+    }
+    function paintWriting() {
+      writingFrame = 0;
+      const state = player.state;
+      const sentence = caption.current;
+      if (!sentence || sentence.dataset.writing === 'static') return;
+      const active = ['loading', 'playing', 'stalled'].includes(state.phase);
+      if (sentence.dataset.story !== `${state.chapter}:${state.direction}`) {
+        if (active) scheduleWriting();
+        return;
+      }
+      if (writingNode !== sentence) {
+        writingNode = sentence;
+        writingGroups = Array.from(sentence.querySelectorAll<HTMLElement>('[data-type-group]'))
+          .map((group) => ({ node: group,
+            letters: Array.from(group.querySelectorAll<HTMLElement>('[data-story-char]')), count: 0 }));
+      }
+      const complete = state.phase === 'completed' || state.phase === 'released';
+      const showing = presentation.isShowing() && !media!.seeking;
+      const start = state.direction === 1 ? FILMS[Math.min(state.chapter, 2)].start : 0;
+      const progress = complete ? 1 : showing && Number.isFinite(media!.duration)
+        ? Math.max(0, Math.min(1, (media!.currentTime - start) / (media!.duration - start))) : 0;
+      for (const group of writingGroups) {
+        const count = complete || reducedMotion ? group.letters.length : showing
+          ? Math.min(group.letters.length, 1 + Math.floor(progress * (group.letters.length - 1))) : 0;
+        if (count === group.count) continue;
+        for (let index = Math.min(group.count, count); index < Math.max(group.count, count); index++)
+          group.letters[index].style.visibility = index < count ? 'visible' : 'hidden';
+        group.count = count;
+        group.node.dataset.written = String(count);
+      }
+      sentence.dataset.writingProgress = progress.toFixed(4);
+      if (active && state.phase !== 'stalled' && !document.hidden) scheduleWriting();
+    }
     const player = new CinematicController(
       media,
       (state) => {
@@ -63,9 +110,10 @@ export function FilmChapters() {
         setSnapshot(state);
         node.dataset.phase = state.phase;
         node.dataset.chapter = String(state.chapter);
+        scheduleWriting();
       },
       undefined,
-      new FrameHandoff(media, canvas, node.querySelector<HTMLImageElement>('.film-poster') ?? undefined),
+      presentation,
     );
     controller.current = player;
     const pageContent = document.querySelector<HTMLElement>('[data-portfolio-content]');
@@ -125,6 +173,7 @@ export function FilmChapters() {
         return;
       }
       player.gesture(direction);
+      scheduleWriting();
     }
     function wheel(event: WheelEvent) {
       if ((event.target as Element).closest('.firn-header')) return;
@@ -207,12 +256,16 @@ export function FilmChapters() {
     }
     function visibility() {
       if (document.hidden) player.suspend();
-      else player.resume();
+      else {
+        player.resume();
+        scheduleWriting();
+      }
     }
     function pageshow() {
       if (!isReleased) {
         scrollTo({ top: 0, behavior: 'instant' });
         player.resume();
+        scheduleWriting();
       }
     }
     const onStep = (event: Event) => step((event as CustomEvent<1 | -1>).detail);
@@ -230,6 +283,7 @@ export function FilmChapters() {
     return () => {
       disposed = true;
       cancelAnimationFrame(resetFrame);
+      cancelAnimationFrame(writingFrame);
       player.destroy();
       controller.current = null;
       gateContent(false);
@@ -258,6 +312,7 @@ export function FilmChapters() {
       aria-label="Cinematic introduction"
     >
       <div className="film-stage">
+        <div className="film-plane" aria-hidden="true">
         <video
           ref={video}
           className="film-surface film-video"
@@ -277,6 +332,7 @@ export function FilmChapters() {
           aria-hidden="true"
         />
         <canvas ref={heldFrame} className="film-surface film-hold" aria-hidden="true" />
+        </div>
         <div className="film-shade" aria-hidden="true" />
         <div className="film-coordinate" aria-hidden="true">
           <span>A DIFFERENT PERSPECTIVE</span>
@@ -284,15 +340,18 @@ export function FilmChapters() {
         </div>
         {!gallery && (
           <div
+            ref={caption}
             key={`${welcome ? 'welcome' : snapshot.chapter}-${snapshot.direction}`}
             className="film-sentence"
+            data-writing={welcome ? 'static' : 'film'}
+            data-story={`${snapshot.chapter}:${snapshot.direction}`}
           >
             <span className="section-label film-micro">{content[0]}</span>
-            <h1>
-              <span>{content[1]}</span>
-              <em>{content[2]}</em>
+            <h1 aria-label={`${content[1]} ${content[2]}`} data-type-group="heading">
+              <span>{glyphs(content[1])}</span>
+              <em>{glyphs(content[2])}</em>
             </h1>
-            <p>{content[3]}</p>
+            <p aria-label={content[3]} data-type-group="description">{glyphs(content[3])}</p>
             <span className="film-cue" role="status">
               {snapshot.phase === 'stalled'
                 ? 'FILM PAUSED · SWIPE TO RESUME ↓'

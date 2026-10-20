@@ -19,6 +19,14 @@
   inset: 0;
   z-index: 4;
 }
+.film-plane {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 100vh;
+  height: 100lvh;
+  min-height: 100%;
+  pointer-events: none;
+}
 .film-surface {
   position: absolute;
   inset: 0;
@@ -81,7 +89,6 @@
 .film-sentence h1 > em {
   display: block;
   width: fit-content;
-  animation: chapter-write 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 .film-sentence h1 > em {
   font-size: 1.05em;
@@ -92,14 +99,18 @@
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  animation-delay: 0.12s;
 }
 .film-sentence > p {
   font-size: clamp(12px, 1.1vw, 17px);
   margin-top: 25px;
   color: #ccd6de;
-  animation: label-enter 0.7s 0.25s both;
   max-width: 650px;
+}
+.film-glyph {
+  visibility: hidden;
+}
+.film-sentence[data-writing='static'] .film-glyph {
+  visibility: visible;
 }
 .film-cue {
   display: inline-block;

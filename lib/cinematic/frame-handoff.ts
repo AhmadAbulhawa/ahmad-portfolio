@@ -31,6 +31,10 @@ export class FrameHandoff {
     return true;
   }
 
+  isShowing() {
+    return this.visible;
+  }
+
   hold() {
     this.cancel();
     // A gallery return or repeated loading gesture must keep the existing hold,

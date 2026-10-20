@@ -13,6 +13,7 @@ type FramePresentation = {
   prepare(start: number): void;
   reset(): void;
   destroy(): void;
+  isShowing?(): boolean;
 };
 export type Snapshot = {
   chapter: number;
@@ -58,7 +59,8 @@ export class CinematicController {
       this.inspect();
     });
     on('playing', () => {
-      if (this.active()) this.publish({ phase: 'playing', hasFrame: video.readyState >= 2 });
+      const hasFrame = this.frames?.isShowing?.() ?? video.readyState >= 2;
+      if (this.active()) this.publish({ phase: hasFrame ? 'playing' : 'loading', hasFrame });
     });
     for (const event of ['timeupdate', 'pause', 'ended', 'seeked']) on(event, () => this.inspect());
     for (const event of ['waiting', 'stalled', 'error'])
@@ -109,6 +111,13 @@ export class CinematicController {
     const v = this.video;
     this.seekStart();
     if (v.seeking || !Number.isFinite(v.duration) || v.duration <= 0) return;
+    // A delayed first-frame notification must not complete a film that has
+    // advanced behind the outgoing canvas without ever becoming visible.
+    if (this.frames?.isShowing && !this.frames.isShowing()) {
+      if (v.paused || this.now() - this.lastProgressAt > 1800)
+        this.publish({ phase: 'stalled', hasFrame: false });
+      return;
+    }
     const t = v.currentTime;
     if (Math.abs(t - this.lastTime) > 0.005) {
       this.progressed = true;

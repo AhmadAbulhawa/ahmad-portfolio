@@ -15,6 +15,7 @@ const browser = await engine.launch({
 });
 const report = [];
 const firstFrames = [];
+const alignments = [];
 try {
   for (const setup of [
     { name: 'desktop', width: 1280, height: 800, delayedPaint: true },
@@ -24,12 +25,42 @@ try {
     const context = await browser.newContext({ viewport: setup, deviceScaleFactor: 1 });
     await context.addInitScript(() => {
       window.frameReveals = [];
+      window.lensBounds = (frame) => {
+        let left = frame.width, right = 0, top = frame.height, bottom = 0;
+        for (let y = 0; y < frame.height * 0.75; y++) {
+          for (let x = 0; x < frame.width; x++) {
+            const i = (y * frame.width + x) * 4;
+            const hi = Math.max(frame.pixels[i], frame.pixels[i + 1], frame.pixels[i + 2]);
+            const lo = Math.min(frame.pixels[i], frame.pixels[i + 1], frame.pixels[i + 2]);
+            if (hi - lo <= 60 || hi <= 100) continue;
+            left = Math.min(left, x); right = Math.max(right, x);
+            top = Math.min(top, y); bottom = Math.max(bottom, y);
+          }
+        }
+        const scale = Math.max(frame.rect.width / frame.width, frame.rect.height / frame.height);
+        const [px, py] = frame.position.split(' ').map(parseFloat);
+        return {
+          x: frame.rect.x + (frame.rect.width - frame.width * scale) * px / 100 + (left + right) * scale / 2,
+          y: frame.rect.y + (frame.rect.height - frame.height * scale) * py / 100 + (top + bottom) * scale / 2,
+          width: (right - left) * scale, height: (bottom - top) * scale,
+        };
+      };
+      window.readFrame = () => {
+        const canvas = document.querySelector('.film-hold');
+        const rect = canvas.getBoundingClientRect();
+        return { width: canvas.width, height: canvas.height,
+          pixels: canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data,
+          rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+          position: getComputedStyle(canvas).objectPosition };
+      };
       new MutationObserver((records) => {
         const canvas = document.querySelector('.film-hold');
         if (!['presenting', 'live'].includes(canvas?.dataset.frame) ||
           !records.some((r) => r.target === canvas)) return;
         const video = document.querySelector('.film-video');
         window.frameReveals.push({ src: video.src, time: video.currentTime });
+        if (video.src.endsWith('/03-shatter.mp4') && !window.firstShatterFrame)
+          window.firstShatterFrame = window.readFrame();
       }).observe(document, { subtree: true, attributes: true, attributeFilter: ['data-frame'] });
     });
     if (setup.delayedPaint)
@@ -64,7 +95,8 @@ try {
     // Compare only the cinematic image. Typography and gallery animation have
     // separate visual coverage and must not mask a one-frame poster flash.
     const imageOnly = await page.addStyleTag({ content: `
-      .film-stage > :not(.film-surface), .firn-header { visibility: hidden !important; }
+      .film-stage > :not(.film-plane), .film-stage > :not(.film-plane) *,
+      .firn-header { visibility: hidden !important; }
     ` });
     const gesture = async (direction) => {
       await page.waitForTimeout(240);
@@ -170,7 +202,16 @@ try {
     await transition('02-dissolve.mp4', 1);
     arm('03-shatter.mp4');
     await finish();
+    const outgoingBounds = await page.evaluate(() => window.lensBounds(window.readFrame()));
     await transition('03-shatter.mp4', 1);
+    const incomingBounds = await page.evaluate(() => window.lensBounds(window.firstShatterFrame));
+    for (const axis of ['x', 'y'])
+      assert.ok(Math.abs(incomingBounds[axis] - outgoingBounds[axis]) < 3,
+        `Goggle ${axis} coordinate jumps between films 02 and 03`);
+    for (const dimension of ['width', 'height'])
+      assert.ok(Math.abs(incomingBounds[dimension] - outgoingBounds[dimension]) < 6,
+        `Goggle ${dimension} changes between films 02 and 03`);
+    alignments.push({ viewport: setup.name, outgoingBounds, incomingBounds });
     arm('03-shatter-reverse.mp4');
     await finish();
     await gesture(1); // gallery keeps the final shatter frame behind its entrance
@@ -211,6 +252,7 @@ try {
   }
   await writeFile(path.join(output, 'frame-continuity.json'), JSON.stringify(report, null, 2));
   await writeFile(path.join(output, 'first-frame-exposure.json'), JSON.stringify(firstFrames, null, 2));
+  await writeFile(path.join(output, 'goggle-alignment.json'), JSON.stringify(alignments, null, 2));
 } finally {
   await browser.close();
 }

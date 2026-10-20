@@ -103,6 +103,24 @@ test('a completed frame is captured before the next source warms, without advanc
     assert.equal(s.media.calls, 2);
   } finally { s.close(); }
 });
+
+test('late decoder timestamps cannot complete a film still covered by the preceding frame', () => {
+  const frames = {
+    hold() {}, prepare() {}, reset() {}, destroy() {}, isShowing: () => false,
+  };
+  const s = setup(frames);
+  try {
+    s.c.gesture(1);
+    s.media.currentTime = s.media.duration;
+    s.media.paused = true;
+    s.media.ended = true;
+    s.tick(10000);
+    assert.equal(s.c.state.chapter, 0);
+    assert.notEqual(s.c.state.phase, 'completed');
+    s.c.gesture(1);
+    assert.equal(s.c.state.chapter, 0);
+  } finally { s.close(); }
+});
 test('missing ended/timeupdate/pause events recover on the same intentional gesture', () => {
   const s = setup();
   try {

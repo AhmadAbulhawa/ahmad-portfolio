@@ -185,15 +185,27 @@ try {
     await chapter(1);
     assert.equal(await video.evaluate((v) => v.playbackRate), 1);
     await page.waitForTimeout(1800);
+    const writing = await page.locator('[data-type-group="heading"]').evaluate((heading) => ({
+      count: Number(heading.dataset.written), total: heading.querySelectorAll('[data-story-char]').length,
+    }));
+    assert.ok(writing.count > 0 && writing.count < writing.total,
+      'The headline keeps writing while the film is still playing');
     await shot('philosophy');
     // Pause well before final frame, then swipe: must retry this chapter.
     await video.evaluate((v) => v.pause());
+    await page.waitForTimeout(60);
+    const pausedWriting = await page.locator('[data-type-group="heading"]').getAttribute('data-written');
+    await page.waitForTimeout(250);
+    assert.equal(await page.locator('[data-type-group="heading"]').getAttribute('data-written'),
+      pausedWriting, 'Writing pauses with the actual film');
     await gesture();
     await chapter(1);
     assert.ok(await video.evaluate((v) => !v.paused), 'Gesture resumes same unfinished film');
     await video.evaluate((v) => v.addEventListener('ended', (event) => event.stopImmediatePropagation(),
       { capture: true, once: true }));
     await finishFilm();
+    await page.waitForFunction(() => Array.from(document.querySelectorAll('[data-type-group]'))
+      .every((group) => Number(group.dataset.written) === group.querySelectorAll('[data-story-char]').length));
     await shot('philosophy-final');
     // Completion survives a suppressed ended notification; the incoming source
     // is already parked at its first frame while the canvas holds the goggles.
@@ -207,6 +219,7 @@ try {
     );
     await shot('transformation');
     await finishFilm();
+    await shot('transformation-final');
     await gesture();
     await phase('gallery');
     await page.waitForSelector('.glass-project');

@@ -72,17 +72,15 @@ try {
     await fallback.goto(base, { waitUntil: 'networkidle' });
     for (let i = 0; i < 3; i++) {
       await wheel(fallback);
-      await fallback.waitForFunction(() => {
-        const video = document.querySelector('.film-video');
-        return Number.isFinite(video.duration) && !video.seeking && video.readyState >= 2 &&
-          document.querySelector('.film-hold').dataset.frame === 'live';
-      });
-      await fallback.locator('.film-video').evaluate((v) => {
-        v.pause();
-        v.currentTime = v.duration - 0.02;
-      });
+      for (let attempt = 0; attempt < 3; attempt++) {
+        await fallback.waitForFunction(() => ['completed', 'stalled'].includes(
+          document.querySelector('.film-journey').dataset.phase), null, { timeout: 22000 });
+        if (await fallback.locator('.film-journey').getAttribute('data-phase') === 'completed') break;
+        await wheel(fallback);
+      }
       await fallback.waitForFunction(
         () => document.querySelector('.film-journey').dataset.phase === 'completed',
+        null, { timeout: 22000 },
       );
     }
     await wheel(fallback);
