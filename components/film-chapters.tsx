@@ -4,7 +4,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import { CinematicController, FILMS, type Snapshot } from '@/lib/cinematic/controller';
-import { StableFilmDeck } from '@/lib/cinematic/stable-deck';
+import { FrameHandoff } from '@/lib/cinematic/frame-handoff';
 import { WheelIntent } from '@/lib/cinematic/wheel-intent';
 import { Arrow } from './icons';
 const SpiralGallery = dynamic(() => import('./spiral-gallery'), { ssr: false });
@@ -31,7 +31,8 @@ const words = (text: string) => text.split(/(\s+)/).map((word, index) => (
 ));
 export function FilmChapters() {
   const root = useRef<HTMLElement>(null);
-  const videos = useRef<(HTMLVideoElement | null)[]>([]);
+  const video = useRef<HTMLVideoElement>(null);
+  const heldFrame = useRef<HTMLCanvasElement>(null);
   const caption = useRef<HTMLDivElement>(null);
   const controller = useRef<CinematicController | null>(null);
   const galleryStep = useRef(0);
@@ -45,11 +46,10 @@ export function FilmChapters() {
   const content = welcome ? introduction : chapters[Math.min(snapshot.chapter, 2)];
 
   useEffect(() => {
-    const node = root.current;
-    const layers = videos.current.slice(0, 6);
-    if (!node || layers.length !== 6 || layers.some(layer => !layer)) return;
-    const clips = layers as HTMLVideoElement[];
-    const media = clips[0];
+    const node = root.current,
+      media = video.current;
+    const canvas = heldFrame.current;
+    if (!node || !media || !canvas) return;
     let disposed = false;
     let isReleased = false;
     const wheelIntent = new WheelIntent();
@@ -63,8 +63,8 @@ export function FilmChapters() {
     let wordOpacity: number[] = [];
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let previousPhase = 'idle';
-    const presentation = new StableFilmDeck(
-      clips, node.querySelector<HTMLImageElement>('.film-poster') ?? undefined,
+    const presentation = new FrameHandoff(
+      media, canvas, node.querySelector<HTMLImageElement>('.film-poster') ?? undefined,
     );
     function scheduleWriting() {
       if (!writingFrame && !disposed) writingFrame = requestAnimationFrame(paintWriting);
@@ -124,7 +124,6 @@ export function FilmChapters() {
         scheduleWriting();
       },
       undefined,
-      presentation,
       presentation,
     );
     controller.current = player;
@@ -325,30 +324,14 @@ export function FilmChapters() {
     >
       <div className="film-stage">
         <div className="film-plane" aria-hidden="true">
-        {FILMS.map((entry, index) => (
-          <video
-            key={entry.file}
-            ref={(element) => { videos.current[index] = element; }}
-            className="film-surface film-clip"
-            src={`/films/${entry.file}.mp4`}
-            muted
-            playsInline
-            preload={index === 0 ? 'auto' : 'metadata'}
-            aria-hidden="true"
-          />
-        ))}
-        {FILMS.map((entry, index) => (
-          <video
-            key={entry.file + '-reverse'}
-            ref={(element) => { videos.current[index + 3] = element; }}
-            className="film-surface film-clip"
-            data-src={`/films/${entry.file}-reverse.mp4`}
-            muted
-            playsInline
-            preload="none"
-            aria-hidden="true"
-          />
-        ))}
+        <video
+          ref={video}
+          className="film-surface film-video"
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+        />
         <Image
           className="film-surface film-poster"
           src="/films/01-goggles-on-poster.jpg"
@@ -359,7 +342,7 @@ export function FilmChapters() {
           unoptimized
           aria-hidden="true"
         />
-        {/* Native source surfaces stay mounted across every handoff. */}
+        <canvas ref={heldFrame} className="film-surface film-hold" aria-hidden="true" />
         </div>
         <div className="film-shade" aria-hidden="true" />
         <div className="film-coordinate" aria-hidden="true">
