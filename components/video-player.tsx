@@ -1,6 +1,6 @@
 'use client';
+import { useEffect, useRef, useState } from 'react';
 import { Poster } from './poster';
-import { useId, useRef, useState, useEffect } from 'react';
 import { Play } from './icons';
 
 type Props = {
@@ -14,123 +14,58 @@ type Props = {
   badge?: string;
   duration?: string;
 };
-export function VideoPlayer({
-  src,
-  poster,
-  width,
-  height,
-  label,
-  description,
-  priority = false,
-  badge,
-  duration,
-}: Props) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
-  const video = useRef<HTMLVideoElement>(null);
-  const [open, setOpen] = useState(false);
+
+export function VideoPlayer({ src, poster, width, height, label, description, priority = false, badge, duration }: Props) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hostRef = useRef<HTMLDivElement>(null);
+  const [started, setStarted] = useState(false);
   const [error, setError] = useState(false);
-  const id = useId();
   const portrait = height > width;
-  const actionLabel =
-    badge ??
-    (portrait ? 'Play scene' : src.includes('aqar') ? 'Play visualization' : 'Play experience');
+
   useEffect(() => {
-    if (!open) return;
-    const old = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = old;
+    const host = hostRef.current;
+    if (!host || !started) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) videoRef.current?.pause();
+    }, { threshold: 0.05 });
+    observer.observe(host);
+    const onHidden = () => {
+      if (document.hidden) videoRef.current?.pause();
     };
-  }, [open]);
-  function close() {
-    video.current?.pause();
-    dialog.current?.close();
-    setOpen(false);
-    trigger.current?.focus();
-  }
-  function play() {
+    document.addEventListener('visibilitychange', onHidden);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onHidden);
+    };
+  }, [started]);
+
+  function playInline() {
     setError(false);
-    setOpen(true);
-    dialog.current?.showModal();
+    setStarted(true);
+    // First click mounts the real video. Playback begins only on user action.
   }
+
   return (
-    <div className={`media ${portrait ? 'media-portrait' : 'media-landscape'}`}>
-      <button
-        ref={trigger}
-        className="media-trigger"
-        onClick={play}
-        aria-label={`${actionLabel} — ${label}`}
-        aria-haspopup="dialog"
-      >
-        <Poster
-          src={poster}
-          alt={
-            portrait
-              ? 'Munjiz landing page with an illuminated tower and Arabic typography'
-              : src.includes('aqar')
-                ? 'Modern furnished interior from the owner-supplied transformation visualization'
-                : 'Garage Tahmeen automotive experience poster'
-          }
-          width={width}
-          height={height}
-          priority={priority}
-        />
-        <span className="play-badge">
-          <Play />
-          <span>{actionLabel}</span>
-        </span>
-        <span className="media-corner" aria-hidden="true">
-          {duration ?? (src.includes('aqar') ? '00:05.3' : 'PLAY')} ↗
-        </span>
-      </button>
-      <dialog
-        ref={dialog}
-        className={`video-dialog ${portrait ? 'dialog-portrait' : ''}`}
-        aria-labelledby={`${id}-title`}
-        aria-describedby={`${id}-description`}
-        onCancel={close}
-        onClose={() => setOpen(false)}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) close();
-        }}
-      >
-        <div className="dialog-content">
-          <div className="dialog-heading">
-            <h2 id={`${id}-title`}>{label}</h2>
-            <button className="dialog-close" onClick={close} autoFocus aria-label="Close video">
-              Close <span aria-hidden="true">×</span>
-            </button>
-          </div>
-          {open && (
-            <video
-              ref={video}
-              src={src}
-              poster={poster}
-              width={width}
-              height={height}
-              controls
-              playsInline
-              autoPlay
-              preload="none"
-              onError={() => setError(true)}
-              aria-label={label}
-            />
-          )}
-          {error && (
-            <p role="alert">
-              Playback is unavailable in this browser.{' '}
-              <a href={src} download>
-                Download the video
-              </a>{' '}
-              to watch it.
-            </p>
-          )}
-          <p id={`${id}-description`}>
-            {description} <span>Silent video.</span>
-          </p>
-        </div>
-      </dialog>
+    <div ref={hostRef} className={'media firn-media ' + (portrait ? 'media-portrait' : 'media-landscape')}>
+      {started ? (
+        <>
+          <video ref={(node) => {
+            videoRef.current = node;
+            if (node && node.paused && !error) {
+              void node.play().catch(() => { /* native controls remain available */ });
+            }
+          }} src={src} poster={poster} width={width} height={height} controls playsInline autoPlay
+            preload="metadata" aria-label={label} onError={() => setError(true)} />
+          {error && <p className="media-note" role="alert">Playback unavailable. <a href={src} download>Download this clip ↗</a></p>}
+        </>
+      ) : (
+        <button type="button" className="media-trigger firn-inline-play" onClick={playInline} aria-label={'Play video inline: ' + label}>
+          <Poster src={poster} alt={label} width={width} height={height} priority={priority} />
+          <span className="play-badge"><Play /><span>{badge ?? 'PLAY FILM'}</span></span>
+          <span className="media-corner">{duration ?? 'WATCH'} ↗</span>
+        </button>
+      )}
+      <span className="sr-only">{description}</span>
     </div>
   );
 }

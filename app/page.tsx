@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Arrow, Asterisk } from '@/components/icons';
+import { Arrow } from '@/components/icons';
 import { Motion } from '@/components/motion';
-import { HeroWorld } from '@/components/hero-world';
+import { FirnlightMotion } from '@/components/firnlight-motion';
 import { VideoPlayer } from '@/components/video-player';
 import { Contact } from '@/components/shell';
 import { munjizClips } from '@/lib/films';
@@ -14,70 +14,40 @@ export default function Home() {
     <>
       <Motion />
       <main id="main-content">
-        <section className="hero wrap hero--immersive" aria-labelledby="hero-title">
-          <HeroWorld />
-          <div className="hero-eyebrow section-label">
-            <span className="status-dot" /> CREATIVE FRONTEND · FULL-STACK · AI
-          </div>
-          <div className="hero-grid">
-            <div className="hero-copy">
-              <p className="hero-name" data-hero-line>
-                Ahmad Mohammad Abulhawa
-              </p>
-              <h1 id="hero-title">
-                <span data-hero-line>Thoughtful code.</span>
-                <span data-hero-line>Unforgettable</span>
-                <span className="serif accent" data-hero-line>
-                  experiences.
-                </span>
-              </h1>
-              <div className="hero-description" data-hero-line>
-                <span className="hero-rule" />
-                <p>
-                  I build expressive interfaces and intelligent products. Where precise engineering
-                  meets a feeling you remember.
-                </p>
-              </div>
-              <div className="hero-actions">
-                <a className="button button-accent" href="#work">
-                  View selected work <Arrow />
-                </a>
-                <a className="text-link" href={`mailto:${person.email}`}>
-                  Let’s talk <Arrow diagonal />
-                </a>
-                {cv && (
-                  <a className="text-link" href={cv} download>
-                    Download CV ↓
-                  </a>
-                )}
+        <FirnlightMotion />
+        <section className="firn-journey" aria-labelledby="hero-title" id="intro">
+          <div className="firn-stage">
+            <div className="firn-art" aria-hidden="true">
+              <div className="firn-portrait" />
+              <div className="firn-snow firn-snow--near" />
+              <div className="firn-snow firn-snow--far" />
+              <div className="firn-vignette" />
+            </div>
+            <div className="firn-topline">
+              <span>AHMAD ABULHAWA — PORTFOLIO / 2026</span>
+              <span>SCROLL-DRIVEN EXPERIENCE</span>
+            </div>
+            <div className="firn-headline">
+              <p className="firn-kicker">FULL-STACK DEVELOPER <span> / </span> AI ENGINEERING</p>
+              <h1 id="hero-title">Ahmad<span className="firn-last">Abulhawa.</span></h1>
+              <div className="firn-subline">
+                <p>Building intelligent products.<br />Crafting unforgettable experiences.</p>
+                <span className="firn-scroll-label">SCROLL TO EXPLORE <span aria-hidden="true">↓</span></span>
               </div>
             </div>
-            <div className="hero-film">
-              <div className="film-topline">
-                <span>IN THE FRAME</span>
-                <span>02 / 03</span>
-              </div>
-              {munjiz.media && <VideoPlayer {...munjizClips[0]} priority />}
-              <div className="film-caption">
-                <div>
-                  <strong>Munjiz</strong>
-                  <span>Brand, motion & a little ambition.</span>
-                </div>
-                <Asterisk />
-              </div>
+            <div className="firn-reveal" aria-hidden="true">
+              <span>01 / THE INTRO</span>
+              <p>IDEAS COME<br /><em>TO LIFE.</em></p>
+              <span>SCROLL INTO SELECTED WORK ↓</span>
             </div>
-          </div>
-          <div className="hero-bottom">
-            <a href={person.github} target="_blank" rel="noopener noreferrer">
-              Explore my GitHub <Arrow diagonal />
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-            <span>DESIGNED WITH INTENT. BUILT WITH CARE.</span>
-            <a href="#work">
-              SCROLL TO EXPLORE <span className="down-arrow">↓</span>
-            </a>
+            <a className="firn-skip" href="#work">Skip intro <span aria-hidden="true">↗</span></a>
           </div>
         </section>
+        <div className="firn-chapter" aria-hidden="true">
+          <span>02 — THE WORK</span>
+          <p>REAL PROJECTS.<br /><em>REAL PROBLEMS SOLVED.</em></p>
+          <span>FOUR SELECTED CASE STUDIES ↓</span>
+        </div>
 
         <section className="work wrap section" id="work" aria-labelledby="work-title">
           <div className="section-top">

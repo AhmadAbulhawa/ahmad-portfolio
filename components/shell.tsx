@@ -1,47 +1,8 @@
 import Link from 'next/link';
 import { Arrow } from './icons';
+import { SiteHeader } from './site-header';
 import { person, cv } from '@/lib/content';
-export function Header() {
-  return (
-    <header className="header wrap">
-      <Link prefetch={false} className="wordmark" href="/" aria-label="aa. Ahmad Abulhawa — home">
-        aa<span className="brand-dot">.</span>
-        <span className="wordmark-label">
-          AHMAD
-          <br />
-          ABULHAWA
-        </span>
-      </Link>
-      <nav className="desktop-nav" aria-label="Main navigation">
-        <Link prefetch={false} href="/#work">
-          Selected work <span>03</span>
-        </Link>
-        <Link prefetch={false} href="/#about">
-          About
-        </Link>
-        <Link prefetch={false} href="/#contact">
-          Contact <Arrow diagonal />
-        </Link>
-      </nav>
-      <details className="mobile-nav">
-        <summary>
-          Menu <span aria-hidden="true">＋</span>
-        </summary>
-        <nav aria-label="Mobile navigation">
-          <Link prefetch={false} href="/#work">
-            Selected work
-          </Link>
-          <Link prefetch={false} href="/#about">
-            About
-          </Link>
-          <Link prefetch={false} href="/#contact">
-            Contact
-          </Link>
-        </nav>
-      </details>
-    </header>
-  );
-}
+export function Header() { return <SiteHeader />; }
 export function Footer() {
   return (
     <footer className="footer wrap">
