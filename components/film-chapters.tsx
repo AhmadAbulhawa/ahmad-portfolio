@@ -50,140 +50,183 @@ export function FilmChapters() {
   const [errors, setErrors] = useState<boolean[]>([false, false, false]);
 
   useEffect(() => {
-    const section = root.current;
-    if (!section) return;
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-    let raf = 0;
-    let activeScene = -1;
-    let interacted = false;
-    let visible = true;
-    let wheelIndex = 0;
-    let wheelControlled = false;
-    let wheelLockedUntil = 0;
-
-    // Playback is self-running after a chapter is reached; no video currentTime scrubbing.
-    function activateClip(index: number) {
-      videos.current.forEach((video, i) => {
-        if (!video) return;
-        video.pause();
-        video.playbackRate = i === 0 ? 1 : 1.5;
-        if (i === index) {
-          if (video.ended || video.currentTime > .12) {
-            try { video.currentTime = 0; } catch { /* metadata pending */ }
-          }
-          void video.play().catch(() => { /* a scroll/touch action will retry */ });
-        } else if (index === 3 && i === 2 && video.readyState >= 1) {
-          try { video.currentTime = Math.max(0, video.duration - .04); } catch { /* metadata pending */ }
-        }
-      });
+    const node = root.current;
+    if (!node) return;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    const previousBody = document.body.style.overflow;
+    const previousHtml = document.documentElement.style.overflow;
+    const skip = node.querySelector<HTMLAnchorElement>('.film-skip');
+    let position = 0;
+    let started = false;
+    let running = false;
+    let released = false;
+    let lockedUntil = 0;
+    let startY = 0;
+    let startX = 0;
+    const complete = [false, false, false];
+    function setPosition(next: number) {
+      position = next;
+      node!.dataset.scene = String(next);
+      node!.dataset.chapter = String(Math.min(next, 3));
+      setScene(next);
+      if (next >= 3) placeCards(cards.current, next - 3, reduce.matches);
     }
-
-    const update = () => {
-      raf = 0;
-      if (!visible || document.hidden) return;
-      const bounds = section.getBoundingClientRect();
-      const travel = Math.max(1, bounds.height - window.innerHeight);
-      const progress = clamp(-bounds.top / travel);
-      let nextScene = Math.min(SCENE_COUNT - 1, Math.floor(progress * SCENE_COUNT));
-      if (nextScene < 3) {
-        wheelControlled = false;
-        wheelIndex = 0;
-      } else if (wheelControlled && window.innerWidth >= 700) {
-        // Manual wheel steps own the active gallery item, not fractional scroll.
-        nextScene = 3 + wheelIndex;
-      } else if (!wheelControlled) {
-        wheelIndex = nextScene - 3;
+    function release() {
+      if (released) return;
+      released = true;
+      node!.dataset.released = 'true';
+      document.body.style.overflow = previousBody;
+      document.documentElement.style.overflow = previousHtml;
+      videos.current.forEach(v => v?.pause());
+    }
+    if (location.hash && location.hash !== '#intro') {
+      released = true;
+      node.dataset.released = 'true';
+    } else {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    }
+    const second = videos.current[1];
+    const primeSecond = () => {
+      if (second && second.readyState >= 1 && second.currentTime < 2.12) {
+        try { second.currentTime = 2.12; } catch { /* seek later */ }
       }
-      const chapter = Math.min(nextScene, 3);
-      section.dataset.chapter = String(chapter);
-      section.dataset.scene = String(nextScene);
-      if (nextScene !== activeScene) {
-        const old = activeScene;
-        activeScene = nextScene;
-        setScene(nextScene);
-        // Initial landing must stay on the first still frame.
-        // Only an actual downward scroll initiates the first video.
-        if (chapter === 0) {
-          if (interacted && progress > .006 && old !== 0) activateClip(0);
-        } else if (old < 0 || Math.min(old, 3) !== chapter) {
-          activateClip(chapter);
+    };
+    second?.addEventListener('loadedmetadata', primeSecond);
+    second?.setAttribute('preload', 'auto');
+    primeSecond();
+    const endedHandlers: Array<() => void> = [];
+    videos.current.forEach((video, i) => {
+      if (!video) return;
+      video.pause();
+      video.playbackRate = i === 0 ? 1 : 1.5;
+      const ended = () => {
+        complete[i] = true;
+        running = false;
+        node!.dataset.playing = 'false';
+        node!.dataset.finished = String(i);
+      };
+      video.addEventListener('ended', ended);
+      endedHandlers.push(() => video.removeEventListener('ended', ended));
+    });
+    function playClip(index: number) {
+      if (released || running || complete[index]) return;
+      const video = videos.current[index];
+      if (!video) return;
+      started = true;
+      running = true;
+      node!.dataset.playing = 'true';
+      videos.current.forEach((v, i) => { if (i !== index) v?.pause(); });
+      video.playbackRate = index === 0 ? 1 : 1.5;
+      const begin = () => {
+        if (released || position !== index) return;
+        try {
+          if (index === 1 && video.currentTime < 2.12) video.currentTime = 2.12;
+          if (index !== 1 && video.currentTime > .1) video.currentTime = 0;
+        } catch { /* wait for playback readiness */ }
+        void video.play().catch(() => {
+          running = false;
+          node!.dataset.playing = 'false';
+          node!.dataset.mediaError = 'playback';
+        });
+      };
+      if (video.readyState < 2) video.addEventListener('canplay', begin, { once: true });
+      else begin();
+    }
+    // Critical: advancing never consults scroll progress. A playing clip
+    // must finish before ANY further wheel, key, or swipe can change scenes.
+    function go(direction: number) {
+      if (released) return;
+      const now = performance.now();
+      if (running || now < lockedUntil) return;
+      lockedUntil = now + 950;
+      if (direction < 0) {
+        if (position > 0) {
+          const next = position - 1;
+          setPosition(next);
+          videos.current.forEach(v => v?.pause());
+          if (next < 3 && complete[next]) {
+            const video = videos.current[next];
+            if (video && video.readyState >= 1) {
+              try { video.currentTime = Math.max(0, video.duration - .05); } catch { /* ready later */ }
+            }
+          }
         }
-        if (nextScene >= 3) placeCards(cards.current, nextScene - 3, reduced.matches);
-      }
-      if (chapter === 0 && interacted && progress > .006) {
-        const video = videos.current[0];
-        if (video && video.paused && !video.ended) {
-          video.playbackRate = 1;
-          void video.play().catch(() => {});
-        }
-      }
-    };
-
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-
-    const onScroll = () => {
-      if (window.scrollY > 5) interacted = true;
-      schedule();
-    };
-    const onTouch = () => { interacted = true; schedule(); };
-    const onWheel = (event: WheelEvent) => {
-      // Desktop gallery ONLY. Never fight native wheel or modify document scroll.
-      // Non-cancelable events are left fully to the browser.
-      if (window.innerWidth < 700 || !visible || activeScene < 3 || !event.cancelable || Math.abs(event.deltaY) < 3) return;
-      const bounds = section.getBoundingClientRect();
-      if (bounds.top > 0 || bounds.bottom < innerHeight) return;
-      const direction = Math.sign(event.deltaY);
-      if ((direction < 0 && wheelIndex === 0) || (direction > 0 && wheelIndex === projects.length - 1)) {
-        wheelControlled = false; // Natural scroll exits from either edge.
         return;
       }
-      event.preventDefault();
-      const now = performance.now();
-      if (now < wheelLockedUntil) return;
-      wheelLockedUntil = now + 850; // One gesture, one complete motion.
-      wheelControlled = true;
-      wheelIndex = Math.max(0, Math.min(projects.length - 1, wheelIndex + direction));
-      const nextScene = 3 + wheelIndex;
-      activeScene = nextScene;
-      section.dataset.scene = String(nextScene);
-      setScene(nextScene);
-      placeCards(cards.current, wheelIndex, reduced.matches);
-    };
-    const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      if (visible) schedule();
-      else {
-        cancelAnimationFrame(raf);
-        raf = 0;
-        videos.current.forEach(v => v?.pause());
+      if (position === 0 && !started) { playClip(0); return; }
+      if (position < 3 && !complete[position]) { playClip(position); return; }
+      if (position === 6) {
+        release();
+        requestAnimationFrame(() => document.getElementById('work')?.scrollIntoView({
+          behavior: reduce.matches ? 'instant' : 'smooth'
+        }));
+        return;
       }
-    }, { rootMargin: '150px' });
-    observer.observe(section);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('touchstart', onTouch, { passive: true });
+      const next = position + 1;
+      if (next === 3) {
+        const video = videos.current[2];
+        if (video && video.readyState >= 1) {
+          try { video.currentTime = Math.max(0, video.duration - .04); } catch { /* wait */ }
+        }
+      }
+      setPosition(next);
+      if (next < 3 && !complete[next]) playClip(next);
+    }
+    function onWheel(event: WheelEvent) {
+      if (released) return;
+      if (event.cancelable) event.preventDefault();
+      if (Math.abs(event.deltaY) >= 5) go(Math.sign(event.deltaY));
+    }
+    function onTouchStart(event: TouchEvent) {
+      startY = event.touches[0]?.clientY ?? 0;
+      startX = event.touches[0]?.clientX ?? 0;
+    }
+    function onTouchMove(event: TouchEvent) {
+      if (!released && event.cancelable) event.preventDefault();
+    }
+    function onTouchEnd(event: TouchEvent) {
+      if (released) return;
+      const y = event.changedTouches[0]?.clientY ?? startY;
+      const x = event.changedTouches[0]?.clientX ?? startX;
+      if (Math.abs(startY - y) > 43 && Math.abs(startY - y) > Math.abs(startX - x)) go(Math.sign(startY - y));
+    }
+    function onKey(event: KeyboardEvent) {
+      if (released || event.altKey || event.metaKey || event.ctrlKey || event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+      if (['ArrowDown','ArrowUp','PageDown','PageUp',' '].includes(event.key)) {
+        event.preventDefault();
+        go(event.key === 'ArrowUp' || event.key === 'PageUp' ? -1 : 1);
+      }
+      if (event.key === 'End') event.preventDefault();
+    }
+    function onVisibility() {
+      if (released || position >= 3 || complete[position]) return;
+      const video = videos.current[position];
+      if (document.hidden) video?.pause();
+      else if (running) void video?.play().catch(() => {});
+    }
+    const onSkip = () => release();
+    skip?.addEventListener('click', onSkip);
     window.addEventListener('wheel', onWheel, { passive: false });
-    window.addEventListener('resize', schedule);
-    const onVisibility = () => {
-      if (document.hidden) videos.current.forEach(v => v?.pause());
-      else schedule();
-    };
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    document.addEventListener('keydown', onKey);
     document.addEventListener('visibilitychange', onVisibility);
-    placeCards(cards.current, 0, reduced.matches);
-    // Fix intro initial state: first video paused at its poster / first frame until scroll.
-    const intro = videos.current[0];
-    if (intro) { intro.pause(); intro.playbackRate = 1; }
-    schedule();
-
+    node.dataset.playing = 'false';
+    setPosition(0);
     return () => {
-      cancelAnimationFrame(raf);
-      observer.disconnect();
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('touchstart', onTouch);
+      skip?.removeEventListener('click', onSkip);
+      second?.removeEventListener('loadedmetadata', primeSecond);
+      endedHandlers.forEach(fn => fn());
       window.removeEventListener('wheel', onWheel);
-      window.removeEventListener('resize', schedule);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+      document.removeEventListener('keydown', onKey);
       document.removeEventListener('visibilitychange', onVisibility);
+      document.body.style.overflow = previousBody;
+      document.documentElement.style.overflow = previousHtml;
       videos.current.forEach(v => v?.pause());
     };
   }, []);
@@ -202,7 +245,7 @@ export function FilmChapters() {
               ref={node => { videos.current[index] = node; }}
               className={'film-video film-video-' + index}
               src={source.src}
-              poster={filmPosters[index]}
+              poster={index === 1 ? undefined : filmPosters[index]}
               preload={index === 0 ? 'auto' : 'metadata'}
               playsInline muted
               onError={() => setErrors(previous => previous.map((value, k) => index === k ? true : value))}

@@ -137,3 +137,13 @@
 }
 /* Native scroll remains in full control. The project index (0–3), not the
    fractional scroll position, determines the complete 3D animation target. */
+
+
+/* V8: strict progression, no scroll-relative timeline or scene skipping. */
+.film-journey{height:100svh!important;min-height:100svh!important;}
+.film-sticky{position:fixed;inset:0;top:0;width:100vw;height:100svh;z-index:30;}
+.film-journey[data-released="true"] .film-sticky{position:relative;inset:auto;z-index:0;}
+.film-journey[data-playing="true"] .film-next{opacity:.35;}
+.film-journey[data-playing="false"] .film-next{opacity:1;}
+.film-journey .film-video{object-fit:cover;}
+@media(max-width:700px){.film-journey .film-video{object-fit:contain;}}
