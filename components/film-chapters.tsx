@@ -21,7 +21,6 @@ export function FilmChapters(){
  const root=useRef<HTMLElement>(null);
  const videos=useRef<(HTMLVideoElement|null)[]>([]);
  const cards=useRef<(HTMLAnchorElement|null)[]>([]);
- const [loaded,setLoaded]=useState<boolean[]>([false,false,false]);
  const [missing,setMissing]=useState<boolean[]>([false,false,false]);
  useEffect(()=>{
   const node=root.current;if(!node)return;
@@ -95,7 +94,6 @@ export function FilmChapters(){
   <div className="film-sticky">
    <div className="film-videos" aria-hidden="true">
     {clips.map((clip,i)=><video key={clip.src} ref={el=>{videos.current[i]=el}} className={'film-video film-video-'+i} muted playsInline preload="auto" poster={clip.poster} src={clip.src}
-      onLoadedMetadata={()=>setLoaded(prev=>prev.map((x,k)=>k===i?true:x))}
       onError={()=>setMissing(prev=>prev.map((x,k)=>k===i?true:x))}/>)}
    </div>
    <div className="film-ambient" aria-hidden="true"/>
