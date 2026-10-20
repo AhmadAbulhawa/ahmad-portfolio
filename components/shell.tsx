@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Arrow } from './icons';
 import { SiteHeader } from './site-header';
 import { person, cv } from '@/lib/content';
-export function Header() { return <SiteHeader />; }
+export function Header() { return <SiteHeader cv={cv} />; }
 export function Footer() {
   return (
     <footer className="footer wrap">

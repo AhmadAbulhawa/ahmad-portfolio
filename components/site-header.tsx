@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { cv } from '@/lib/content';
 
 const items = [
   { href: '/#work', label: 'Work', no: '01' },
@@ -10,7 +9,7 @@ const items = [
   { href: '/#contact', label: 'Contact', no: '03' },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ cv }: { cv?: string }) {
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
