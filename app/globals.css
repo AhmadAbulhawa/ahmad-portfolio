@@ -443,43 +443,30 @@ p {
   height: auto;
   box-shadow: 0 25px 65px #0008;
 }
-/* Personal spread */
+/* Personal spread — lightweight, image-free editorial layout */
 .about {
-  display: grid;
-  grid-template-columns: 1fr 1.08fr;
+  display: block;
   padding: 0;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
-.about-portrait {
-  position: relative;
-  overflow: hidden;
-  min-height: 900px;
-}
-.about-portrait img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-  object-position: 51% 30%;
-}
-.about-portrait:after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #070b1000 25%, #070b1040 60%, #070b10d9);
-}
-.portrait-caption {
-  position: absolute;
-  bottom: 45px;
-  left: var(--gutter);
-  z-index: 1;
-  font-size: 10px;
-  letter-spacing: 0.15em;
-  line-height: 1.8;
-}
 .about-editorial {
-  padding: 80px clamp(30px, 5.3vw, 100px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: start;
+  column-gap: clamp(36px, 7vw, 150px);
+  row-gap: 24px;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding: clamp(90px, 9vw, 150px) var(--gutter);
   background: radial-gradient(ellipse at 100% 15%, #13152a, transparent 55%);
+}
+.about-editorial > .section-label,
+.about-editorial > .education {
+  grid-column: 1 / -1;
+}
+.about-editorial > .about-prose {
+  padding-top: 38px;
 }
 .about-editorial h2 {
   font-size: clamp(52px, 6.1vw, 100px);
@@ -1152,11 +1139,9 @@ p {
     gap: 35px;
     grid-template-columns: 0.7fr 1fr;
   }
-  .about-portrait {
-    min-height: 800px;
-  }
   .about-editorial {
-    padding: 60px 35px;
+    padding: 70px var(--gutter);
+    column-gap: 36px;
   }
   .about-editorial h2 {
     font-size: 66px;
@@ -1350,23 +1335,12 @@ p {
   .cis-art {
     padding: 15px;
   }
-  .about {
-    display: flex;
-    flex-direction: column;
-  }
-  .about-portrait {
-    min-height: 0;
-    height: 520px;
-  }
-  .about-portrait img {
-    object-position: 50% 35%;
-  }
-  .portrait-caption {
-    bottom: 30px;
-    font-size: 8px;
-  }
   .about-editorial {
-    padding: 45px var(--gutter) 50px;
+    display: block;
+    padding: 65px var(--gutter) 75px;
+  }
+  .about-editorial > .about-prose {
+    padding-top: 0;
   }
   .about-editorial h2 {
     font-size: clamp(60px, 15vw, 90px);
