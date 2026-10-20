@@ -1,147 +1,233 @@
 'use client';
+
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { filmSources } from '@/lib/film-sources';
 
-const clips = [
-  {src:'/films/01-goggles-on.mp4',poster:'/projects/ahmad-firnlight-hero.webp',start:.00,end:.23, duration:3.1767},
-  {src:'/films/02-dissolve.mp4',poster:'/projects/ahmad-firnlight-hero.webp',start:.23,end:.53,duration:8},
-  {src:'/films/03-shatter.mp4',poster:'/projects/ahmad-firnlight-hero.webp',start:.53,end:.83,duration:8},
-];
-const projects=[
- {name:'Munjiz',tag:'AI / PRODUCT DESIGN',slug:'munjiz',image:'/projects/munjiz-arrival.webp'},
- {name:'Garage Tahmeen',tag:'FRONTEND / MOTION',slug:'garage-tahmeen',image:'/projects/garage-tahmeen-drive.webp'},
- {name:'AqarAI',tag:'SPATIAL AI',slug:'aqar-ai',image:'/projects/aqar-poster.webp'},
- {name:'CISmate',tag:'MOBILE / ACADEMIC PLANNING',slug:'cismate',image:'/projects/cismate-planner.webp'},
+const projects = [
+  { name: 'Munjiz', tag: 'AI / PRODUCT DESIGN', slug: 'munjiz', image: '/projects/munjiz-arrival.webp' },
+  { name: 'Garage Tahmeen', tag: 'FRONTEND / MOTION', slug: 'garage-tahmeen', image: '/projects/garage-tahmeen-drive.webp' },
+  { name: 'AqarAI', tag: 'SPATIAL AI', slug: 'aqar-ai', image: '/projects/aqar-poster.webp' },
+  { name: 'CISmate', tag: 'MOBILE / STUDENT PLANNING', slug: 'cismate', image: '/projects/cismate-planner.webp' },
 ] as const;
-const clamp=(n:number)=>Math.max(0,Math.min(1,n));
-const smooth=(n:number)=>{const x=clamp(n);return x*x*(3-2*x);};
-const segment=(n:number,a:number,b:number)=>smooth((n-a)/(b-a));
 
-export function FilmChapters(){
- const root=useRef<HTMLElement>(null);
- const videos=useRef<(HTMLVideoElement|null)[]>([]);
- const cards=useRef<(HTMLAnchorElement|null)[]>([]);
- const [missing,setMissing]=useState<boolean[]>([false,false,false]);
- const [available,setAvailable]=useState<boolean[]>([false,false,false]);
- useEffect(()=>{
-  let canceled=false;
-  Promise.all(clips.map(async c=>{try{const r=await fetch(c.src,{method:'HEAD'});return r.ok;}catch{return false;}})).then(results=>{
-   if(canceled)return;
-   setAvailable(results);
-   setMissing(results.map(x=>!x));
-  });
-  return()=>{canceled=true};
- },[]);
- useEffect(()=>{
-  const node=root.current;if(!node)return;
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-  let raf=0,current=0,target=0,lastActive=-1,visible=true;
-  const update=()=>{
-   const rect=node.getBoundingClientRect();
-   target=clamp(-rect.top/Math.max(1,rect.height-innerHeight));
-   if(!raf)raf=requestAnimationFrame(render);
-  };
-  const render=()=>{
-   raf=0;
-   if(!visible||document.hidden)return;
-   current=reduced.matches?0:current+(target-current)*.24;
-   if(Math.abs(target-current)<.0009)current=target;
-   const p=current;
-   node.style.setProperty('--film-scroll',String(p));
-   const chapter=p<.23?0:p<.53?1:p<.83?2:3;
-   node.dataset.chapter=String(chapter);
-   clips.forEach((clip,i)=>{
-    const v=videos.current[i];if(!v||v.readyState<1)return;
-    const phase=clamp((p-clip.start)/(clip.end-clip.start));
-    // Scroll is the timeline. Speeding a clip here means shortening its scroll distance, not autoplay.
-    const wanted=Math.min(Math.max(0,v.duration-.045),phase*clip.duration);
-    if(Math.abs(v.currentTime-wanted)>.06){
-      try {v.currentTime=wanted;}catch {/* browser not seekable yet */ }
-    }
-    if(!v.paused)v.pause();
-   });
-   node.style.setProperty('--scene-1',String((1-segment(p,.20,.27))));
-   node.style.setProperty('--scene-2',String(segment(p,.19,.26)*(1-segment(p,.50,.56))));
-   node.style.setProperty('--scene-3',String(segment(p,.49,.56)*(1-segment(p,.80,.86))));
-   node.style.setProperty('--film-name',String(1-segment(p,.14,.22)));
-   node.style.setProperty('--film-quote',String(segment(p,.29,.36)*(1-segment(p,.46,.52))));
-   node.style.setProperty('--film-break',String(segment(p,.60,.69)*(1-segment(p,.77,.83))));
-   const gallery=segment(p,.80,.87);
-   node.style.setProperty('--film-gallery',String(gallery));
-   const arc=segment(p,.83,1);
-   const vw=Math.min(innerWidth,1200);
-   const radius=Math.min(vw*.4,440);
-   cards.current.forEach((card,i)=>{
-    if(!card)return;
-    // Cards advance around a true cylindrical helix rather than scaling in a flat row.
-    const angle=i*Math.PI*.54+arc*Math.PI*2.25-Math.PI*.55;
-    const x=Math.sin(angle)*radius;
-    const z=Math.cos(angle)*radius;
-    const y=(i-1.5)*150-(arc*550);
-    const scale=.55+(z+radius)/(2*radius)*.55;
-    card.style.transform='translate3d(calc(-50% + '+x.toFixed(1)+'px),calc(-50% + '+y.toFixed(1)+'px),'+z.toFixed(1)+'px) rotateY('+(-angle*180/Math.PI).toFixed(1)+'deg) scale('+scale.toFixed(3)+')';
-    card.style.zIndex=String(Math.round(z+radius));
-    card.tabIndex=gallery>.94?0:-1;
-    card.style.pointerEvents=gallery>.94?'auto':'none';
-   });
-   if(chapter!==lastActive){lastActive=chapter;}
-   if(Math.abs(target-current)>.0009)raf=requestAnimationFrame(render);
-  };
-  const observer=new IntersectionObserver(([entry])=>{
-   visible=entry.isIntersecting;
-   if(visible)update();
-   else {cancelAnimationFrame(raf);raf=0;}
-  },{rootMargin:'200px'});
-  observer.observe(node);
-  window.addEventListener('scroll',update,{passive:true});
-  window.addEventListener('resize',update);
-  const onVisibility=()=>{if(!document.hidden)update()};
-  document.addEventListener('visibilitychange',onVisibility);
-  update();
-  return()=>{cancelAnimationFrame(raf);observer.disconnect();window.removeEventListener('scroll',update);window.removeEventListener('resize',update);document.removeEventListener('visibilitychange',onVisibility);};
- },[]);
- return <section ref={root} className="film-journey" id="intro" aria-label="Ahmad's cinematic project story">
-  <div className="film-sticky">
-   <div className="film-videos" aria-hidden="true">
-    {clips.map((clip,i)=><video key={clip.src} ref={el=>{videos.current[i]=el}} className={'film-video film-video-'+i} muted playsInline preload="auto" poster={clip.poster} src={available[i]?clip.src:undefined}
-      onError={()=>setMissing(prev=>prev.map((x,k)=>k===i?true:x))}/>)}
-   </div>
-   <div className="film-ambient" aria-hidden="true"/>
-   <div className="film-name">
-    <span className="film-micro">FULL-STACK ENGINEER · AI · CREATIVE DEVELOPMENT</span>
-    <h1>AHMAD <em>ABULHAWA.</em></h1>
-    <span className="film-scroll-cue">SCROLL TO BEGIN ↓</span>
-   </div>
-   <div className="film-quote">
-    <span className="film-micro">01 / DESIGN PHILOSOPHY</span>
-    <blockquote>“Design isn&apos;t just what you see.<br/><em>It&apos;s what you make possible.</em>”</blockquote>
-    <p>From meaningful interfaces to intelligent products — each project is a new way to solve something real.</p>
-   </div>
-   <div className="film-break">
-     <span className="film-micro">02 / THE BREAKTHROUGH</span>
-     <p>BREAK THE EXPECTED.<br/><em>BUILD THE NEXT.</em></p>
-   </div>
-   <div className="film-gallery">
-     <header><span>03 / SELECTED WORK</span><span>SCROLL THROUGH THE HELIX ↓</span></header>
-     <div className="film-helix" role="group" aria-label="Choose a project">
-      {projects.map((project,i)=><Link key={project.slug} href={'/projects/'+project.slug+'/'} prefetch={false}
-       ref={el=>{cards.current[i]=el}}
-       className="film-glass-card" tabIndex={-1} aria-label={'Explore '+project.name+' project'}>
-        <div className="film-card-art" style={{backgroundImage:'url('+project.image+')'}}/>
-        <div className="film-card-info"><span>{project.tag}</span><strong>{project.name}</strong><span>VIEW PROJECT ↗</span></div>
-       </Link>)}
-     </div>
-     <Link href="#work" className="film-explore-all">ALL PROJECTS ↘</Link>
-   </div>
-   {(missing.some(Boolean))&&<p className="film-media-warning" role="status">The cinematic video files are still being attached to this preview. The interactive work gallery is available below.</p>}
-   <div className="film-dots" aria-hidden="true"><span>01</span><span>02</span><span>03</span><span>04</span></div>
-   <a className="film-skip" href="#work">SKIP INTRO ↗</a>
-  </div>
-  <div className="film-sr-notes sr-only">
-   <p>Scroll chapter one: Ahmad Abulhawa puts on his goggles.</p>
-   <p>Scroll chapter two: a quote about design and a transition into the project philosophy.</p>
-   <p>Scroll chapter three: the goggles shatter into iridescent glass.</p>
-   <p>Scroll chapter four: select from four interactive project case studies in a 3D spiral gallery.</p>
-  </div>
- </section>;
+// A whole scrolling chapter per sentence. Video playback is not scrubbed or seeked
+// with scroll position; it runs once at 1.5x when its chapter becomes active.
+const story = [
+  { chapter: 0, eyebrow: 'INTRODUCTION / 01', line: 'AHMAD', emphasis: 'ABULHAWA.', detail: 'Full-stack developer. AI engineering. Visual experiences.' },
+  { chapter: 0, eyebrow: 'THE WAY I THINK / 02', line: 'THOUGHTFUL', emphasis: 'BY DESIGN.', detail: 'Every experience starts with one bold idea.' },
+  { chapter: 0, eyebrow: 'THE WAY I BUILD / 03', line: 'BUILT TO WORK.', emphasis: 'MADE TO FEEL.', detail: 'Beautiful is good. Beautiful and useful is better.' },
+  { chapter: 1, eyebrow: 'THE PHILOSOPHY / 04', line: 'DESIGN IS', emphasis: 'A FEELING.', detail: 'More than pixels. More than a pretty interface.' },
+  { chapter: 1, eyebrow: 'THE PHILOSOPHY / 05', line: 'BEYOND', emphasis: 'WHAT YOU SEE.', detail: 'The best solutions make complex things feel simple.' },
+  { chapter: 1, eyebrow: 'THE PHILOSOPHY / 06', line: 'THE EXPERIENCE / 06', emphasis: 'IS WHAT MATTERS.', detail: 'Four real projects. Four different challenges. One obsession with detail.' },
+  { chapter: 2, eyebrow: 'THE SHIFT / 07', line: 'BREAK THE', emphasis: 'EXPECTED.', detail: 'The next idea begins where the ordinary ends.' },
+  { chapter: 2, eyebrow: 'THE SHIFT / 08', line: 'SHATTER', emphasis: 'THE ORDINARY.', detail: 'Watch a single vision become a thousand possibilities.' },
+  { chapter: 2, eyebrow: 'THE REVEAL / 09', line: 'NOW EXPLORE', emphasis: 'THE WORK.', detail: 'Every piece leads somewhere different.' },
+] as const;
+
+const STEP_COUNT = 17;
+const clamp = (value: number) => Math.max(0, Math.min(1, value));
+const smoother = (value: number) => {
+  const x = clamp(value);
+  return x * x * (3 - 2 * x);
+};
+
+export function FilmChapters() {
+  const root = useRef<HTMLElement>(null);
+  const videos = useRef<(HTMLVideoElement | null)[]>([]);
+  const cards = useRef<(HTMLAnchorElement | null)[]>([]);
+  const [step, setStep] = useState(0);
+  const [videoError, setVideoError] = useState<boolean[]>([false, false, false]);
+
+  useEffect(() => {
+    const section = root.current;
+    if (!section) return;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    let requestId = 0;
+    let current = 0;
+    let target = 0;
+    let lastChapter = -1;
+    let lastStep = -1;
+    let isVisible = true;
+    let previousGallery = false;
+
+    const readScroll = () => {
+      const bounds = section.getBoundingClientRect();
+      target = clamp(-bounds.top / Math.max(1, bounds.height - window.innerHeight));
+      if (!requestId) requestId = requestAnimationFrame(render);
+    };
+
+    const render = () => {
+      requestId = 0;
+      if (!isVisible || document.hidden) return;
+      current = reduced.matches ? target : current + (target - current) * .25;
+      if (Math.abs(target - current) < .0006) current = target;
+      const progress = current;
+      const nextStep = Math.min(STEP_COUNT - 1, Math.floor(progress * STEP_COUNT));
+      const chapter = nextStep <= 2 ? 0 : nextStep <= 5 ? 1 : nextStep <= 8 ? 2 : 3;
+      section.dataset.chapter = String(chapter);
+      section.dataset.step = String(nextStep);
+
+      if (nextStep !== lastStep) {
+        lastStep = nextStep;
+        setStep(nextStep);
+      }
+
+      // Only play the active cinematic shot, at 1.5x speed, once on chapter entry.
+      // No frame-by-frame seeking with the wheel.
+      if (chapter !== lastChapter) {
+        lastChapter = chapter;
+        videos.current.forEach((video, index) => {
+          if (!video) return;
+          video.pause();
+          video.playbackRate = 1.5;
+          if (index === chapter) {
+            if (video.ended || video.currentTime > .15) {
+              try { video.currentTime = 0; } catch { /* browser loading */ }
+            }
+            void video.play().catch(() => { /* user scroll retries on supported mobile browsers */ });
+          } else if (chapter === 3 && index === 2 && video.readyState >= 1) {
+            // Match the end frame of the shattered-glass clip behind the live 3D helix.
+            try { video.currentTime = Math.max(0, video.duration - .08); } catch { /* browser loading */ }
+          }
+        });
+      } else if (chapter < 3) {
+        const active = videos.current[chapter];
+        if (active && active.paused && !active.ended && active.readyState >= 2) {
+          void active.play().catch(() => {});
+        }
+      }
+
+      const gallery = chapter === 3;
+      const galleryProgress = clamp((progress - 9 / STEP_COUNT) / (8 / STEP_COUNT));
+      const galleryReveal = smoother(galleryProgress * 7);
+      section.style.setProperty('--gallery-reveal', String(galleryReveal));
+      section.style.setProperty('--film-scroll', String(progress));
+
+      if (gallery !== previousGallery) previousGallery = gallery;
+      const vw = Math.min(window.innerWidth, 1150);
+      const radius = Math.min(vw * .33, 355);
+      // One leisurely helical orbit, spread over EIGHT scroll screens instead
+      // of racing around the whole ring in ~one screen.
+      const arc = galleryProgress * Math.PI * 1.12;
+      const mobile = window.innerWidth < 700;
+      cards.current.forEach((card, index) => {
+        if (!card) return;
+        const a = index * Math.PI * .53 + arc - Math.PI * .45;
+        const x = Math.sin(a) * radius;
+        const z = Math.cos(a) * radius;
+        const y = (index - 1.5) * (mobile ? 110 : 150) - galleryProgress * (mobile ? 180 : 240);
+        const scale = .62 + ((z + radius) / (2 * radius)) * .28;
+        card.style.transform =
+          'translate3d(calc(-50% + ' + x.toFixed(1) + 'px),calc(-50% + ' + y.toFixed(1) +
+          'px),' + z.toFixed(1) + 'px) rotateY(' + (-a * 180 / Math.PI).toFixed(1) +
+          'deg) scale(' + scale.toFixed(3) + ')';
+        card.style.zIndex = String(Math.round(z + radius));
+        card.style.pointerEvents = gallery ? 'auto' : 'none';
+        card.tabIndex = gallery ? 0 : -1;
+      });
+
+      if (Math.abs(target - current) > .0006) requestId = requestAnimationFrame(render);
+    };
+
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+      if (isVisible) readScroll();
+      else {
+        cancelAnimationFrame(requestId);
+        requestId = 0;
+        videos.current.forEach(video => video?.pause());
+      }
+    }, { rootMargin: '200px' });
+
+    observer.observe(section);
+    window.addEventListener('scroll', readScroll, { passive: true });
+    window.addEventListener('resize', readScroll);
+    const onVisible = () => { if (!document.hidden) readScroll(); else videos.current.forEach(v => v?.pause()); };
+    document.addEventListener('visibilitychange', onVisible);
+    readScroll();
+
+    return () => {
+      cancelAnimationFrame(requestId);
+      observer.disconnect();
+      videos.current.forEach(video => video?.pause());
+      window.removeEventListener('scroll', readScroll);
+      window.removeEventListener('resize', readScroll);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, []);
+
+  const activeStory = story[Math.min(8, step)];
+  const gallery = step >= 9;
+
+  return (
+    <section ref={root} className="film-journey" id="intro" aria-label="Ahmad's cinematic portfolio">
+      <div className="film-sticky">
+        <div className="film-videos" aria-hidden="true">
+          {filmSources.map((clip, index) => (
+            <video
+              key={clip.role}
+              ref={node => { videos.current[index] = node; }}
+              className={'film-video film-video-' + index}
+              src={clip.src}
+              muted
+              playsInline
+              preload={index === 0 ? 'auto' : 'metadata'}
+              onError={() => setVideoError(previous => previous.map((failed, k) => k === index ? true : failed))}
+            />
+          ))}
+        </div>
+        <div className="film-ambient" aria-hidden="true" />
+
+        {!gallery && (
+          <div key={step} className="film-sentence" aria-live="polite">
+            <span className="film-micro">{activeStory.eyebrow}</span>
+            <h1>{activeStory.line}<br /><em>{activeStory.emphasis}</em></h1>
+            <p>{activeStory.detail}</p>
+            <span className="film-next">KEEP SCROLLING ↓</span>
+          </div>
+        )}
+
+        <div className="film-gallery" aria-hidden={!gallery}>
+          <header>
+            <span>SELECTED WORK / 04</span>
+            <span>SCROLL SLOWLY · CHOOSE A PROJECT ↗</span>
+          </header>
+          <div className="film-helix" role="group" aria-label="Interactive glass project helix">
+            {projects.map((project, index) => (
+              <Link
+                key={project.slug}
+                href={'/projects/' + project.slug + '/'}
+                prefetch={false}
+                ref={node => { cards.current[index] = node; }}
+                className="film-glass-card"
+                tabIndex={-1}
+                aria-label={'Explore ' + project.name + ' project'}
+              >
+                <div className="film-card-art" style={{ backgroundImage: 'url(' + project.image + ')' }} />
+                <div className="film-card-info">
+                  <span>{project.tag}</span>
+                  <strong>{project.name}</strong>
+                  <span>EXPLORE CASE STUDY ↗</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+          <span className="film-gallery-hint">THE IDEAS BEHIND THE GLASS.</span>
+          <Link href="#work" className="film-explore-all">ALL PROJECTS ↘</Link>
+        </div>
+
+        {videoError.some(Boolean) && (
+          <p className="film-media-warning" role="status">A cinematic clip is temporarily unavailable. You can still explore the projects below.</p>
+        )}
+        <div className="film-dots" aria-hidden="true">
+          <span className={step < 3 ? 'active' : ''}>01</span>
+          <span className={step >= 3 && step < 6 ? 'active' : ''}>02</span>
+          <span className={step >= 6 && step < 9 ? 'active' : ''}>03</span>
+          <span className={step >= 9 ? 'active' : ''}>04</span>
+        </div>
+        <a className="film-skip" href="#work">SKIP INTRO ↗</a>
+      </div>
+    </section>
+  );
 }

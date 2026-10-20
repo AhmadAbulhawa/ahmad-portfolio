@@ -2,7 +2,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Arrow } from '@/components/icons';
 import { Motion } from '@/components/motion';
-import { FirnlightMotion } from '@/components/firnlight-motion';
 import { FilmChapters } from '@/components/film-chapters';
 import { VideoPlayer } from '@/components/video-player';
 import { Contact } from '@/components/shell';
@@ -15,7 +14,6 @@ export default function Home() {
     <>
       <Motion />
       <main id="main-content">
-        <FirnlightMotion />
         <FilmChapters />
         <section className="work wrap section" data-motion-section id="work" aria-labelledby="work-title">
           <div className="section-top">
