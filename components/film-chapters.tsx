@@ -22,6 +22,16 @@ export function FilmChapters(){
  const videos=useRef<(HTMLVideoElement|null)[]>([]);
  const cards=useRef<(HTMLAnchorElement|null)[]>([]);
  const [missing,setMissing]=useState<boolean[]>([false,false,false]);
+ const [available,setAvailable]=useState<boolean[]>([false,false,false]);
+ useEffect(()=>{
+  let canceled=false;
+  Promise.all(clips.map(async c=>{try{const r=await fetch(c.src,{method:'HEAD'});return r.ok;}catch{return false;}})).then(results=>{
+   if(canceled)return;
+   setAvailable(results);
+   setMissing(results.map(x=>!x));
+  });
+  return()=>{canceled=true};
+ },[]);
  useEffect(()=>{
   const node=root.current;if(!node)return;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -93,7 +103,7 @@ export function FilmChapters(){
  return <section ref={root} className="film-journey" id="intro" aria-label="Ahmad's cinematic project story">
   <div className="film-sticky">
    <div className="film-videos" aria-hidden="true">
-    {clips.map((clip,i)=><video key={clip.src} ref={el=>{videos.current[i]=el}} className={'film-video film-video-'+i} muted playsInline preload="auto" poster={clip.poster} src={clip.src}
+    {clips.map((clip,i)=><video key={clip.src} ref={el=>{videos.current[i]=el}} className={'film-video film-video-'+i} muted playsInline preload="auto" poster={clip.poster} src={available[i]?clip.src:undefined}
       onError={()=>setMissing(prev=>prev.map((x,k)=>k===i?true:x))}/>)}
    </div>
    <div className="film-ambient" aria-hidden="true"/>
