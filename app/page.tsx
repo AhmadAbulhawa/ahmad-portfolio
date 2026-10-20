@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Arrow, Asterisk } from '@/components/icons';
 import { Motion } from '@/components/motion';
+import { HeroWorld } from '@/components/hero-world';
 import { VideoPlayer } from '@/components/video-player';
 import { Contact } from '@/components/shell';
 import { munjizClips } from '@/lib/films';
@@ -13,7 +14,8 @@ export default function Home() {
     <>
       <Motion />
       <main id="main-content">
-        <section className="hero wrap" aria-labelledby="hero-title">
+        <section className="hero wrap hero--immersive" aria-labelledby="hero-title">
+          <HeroWorld />
           <div className="hero-eyebrow section-label">
             <span className="status-dot" /> CREATIVE FRONTEND · FULL-STACK · AI
           </div>
