@@ -1,16 +1,16 @@
-# Firnlight-inspired portfolio UI (prototype branch)
-The owner selected https://www.scrolltide.co/templates/firnlight as a visual and motion reference.
-This is an original implementation, not a copy of the paid Scrolltide source.
+# Firnlight-inspired portfolio v2: actual chapters
+Creative reference: https://www.scrolltide.co/templates/firnlight. This is an original, self-contained implementation rather than a copy of Scrolltide premium source.
 
-- Scroll-driven sticky hero with a snow portrait and a camera-like push-in.
-- Fade to black and project-chapter reveal, with the work section immediately following.
-- Monochrome winter palette replaces the old lime/green styling.
-- Responsive navigation and full-page mobile overlay.
-- Videos now play inline on click; the previous full-screen video dialog is gone.
-- Source case studies, real project text, contact links and CV are preserved.
-- No scroll hijacking; reduced-motion accessible fallback; scroll animation only runs while a user scrolls.
-- Approved snow portrait visual is embedded at /projects/ahmad-firnlight-hero.webp (compressed static WebP preview).
-- Unused first-iteration ThreeUI shader prototype was retired from this branch. The animated action in Firnlight's original film was not copied: a real multi-frame wardrobe/goggle animation would require an approved frame sequence or filmed footage.
+1. Snow portrait fills the editorial cover.
+2. Native scroll scrubs the portrait/camera-like push and matte-to-black transition.
+3. Three actual portfolio stills emerge from the dark in a CSS-3D visual gallery.
+4. The gallery rotates/fans out, then transitions into an explicit chapter.
+5. Existing four real project case studies now use a coherent icy editorial direction (the fourth lives in its own CISmate showcase).
+6. Project videos still play inline, no pop-ups. Menu remains mobile friendly.
+7. Reduced motion bypasses the scrub, retaining all navigable content.
+
+This proof uses a real layered CSS 3D illusion with stills and native scrolling. It does NOT falsely represent the owner's image as actual filmed goggle-motion frames. True photorealistic pose changes would require a separately produced frame sequence.
+
+A high-resolution snow image replacement is required because the initial 4KB source was incorrectly compressed. Review face framing on mobile separately.
 
 Validation: npm ci && npm run lint && npm run typecheck && npm run build.
-Test on real iOS Safari and desktop browsers before merging main.

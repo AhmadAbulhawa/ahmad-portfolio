@@ -38,7 +38,24 @@ export default function Home() {
             <div className="firn-reveal" aria-hidden="true">
               <span>01 / THE INTRO</span>
               <p>IDEAS COME<br /><em>TO LIFE.</em></p>
-              <span>SCROLL INTO SELECTED WORK ↓</span>
+              <span>DISCOVER THE WORK ↓</span>
+            </div>
+            <div className="firn-showcase" aria-hidden="true">
+              <div className="firn-showcase-halo" />
+              <div className="firn-cinema-card firn-cinema-card--left">
+                <div className="firn-card-image firn-card-image--aqar" />
+                <span>AQARAI / INTELLIGENT DESIGN</span>
+              </div>
+              <div className="firn-cinema-card firn-cinema-card--center">
+                <div className="firn-card-image firn-card-image--munjiz" />
+                <span>MUNJIZ / AI WORKFLOWS</span>
+              </div>
+              <div className="firn-cinema-card firn-cinema-card--right">
+                <div className="firn-card-image firn-card-image--garage" />
+                <span>GARAGE TAHMEEN / MOTION</span>
+              </div>
+              <p className="firn-showcase-title">THE WORK <em>BEHIND THE VISION.</em></p>
+              <span className="firn-showcase-count">03 / 04 — SELECTED PROJECTS</span>
             </div>
             <a className="firn-skip" href="#work">Skip intro <span aria-hidden="true">↗</span></a>
           </div>
@@ -46,13 +63,13 @@ export default function Home() {
         <div className="firn-chapter" aria-hidden="true">
           <span>02 — THE WORK</span>
           <p>REAL PROJECTS.<br /><em>REAL PROBLEMS SOLVED.</em></p>
-          <span>FOUR SELECTED CASE STUDIES ↓</span>
+          <span>FOUR PROJECTS. ONE CREATIVE JOURNEY. ↓</span>
         </div>
 
         <section className="work wrap section" id="work" aria-labelledby="work-title">
           <div className="section-top">
             <div className="section-label">
-              <span className="tiny-cross">+</span> SELECTED WORK / 01—03
+              <span className="tiny-cross">+</span> SELECTED WORK / 01—04
             </div>
             <span className="section-aside">Different problems. One attention to detail.</span>
           </div>
@@ -61,7 +78,7 @@ export default function Home() {
             <br />
             <em>Made to feel.</em>
           </h2>
-          <article className="project garage-project" aria-labelledby="garage-title" data-reveal>
+          <article className="project garage-project firn-feature" data-motion-project aria-labelledby="garage-title" data-reveal>
             {garageClips[0] ? (
               <VideoPlayer {...garageClips[0]} />
             ) : (
@@ -114,7 +131,7 @@ export default function Home() {
           </article>
 
           <article
-            className="project munjiz-project"
+            className="project munjiz-project firn-feature" data-motion-project
             id="munjiz"
             aria-labelledby="munjiz-title"
             data-reveal
@@ -163,7 +180,7 @@ export default function Home() {
             </div>
           </article>
 
-          <article className="project aqar-project" aria-labelledby="aqar-title" data-reveal>
+          <article className="project aqar-project firn-feature" data-motion-project aria-labelledby="aqar-title" data-reveal>
             <div className="aqar-top">
               <span className="section-label">03 / SPATIAL INTELLIGENCE</span>
               <span className="section-label">A ROOM. RECONSIDERED.</span>
@@ -211,7 +228,7 @@ export default function Home() {
               The same curiosity.
             </h2>
           </div>
-          <Link prefetch={false} className="cis-card" href="/projects/cismate/">
+          <Link prefetch={false} className="cis-card firn-feature" data-motion-project href="/projects/cismate/">
             <div className="cis-preview">
               <Image
                 src="/projects/cismate-planner-thumb.webp"
