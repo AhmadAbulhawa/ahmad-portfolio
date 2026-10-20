@@ -19,7 +19,7 @@ try {
     { name: 'desktop', width: 1280, height: 800 },
     { name: 'mobile', width: 390, height: 844 },
     { name: 'mobile-fallback', width: 390, height: 844, fallback: true },
-  ]) {
+  ].filter((setup) => !process.env.QA_VIEWPORT || setup.name === process.env.QA_VIEWPORT)) {
     const context = await browser.newContext({ viewport: setup, deviceScaleFactor: 1 });
     if (setup.fallback)
       await context.addInitScript(() => {
@@ -40,7 +40,7 @@ try {
     await page.waitForFunction(() => document.querySelector('.film-hold')?.dataset.frame);
     // Compare only the cinematic image. Typography and gallery animation have
     // separate visual coverage and must not mask a one-frame poster flash.
-    await page.addStyleTag({ content: `
+    const imageOnly = await page.addStyleTag({ content: `
       .film-stage > :not(.film-surface), .firn-header { visibility: hidden !important; }
     ` });
     const gesture = async (direction) => {
@@ -147,6 +147,22 @@ try {
     await gesture(1); // gallery keeps the final shatter frame behind its entrance
     await page.waitForFunction(() =>
       document.querySelector('.film-journey')?.dataset.phase === 'gallery');
+    await imageOnly.evaluate((style) => { style.disabled = true; });
+    await page.waitForTimeout(900);
+    await page.screenshot({ path: path.join(output, `${setup.name}-gallery-background.png`) });
+    await imageOnly.evaluate((style) => { style.disabled = false; });
+    const galleryStyle = await page.addStyleTag({ content: `
+      .film-stage > .film-gallery { visibility: visible !important; }
+      .film-gallery * { visibility: hidden !important; }
+    ` });
+    const galleryFrame = await shot();
+    await page.locator('.film-hold').evaluate((canvas) => { canvas.style.opacity = '0'; });
+    const withoutFrame = await shot();
+    await page.locator('.film-hold').evaluate((canvas) => { canvas.style.opacity = '1'; });
+    const galleryDifference = await pixels(galleryFrame, withoutFrame);
+    assert.ok(galleryDifference.mean > 2 && galleryDifference.changed > 0.05,
+      'The gallery must visibly retain the last film frame behind its transparent atmosphere');
+    await galleryStyle.evaluate((style) => style.remove());
     await transition('03-shatter-reverse.mp4', -1);
     await finish();
     await transition('02-dissolve-reverse.mp4', -1);

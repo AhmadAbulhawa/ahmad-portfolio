@@ -177,7 +177,7 @@
   position: absolute;
   inset: 0;
   z-index: 3;
-  background: radial-gradient(ellipse at 50% 50%, #19213588, transparent 65%), #060a10;
+  background: radial-gradient(ellipse at 50% 50%, #19213566, #060a1070 80%);
   animation: gallery-enter 0.8s both;
 }
 .spiral-world {
