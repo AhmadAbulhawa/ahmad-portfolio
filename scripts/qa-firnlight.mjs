@@ -82,6 +82,11 @@ for (const setup of setups) {
  assert.match(next,/calc\(-50% \+ 0(?:\.0+)?px\)/,'Second project must be precisely centered');
  const past=await cards.nth(0).evaluate(el=>Number(el.dataset.helixRelative));
  assert.ok(past<-.98&&past> -1.02,'Prior project must move above and behind, not wrap below');
+ const oldOpacity=await cards.nth(0).evaluate(el=>Number(el.style.opacity));
+ assert.equal(oldOpacity,0,'Previous project should be hidden above the staircase');
+ const future=await cards.nth(2).evaluate(el=>({x:el.style.transform,relative:Number(el.dataset.helixRelative)}));
+ assert.ok(future.relative>.98,'Upcoming project should be one descending stair lower');
+
  await page.waitForTimeout(1150);
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-glass-stair.png'});
  await page.waitForTimeout(1250);

@@ -281,3 +281,8 @@ body:has(.film-journey) .firn-mobile-panel a>span{color:#a1c2f6;}
   .film-gallery-hint{bottom:11%;max-width:57%;font-size:10px;}
   .film-explore-all{bottom:5%;}
 }
+
+/* V11.1 — foreground card heads the circular staircase. Other cards
+   descend immediately below and slightly around its edge, not far to the side. */
+.film-gallery-hint{z-index:8;}
+.film-glass-card{box-shadow:0 24px 90px #000d,0 0 24px #091a2b;transform-style:preserve-3d;}

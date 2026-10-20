@@ -36,14 +36,14 @@ function drawHelix(cards: (HTMLAnchorElement | null)[], position: number) {
     const relative = index - position; // Signed: never modulo / teleport.
     const radians = relative * .96;
     const distance = Math.abs(relative);
-    const x = Math.sin(radians) * radius * .86;
+    const x = Math.sin(radians) * radius * .43;
     const y = relative * step;
     const z = (Math.cos(radians) - 1) * radius * .66 - distance * (mobile ? 82 : 100);
     const angle = -Math.sin(radians) * 37;
     const size = Math.max(.54, 1 - distance * .16);
-    const alpha = relative < -.05
-      ? Math.max(0, .65 - distance * .36)
-      : Math.max(.43, 1 - distance * .16);
+    const alpha = relative < 0
+      ? Math.max(0, 1 - distance * 1.10)
+      : Math.max(.56, 1 - distance * .13);
     // At an integer position the selected panel is x=0, y=0,
     // z=0, rotateY=0 and scale=1, literally facing the screen.
     card.style.transform =
