@@ -39,6 +39,7 @@ for (const scenario of cases) {
   assert.equal(await gallery.evaluate(el => el.inert), false, scenario.name+' gallery must be interactive at the projects chapter');
   assert.equal(await gallery.locator('a[href^="/projects/"]').count(),4, 'All four projects must be selectable');
   await gallery.getByRole('link',{name:'Open Munjiz case study'}).click();
+  await page.waitForURL(/\/projects\/munjiz\/?$/, {timeout:10000});
   assert.match(page.url(), /\/projects\/munjiz\/?$/, 'Floating card must open its project');
   await page.goto('http://127.0.0.1:3000/', {waitUntil:'networkidle'});
 
