@@ -65,7 +65,7 @@ export function FilmChapters() {
         node.dataset.chapter = String(state.chapter);
       },
       undefined,
-      new FrameHandoff(media, canvas),
+      new FrameHandoff(media, canvas, node.querySelector<HTMLImageElement>('.film-poster') ?? undefined),
     );
     controller.current = player;
     const pageContent = document.querySelector<HTMLElement>('[data-portfolio-content]');
@@ -258,6 +258,14 @@ export function FilmChapters() {
       aria-label="Cinematic introduction"
     >
       <div className="film-stage">
+        <video
+          ref={video}
+          className="film-surface film-video"
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+        />
         <Image
           className="film-surface film-poster"
           src="/films/01-goggles-on-poster.jpg"
@@ -266,14 +274,6 @@ export function FilmChapters() {
           sizes="100vw"
           priority
           unoptimized
-          aria-hidden="true"
-        />
-        <video
-          ref={video}
-          className="film-surface film-video"
-          muted
-          playsInline
-          preload="metadata"
           aria-hidden="true"
         />
         <canvas ref={heldFrame} className="film-surface film-hold" aria-hidden="true" />

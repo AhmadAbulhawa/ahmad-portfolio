@@ -72,25 +72,18 @@ try {
     await fallback.goto(base, { waitUntil: 'networkidle' });
     for (let i = 0; i < 3; i++) {
       await wheel(fallback);
-      await fallback.waitForFunction(() =>
-        Number.isFinite(document.querySelector('video').duration),
-      );
-      await fallback.locator('video').evaluate((v) => {
-        Object.defineProperty(v, 'currentTime', {
-          configurable: true,
-          get: () => v.duration - 0.001,
-        });
-        Object.defineProperty(v, 'paused', { configurable: true, get: () => true });
-        Object.defineProperty(v, 'seeking', { configurable: true, get: () => false });
+      await fallback.waitForFunction(() => {
+        const video = document.querySelector('.film-video');
+        return Number.isFinite(video.duration) && !video.seeking && video.readyState >= 2 &&
+          document.querySelector('.film-hold').dataset.frame === 'live';
+      });
+      await fallback.locator('.film-video').evaluate((v) => {
+        v.pause();
+        v.currentTime = v.duration - 0.02;
       });
       await fallback.waitForFunction(
         () => document.querySelector('.film-journey').dataset.phase === 'completed',
       );
-      await fallback.locator('video').evaluate((v) => {
-        delete v.currentTime;
-        delete v.paused;
-        delete v.seeking;
-      });
     }
     await wheel(fallback);
     await fallback.waitForSelector('.spiral-scene[data-webgl="unavailable"]');

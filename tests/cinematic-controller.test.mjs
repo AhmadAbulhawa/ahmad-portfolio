@@ -36,13 +36,14 @@ class Media extends EventTarget {
   }
   removeAttribute() {}
 }
-function setup() {
+function setup(frames) {
   let time = 0;
   const media = new Media();
   const c = new CinematicController(
     media,
     () => {},
     () => time,
+    frames,
   );
   return {
     c,
@@ -74,6 +75,33 @@ test('starts at frame zero and never autoplays; repeated input cannot skip unfin
   } finally {
     s.close();
   }
+});
+
+test('a completed frame is captured before the next source warms, without advancing or autoplay', () => {
+  const order = [];
+  let s;
+  const frames = {
+    hold() { order.push({ src: s?.media.src, time: s?.media.currentTime }); },
+    prepare() {}, reset() {}, destroy() {},
+  };
+  s = setup(frames);
+  try {
+    s.c.gesture(1);
+    finish(s);
+    assert.equal(s.c.state.chapter, 0);
+    assert.equal(s.c.state.phase, 'completed');
+    assert.equal(s.media.calls, 1, 'Preloading never calls play');
+    assert.equal(s.media.paused, true);
+    assert.match(order.at(-1).src, /01-goggles-on.mp4$/);
+    assert.equal(order.at(-1).time, 7.98);
+    assert.match(s.media.src, /02-dissolve.mp4$/);
+    assert.equal(s.media.currentTime, 1.5, 'Warm at the real incoming start seek');
+    const loads = s.media.loads;
+    s.c.gesture(1);
+    assert.equal(s.c.state.chapter, 1);
+    assert.equal(s.media.loads, loads, 'The next gesture reuses the prepared source');
+    assert.equal(s.media.calls, 2);
+  } finally { s.close(); }
 });
 test('missing ended/timeupdate/pause events recover on the same intentional gesture', () => {
   const s = setup();

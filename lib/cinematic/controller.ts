@@ -36,6 +36,8 @@ export class CinematicController {
   private lastProgressAt = 0;
   private progressed = false;
   private seekPending = false;
+  private seekTarget = 0;
+  private prepared: { chapter: number; direction: Direction } | undefined;
   private stopped = false;
   private listeners: Array<() => void> = [];
   private watchdog: ReturnType<typeof setInterval> | undefined;
@@ -91,7 +93,7 @@ export class CinematicController {
   private seekStart() {
     if (!this.seekPending || this.video.readyState < 1) return;
     this.seekPending = false;
-    const target = this.state.direction === 1 ? FILMS[this.state.chapter].start : 0;
+    const target = this.seekTarget;
     if (target > 0) {
       try {
         this.video.currentTime = target;
@@ -129,8 +131,10 @@ export class CinematicController {
         (bufferedToEnd && v.readyState >= 2 && this.now() - this.lastProgressAt > 400));
     if (finalSample) {
       this.stopWatchdog();
+      this.frames?.hold();
       this.publish({ phase: 'completed', progress: 1, hasFrame: true });
       v.pause();
+      this.prepareNext();
       return;
     }
     const start = this.state.direction === 1 ? FILMS[this.state.chapter].start : 0;
@@ -150,16 +154,33 @@ export class CinematicController {
     this.video.pause();
     this.stopWatchdog();
     this.progressed = false;
-    this.lastTime = 0;
+    const warm = this.prepared?.chapter === chapter && this.prepared.direction === direction &&
+      !this.video.error;
+    this.lastTime = warm && Number.isFinite(this.video.currentTime) ? this.video.currentTime : 0;
     this.lastProgressAt = this.now();
-    this.seekPending = direction === 1 && FILMS[chapter].start > 0;
     this.publish({ chapter, direction, phase: 'loading', progress: 0, hasFrame: false });
+    if (!warm) this.prepareSource(chapter, direction);
+    this.prepared = undefined;
+    this.frames?.prepare(direction === 1 ? FILMS[chapter].start : 0);
+  }
+  private prepareSource(chapter: number, direction: Direction) {
+    this.seekTarget = direction === 1 ? FILMS[chapter].start : 0;
+    this.seekPending = this.seekTarget > 0;
+    this.prepared = { chapter, direction };
     const file = FILMS[chapter].file;
     this.video.src = `/films/${file}${direction === -1 ? '-reverse' : ''}.mp4`;
     this.video.playbackRate = FILMS[chapter].rate;
     this.video.preload = 'auto';
     this.video.load();
-    this.frames?.prepare(direction === 1 ? FILMS[chapter].start : 0);
+  }
+  private prepareNext() {
+    // Reuse the same paused decoder while the completed frame stays on canvas.
+    // Loading a future source never advances the public chapter or starts play.
+    if (!this.frames || this.stopped) return;
+    this.generation++;
+    const { chapter, direction } = this.state;
+    if (direction === 1) this.prepareSource(chapter < 2 ? chapter + 1 : 2, chapter < 2 ? 1 : -1);
+    else this.prepareSource(chapter > 0 ? chapter - 1 : 0, chapter > 0 ? -1 : 1);
   }
   private play() {
     const generation = this.generation;
@@ -255,7 +276,7 @@ export class CinematicController {
   }
   reset() {
     this.load(0, 1, true);
-    this.video.preload = 'metadata';
+    this.video.preload = 'auto';
     this.publish({ phase: 'idle', hasFrame: false });
   }
   destroy() {

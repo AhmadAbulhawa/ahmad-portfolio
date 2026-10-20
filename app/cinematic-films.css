@@ -29,12 +29,8 @@
   object-position: 50% 43%;
   pointer-events: none;
 }
-.film-video,
 .film-hold {
   opacity: 0;
-}
-.film-hold[data-frame='live'] {
-  transition: opacity 90ms linear;
 }
 .film-shade {
   position: absolute;
@@ -545,9 +541,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .film-progress {
-    transition: none;
-  }
-  .film-hold[data-frame='live'] {
     transition: none;
   }
   .film-sentence h1 > span,

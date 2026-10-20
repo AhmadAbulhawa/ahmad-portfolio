@@ -14,13 +14,32 @@ const browser = await engine.launch({
   args: engine === chromium ? ['--no-sandbox', '--disable-dev-shm-usage'] : [],
 });
 const report = [];
+const firstFrames = [];
 try {
   for (const setup of [
-    { name: 'desktop', width: 1280, height: 800 },
+    { name: 'desktop', width: 1280, height: 800, delayedPaint: true },
     { name: 'mobile', width: 390, height: 844 },
     { name: 'mobile-fallback', width: 390, height: 844, fallback: true },
   ].filter((setup) => !process.env.QA_VIEWPORT || setup.name === process.env.QA_VIEWPORT)) {
     const context = await browser.newContext({ viewport: setup, deviceScaleFactor: 1 });
+    await context.addInitScript(() => {
+      window.frameReveals = [];
+      new MutationObserver((records) => {
+        const canvas = document.querySelector('.film-hold');
+        if (!['presenting', 'live'].includes(canvas?.dataset.frame) ||
+          !records.some((r) => r.target === canvas)) return;
+        const video = document.querySelector('.film-video');
+        window.frameReveals.push({ src: video.src, time: video.currentTime });
+      }).observe(document, { subtree: true, attributes: true, attributeFilter: ['data-frame'] });
+    });
+    if (setup.delayedPaint)
+      await context.addInitScript(() => {
+        const native = HTMLVideoElement.prototype.requestVideoFrameCallback;
+        if (typeof native !== 'function') return;
+        HTMLVideoElement.prototype.requestVideoFrameCallback = function(callback) {
+          return native.call(this, (now, frame) => setTimeout(() => callback(now, frame), 350));
+        };
+      });
     if (setup.fallback)
       await context.addInitScript(() => {
         Object.defineProperty(HTMLVideoElement.prototype, 'requestVideoFrameCallback', {
@@ -31,6 +50,10 @@ try {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     let gate;
+    const arm = (file) => {
+      let release;
+      gate = { file, wait: new Promise((resolve) => { release = resolve; }), release: () => release() };
+    };
     await page.route('**/films/*.mp4', async (route) => {
       if (gate && new URL(route.request().url()).pathname.endsWith(gate.file))
         await gate.wait;
@@ -101,8 +124,7 @@ try {
     const transition = async (file, direction) => {
       console.log(`${setup.name}: hold ${file}`);
       const before = await shot();
-      let release;
-      gate = { file, wait: new Promise((resolve) => { release = resolve; }) };
+      assert.equal(gate?.file, file, 'Delay is armed before the previous film completes');
       await gesture(direction);
       await page.waitForFunction((file) =>
         document.querySelector('.film-video')?.src.endsWith(file), file);
@@ -115,7 +137,7 @@ try {
         }));
         assert.equal(held.frame, 'held', `${file}: outgoing frame lost`);
         assert.equal(held.opacity, '1');
-        assert.equal(held.videoOpacity, '0');
+        assert.equal(held.videoOpacity, '1', 'Keep the covered decoder paintable');
         const after = await shot();
         const difference = await pixels(before, after);
         assert.ok(difference.mean < 2 && difference.changed < 0.01,
@@ -129,20 +151,27 @@ try {
       await gesture(direction);
       console.log(`${setup.name}: release ${file}`);
       assert.ok((await page.locator('.film-video').getAttribute('src')).endsWith(file));
+      const release = gate.release;
       gate = undefined;
       release();
       await live();
       console.log(`${setup.name}: live ${file}`);
-      const time = await page.locator('.film-video').evaluate((video) => video.currentTime);
+      const time = await page.evaluate((file) =>
+        window.frameReveals.find((frame) => frame.src.endsWith(file))?.time, file);
       const start = file === '02-dissolve.mp4' ? 1.5 : 0;
-      assert.ok(time >= start - 1 / 24 && time < start + 0.6,
+      assert.ok(time >= start - 1 / 24 && time < start + 1 / 12,
         `${file}: hidden playback before reveal (${time})`);
+      firstFrames.push({ viewport: setup.name, file, start, firstExposure: time,
+        mediaAdvance: time - start, delayedCompositor: !!setup.delayedPaint });
     };
     await gesture(1);
+    arm('02-dissolve.mp4');
     await finish();
     await transition('02-dissolve.mp4', 1);
+    arm('03-shatter.mp4');
     await finish();
     await transition('03-shatter.mp4', 1);
+    arm('03-shatter-reverse.mp4');
     await finish();
     await gesture(1); // gallery keeps the final shatter frame behind its entrance
     await page.waitForFunction(() =>
@@ -164,8 +193,10 @@ try {
       'The gallery must visibly retain the last film frame behind its transparent atmosphere');
     await galleryStyle.evaluate((style) => style.remove());
     await transition('03-shatter-reverse.mp4', -1);
+    arm('02-dissolve-reverse.mp4');
     await finish();
     await transition('02-dissolve-reverse.mp4', -1);
+    arm('01-goggles-on-reverse.mp4');
     await finish();
     await transition('01-goggles-on-reverse.mp4', -1);
     await finish();
@@ -179,6 +210,7 @@ try {
     console.log(`PASS ${setup.name}: forward, reverse, gallery, reset, delayed frame continuity`);
   }
   await writeFile(path.join(output, 'frame-continuity.json'), JSON.stringify(report, null, 2));
+  await writeFile(path.join(output, 'first-frame-exposure.json'), JSON.stringify(firstFrames, null, 2));
 } finally {
   await browser.close();
 }
