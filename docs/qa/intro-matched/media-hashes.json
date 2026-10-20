@@ -1,13 +1,13 @@
 [
   {
-    "file": "01-goggles-on-aligned-reverse.mp4",
-    "sha256": "72cf0d80f65c8c90274e0ffc0eeb560d19ca90da140943eaaaefb87f2d49d31d",
-    "bytes": 5570981
+    "file": "01-goggles-on-continuous-reverse.mp4",
+    "sha256": "b21811c7ae981cfacf0aad652b093d22e12391d95628381f86d69dec75468bd9",
+    "bytes": 5448162
   },
   {
-    "file": "01-goggles-on-aligned.mp4",
-    "sha256": "ddb7705494f465313dd26326311b0b4ac102ae7b6af65966f7f3b8f6da358cc0",
-    "bytes": 4986711
+    "file": "01-goggles-on-continuous.mp4",
+    "sha256": "d9812111eb7e7b9c40dca216170508be3d5835f515b5df2667251feb6d98dac2",
+    "bytes": 4958692
   },
   {
     "file": "01-goggles-on-reverse.mp4",

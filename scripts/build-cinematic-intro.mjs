@@ -1,9 +1,10 @@
 import { createHash } from 'node:crypto';
-import { readFile, mkdir, stat } from 'node:fs/promises';
+import { readFile, mkdir, stat, copyFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
+import path from 'node:path';
 
-// Keep the owner's originals intact. The playback derivative contains every
-// original intro frame, then resolves to the exact decoded opening of film 02.
+// Complete the final hand movement within the original 77-frame timeline,
+// resolving to film 02's decoded opening pose through motion interpolation.
 const original = 'public/films/01-goggles-on.mp4';
 const next = 'public/films/02-dissolve.mp4';
 for (const [file, expected] of [
@@ -13,30 +14,35 @@ for (const [file, expected] of [
   if (createHash('sha256').update(await readFile(file)).digest('hex') !== expected)
     throw Error(`Unexpected original footage: ${file}`);
 }
-await mkdir('work/matched-intro', { recursive: true });
-function run(args) {
-  const result = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], {
-    encoding: 'utf8', timeout: 240000,
-  });
+const rife = process.env.RIFE_BIN;
+if (!rife) throw Error('Set RIFE_BIN to the RIFE ncnn Vulkan executable (release 20221029).');
+const model = process.env.RIFE_MODEL || path.join(path.dirname(rife), 'rife-v4.6');
+const directory = 'work/continuous-intro';
+await mkdir(directory, { recursive: true });
+function run(command, args) {
+  const result = spawnSync(command, args, { encoding: 'utf8', timeout: 240000 });
   if (result.status !== 0) throw Error(result.stderr || String(result.error));
 }
-const target = 'work/matched-intro/dissolve-start.png';
-run(['-ss', '1.5', '-i', next, '-frames:v', '1', target]);
-const forward = 'public/films/01-goggles-on-aligned.mp4';
-const reverse = 'public/films/01-goggles-on-aligned-reverse.mp4';
+const ffmpeg = args => run('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args]);
+const frame = index => path.join(directory, `frame-${String(index).padStart(3, '0')}.png`);
+ffmpeg(['-i', original, '-frames:v', '65', '-fps_mode', 'passthrough', path.join(directory, 'frame-%03d.png')]);
+const target = path.join(directory, 'dissolve-start.png');
+ffmpeg(['-ss', '1.5', '-i', next, '-frames:v', '1', target]);
+for (let step = 1; step < 12; step++) {
+  const u = step / 12;
+  const time = u * u * (3 - 2 * u);
+  run(rife, ['-0', frame(65), '-1', target, '-o', frame(65 + step),
+    '-m', model, '-g', '-1', '-j', '1:3:1', '-s', String(time)]);
+  console.log(`Motion frame ${step}/11 complete`);
+}
+await copyFile(target, frame(77));
+const forward = 'public/films/01-goggles-on-continuous.mp4';
+const reverse = 'public/films/01-goggles-on-continuous-reverse.mp4';
 const encoding = ['-an', '-c:v', 'libx264', '-preset', 'fast', '-crf', '16',
   '-pix_fmt', 'yuv420p', '-r', '24', '-fps_mode', 'cfr', '-movflags', '+faststart'];
-// 77 original frames + a nine-frame dissolve + three endpoint holds, at 24 fps.
-// Only opacity changes in this short editorial join: no zoom, crop, warp,
-// generated texture, optical-flow artifacts, or transform of the source image.
-run(['-i', original, '-loop', '1', '-framerate', '24', '-i', target,
-  '-filter_complex',
-  '[0:v]setpts=N/(24*TB),tpad=stop_mode=clone:stop_duration=0.5,fps=24,settb=AVTB[a];' +
-  '[1:v]format=yuv420p,fps=24,settb=AVTB[b];' +
-  '[a][b]xfade=transition=fade:duration=0.375:offset=3.208333333,' +
-  'trim=end_frame=89,setpts=N/(24*TB),format=yuv420p[v]',
-  '-map', '[v]', ...encoding, forward]);
-run(['-i', forward, '-vf', 'reverse', ...encoding, reverse]);
+ffmpeg(['-framerate', '24', '-start_number', '1', '-i', path.join(directory, 'frame-%03d.png'),
+  '-frames:v', '77', ...encoding, forward]);
+ffmpeg(['-i', forward, '-vf', 'reverse', ...encoding, reverse]);
 for (const file of [forward, reverse]) {
   const bytes = (await stat(file)).size;
   if (bytes > 24 * 1024 * 1024) throw Error(`Hosting limit exceeded: ${file}`);

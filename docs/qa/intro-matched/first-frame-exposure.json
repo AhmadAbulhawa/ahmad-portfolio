@@ -3,120 +3,120 @@
     "viewport": "desktop",
     "file": "02-dissolve.mp4",
     "start": 1.5,
-    "firstExposure": 1.50499,
-    "mediaAdvance": 0.00499000000000005,
+    "firstExposure": 1.504619,
+    "mediaAdvance": 0.004618999999999929,
     "delayedCompositor": true
   },
   {
     "viewport": "desktop",
     "file": "03-shatter.mp4",
     "start": 0,
-    "firstExposure": 0.006869,
-    "mediaAdvance": 0.006869,
+    "firstExposure": 0.006192,
+    "mediaAdvance": 0.006192,
     "delayedCompositor": true
   },
   {
     "viewport": "desktop",
     "file": "03-shatter-reverse.mp4",
     "start": 0,
-    "firstExposure": 0.009628,
-    "mediaAdvance": 0.009628,
+    "firstExposure": 0.005567,
+    "mediaAdvance": 0.005567,
     "delayedCompositor": true
   },
   {
     "viewport": "desktop",
     "file": "02-dissolve-reverse.mp4",
     "start": 0,
-    "firstExposure": 0.005243,
-    "mediaAdvance": 0.005243,
+    "firstExposure": 0.008219,
+    "mediaAdvance": 0.008219,
     "delayedCompositor": true
   },
   {
     "viewport": "desktop",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "start": 0,
-    "firstExposure": 0.007228,
-    "mediaAdvance": 0.007228,
+    "firstExposure": 0.007715,
+    "mediaAdvance": 0.007715,
     "delayedCompositor": true
   },
   {
     "viewport": "mobile",
     "file": "02-dissolve.mp4",
     "start": 1.5,
-    "firstExposure": 1.52,
-    "mediaAdvance": 0.020000000000000018,
+    "firstExposure": 1.507001,
+    "mediaAdvance": 0.007001000000000035,
     "delayedCompositor": false
   },
   {
     "viewport": "mobile",
     "file": "03-shatter.mp4",
     "start": 0,
-    "firstExposure": 0.00742,
-    "mediaAdvance": 0.00742,
+    "firstExposure": 0.007301,
+    "mediaAdvance": 0.007301,
     "delayedCompositor": false
   },
   {
     "viewport": "mobile",
     "file": "03-shatter-reverse.mp4",
     "start": 0,
-    "firstExposure": 0.01602,
-    "mediaAdvance": 0.01602,
+    "firstExposure": 0.004371,
+    "mediaAdvance": 0.004371,
     "delayedCompositor": false
   },
   {
     "viewport": "mobile",
     "file": "02-dissolve-reverse.mp4",
     "start": 0,
-    "firstExposure": 0.071561,
-    "mediaAdvance": 0.071561,
+    "firstExposure": 0.005663,
+    "mediaAdvance": 0.005663,
     "delayedCompositor": false
   },
   {
     "viewport": "mobile",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "start": 0,
-    "firstExposure": 0.011518,
-    "mediaAdvance": 0.011518,
+    "firstExposure": 0.010102,
+    "mediaAdvance": 0.010102,
     "delayedCompositor": false
   },
   {
     "viewport": "mobile-fallback",
     "file": "02-dissolve.mp4",
     "start": 1.5,
-    "firstExposure": 1.507839,
-    "mediaAdvance": 0.00783899999999993,
+    "firstExposure": 1.502928,
+    "mediaAdvance": 0.0029280000000000417,
     "delayedCompositor": false
   },
   {
     "viewport": "mobile-fallback",
     "file": "03-shatter.mp4",
     "start": 0,
-    "firstExposure": 0.00708,
-    "mediaAdvance": 0.00708,
+    "firstExposure": 0.00642,
+    "mediaAdvance": 0.00642,
     "delayedCompositor": false
   },
   {
     "viewport": "mobile-fallback",
     "file": "03-shatter-reverse.mp4",
     "start": 0,
-    "firstExposure": 0.014554,
-    "mediaAdvance": 0.014554,
+    "firstExposure": 0.003854,
+    "mediaAdvance": 0.003854,
     "delayedCompositor": false
   },
   {
     "viewport": "mobile-fallback",
     "file": "02-dissolve-reverse.mp4",
     "start": 0,
-    "firstExposure": 0.007022,
-    "mediaAdvance": 0.007022,
+    "firstExposure": 0.005959,
+    "mediaAdvance": 0.005959,
     "delayedCompositor": false
   },
   {
     "viewport": "mobile-fallback",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "start": 0,
-    "firstExposure": 0.008891,
-    "mediaAdvance": 0.008891,
+    "firstExposure": 0.004108,
+    "mediaAdvance": 0.004108,
     "delayedCompositor": false
   }
 ]

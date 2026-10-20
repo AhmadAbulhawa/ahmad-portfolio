@@ -92,7 +92,7 @@ test('a completed frame is captured before the next source warms, without advanc
     assert.equal(s.c.state.phase, 'completed');
     assert.equal(s.media.calls, 1, 'Preloading never calls play');
     assert.equal(s.media.paused, true);
-    assert.match(order.at(-1).src, /01-goggles-on-aligned.mp4$/);
+    assert.match(order.at(-1).src, /01-goggles-on-continuous.mp4$/);
     assert.equal(order.at(-1).time, 7.98);
     assert.match(s.media.src, /02-dissolve.mp4$/);
     assert.equal(s.media.currentTime, 1.5, 'Warm at the real incoming start seek');

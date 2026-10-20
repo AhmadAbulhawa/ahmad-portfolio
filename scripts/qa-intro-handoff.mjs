@@ -112,8 +112,14 @@ try {
     await step(); await complete();
     await compare('01-to-02', 1, '02-dissolve.mp4', 1.5);
     await complete();
+    if (setup.name === 'recording-landscape') {
+      // Record the complete original dissolve and shatter as well, so visual
+      // review covers the story in motion rather than only matching endpoints.
+      await step(); await live(); await complete();
+      await step(-1); await live(); await complete();
+    }
     await step(-1); await live(); await complete();
-    await compare('02-to-01', -1, '01-goggles-on-aligned-reverse.mp4');
+    await compare('02-to-01', -1, '01-goggles-on-continuous-reverse.mp4');
     await complete();
     await step(-1);
     await page.waitForFunction(() => document.querySelector('.film-journey')?.dataset.phase === 'idle');

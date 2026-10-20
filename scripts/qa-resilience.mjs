@@ -10,7 +10,7 @@ const report = [];
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const held = [];
-  await page.route('**/films/01-goggles-on-aligned.mp4', (route) => {
+  await page.route('**/films/01-goggles-on-continuous.mp4', (route) => {
     held.push(route);
   });
   await page.goto(base, { waitUntil: 'domcontentloaded' });
@@ -26,7 +26,7 @@ try {
   assert.ok(
     ['loading', 'stalled'].includes(await page.locator('.film-journey').getAttribute('data-phase')),
   );
-  await page.unroute('**/films/01-goggles-on-aligned.mp4');
+  await page.unroute('**/films/01-goggles-on-continuous.mp4');
   for (const route of held) await route.continue().catch(() => {});
   await page.waitForFunction(
     () => document.querySelector('.film-journey').dataset.phase === 'completed',

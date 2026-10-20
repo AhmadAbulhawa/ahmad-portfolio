@@ -23,8 +23,8 @@ export type Snapshot = {
   hasFrame: boolean;
 };
 export const FILMS = [
-  // This derivative ends on film 02's actual opening frame in both directions.
-  { file: '01-goggles-on-aligned', start: 0, rate: 1 },
+  // Forward ends and reverse begins on film 02's actual opening frame.
+  { file: '01-goggles-on-continuous', start: 0, rate: 1 },
   // A short breath before the first visible disappearance; no hidden playback.
   { file: '02-dissolve', start: 1.5, rate: 1 },
   { file: '03-shatter', start: 0, rate: 1.5 },

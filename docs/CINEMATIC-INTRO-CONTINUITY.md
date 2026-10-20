@@ -1,27 +1,47 @@
-# Matched intro endpoints
+# Continuous intro motion
 
-The owner-supplied recording shows a pose jump at film 01 -> 02. The original endpoint lens is about 14% narrower than film 02's opening pose. A runtime dissolve concealed loading but still changed the resting image when the next chapter was requested.
+Film 01's original final pose differs from film 02's opening pose: the hands, head, and goggles move relative to one another. Changing only the image scale or position cannot align all of them. The playback edit completes that movement before the chapter boundary, so starting film 02 preserves the resting pose.
 
 ## Playback edit
 
-`01-goggles-on-aligned.mp4` retains all 77 original intro frames at 24 fps. After the original motion finishes, a nine-frame (375 ms) opacity join resolves to the actual decoded frame at 1.5 seconds in `02-dissolve.mp4`, followed by three endpoint holds. The resulting 1080p playback edit lasts 3.708 seconds. Its reverse is generated from that same edit. The three original forward MP4 files are retained byte-for-byte; see [media hashes](qa/intro-matched/media-hashes.json).
+`01-goggles-on-continuous.mp4` contains 77 frames at 24 fps:
 
-The short join is deliberately part of film 01's timeline, before the completed resting frame. It uses the two supplied source images, without optical-flow warping, generated texture, camera transforms, or per-film cover adjustments. At the next user input both sides of the boundary already show the same pose. Compression leaves small color differences; decoded pixels are not asserted byte-identical.
+- Frames 0–64 retain the original intro motion, with normal re-encoding differences.
+- Frames 65–75 are eleven synthesized motion-interpolation frames between original frame 64 and the decoded frame at 1.5 seconds in `02-dissolve.mp4`.
+- Frame 76 is that actual decoded opening image from film 02.
 
-All runtime handoffs now expose matched start frames directly, including reduced motion. The failed 500 ms runtime dissolve and its second full-resolution canvas have been removed. The existing loading hold, single decoder, first-frame readiness, source preparation, input gating, captions, and gallery remain in place.
+The movement occupies the final half second of the original frame sequence. There are no appended frames or endpoint holds. The reverse film is generated from this same playback edit. The encoded duration is 77/24 seconds (3.208 seconds); the original container reports 3.177 seconds because its final sample is shorter.
 
-Rebuild the playback derivatives with `npm run media:intro` (requires FFmpeg), then `npm run build`. Normal hosting builds use the committed MP4 files and do not require FFmpeg.
+Motion interpolation uses [RIFE ncnn Vulkan](https://github.com/nihui/rife-ncnn-vulkan), release `20221029`, model `rife-v4.6`, at 1920 × 1080. The interpolation parameter follows `u²(3 − 2u)` to settle into the final pose. These eleven frames are reconstructed motion, not original captured frames. The three original forward MP4 files remain byte-identical; see [media hashes](qa/intro-matched/media-hashes.json).
+
+The player uses the new asset names to avoid cached copies of the previous edit. It presents the matching incoming frame directly, using the existing loading hold and shared media plane. All chapters keep the same cover crop.
+
+## Rebuild
+
+Install FFmpeg and the RIFE executable/model from the release above, then run:
+
+```sh
+RIFE_BIN=/absolute/path/to/rife-ncnn-vulkan npm run media:intro
+npm run qa:intro-motion
+npm run build
+```
+
+`RIFE_MODEL` can override the default `rife-v4.6` directory beside the executable. The script uses CPU inference and checks the source footage hashes. Hosting builds use the committed MP4 assets and do not need these media tools.
 
 ## Executed verification
 
-- `npm run qa:intro`: all eight 01 -> 02 / reverse 02 -> 01 comparisons pass at 1536 x 720, 390 x 844, 844 x 390, and reduced motion. Measured lens center, width, and height differ by **0 rendered pixels** at every handoff. Full-frame maximum-channel mean differences are 2.00/255 forward and 2.63/255 reverse; fewer than 0.16% of pixels differ by more than 16/255. The media plane does not change size or position.
-- `npm run qa:frames`: all three desktop/mobile/fallback journeys pass delayed loading, the 02/03 boundary, forward/reverse playback, gallery return, reset, and incoming start-frame exposure.
-- `npm run qa:cinematic`: desktop wheel and mobile Chromium protocol touch journeys pass through all chapters, gallery stops, navigation, and four case studies, without runtime errors or stall retries.
-- All 20 controller/input tests, lint, TypeScript, production export and hosting asset-size checks pass.
+- `npm run qa:intro-motion`: both playback directions contain exactly 77 frames. The retained frames differ by at most 1.21/255 mean channel error. The final frame and reverse opening differ from film 02's actual start by 1.35/255 and 1.38/255 respectively. The reconstructed motion has no frozen frame or isolated large step. A best-fit opacity-blend comparison confirms that its intermediate geometry moves instead of merely blending the two poses.
+- `npm run qa:intro`: all eight forward/reverse boundary comparisons pass at 1536 × 720, 390 × 844, 844 × 390, and reduced motion. The detected lens center and dimensions differ by at most **0.8 rendered pixels** at this boundary. The media element's size and position are unchanged. Compression leaves small color differences; decoded images are not byte-identical.
+- `npm run qa:frames`: desktop, mobile, and fallback journeys pass through all three films forward and backward, gallery return, reset, delayed loading, and incoming start-frame exposure.
+- All 20 controller/input tests, lint, TypeScript, production export, and hosting asset-size checks pass.
 
-[Browser recording](qa/intro-matched/preview.mp4) · [Measured intro boundaries](qa/intro-matched/intro-handoff.json) · [Journey report](qa/intro-matched/browser-report.json)
+The recording covers all three films forward and backward. All thirteen frames spanning the repaired motion were also visually inspected, including a close crop of the hands and goggles.
+
+[Browser recording](qa/intro-matched/preview.mp4) · [Motion measurements](qa/intro-matched/motion-report.json) · [Intro boundaries](qa/intro-matched/intro-handoff.json) · [Loading continuity](qa/intro-matched/frame-continuity.json)
+
+![Final motion, left to right and top to bottom](qa/intro-matched/motion-detail-frames.webp)
 
 ![Landscape immediately before chapter change](qa/intro-matched/recording-landscape-01-to-02-before.webp)
 ![Landscape immediately after chapter change](qa/intro-matched/recording-landscape-01-to-02-after.webp)
 
-Verification uses local Chromium with mobile viewport/touch emulation, not physical iPhone Safari. Production/main was not deployed or merged by this fix.
+Browser verification used Chromium with mobile viewport/touch emulation. Physical iPhone Safari was not tested. This fix is committed to the repair branch; main was not merged or deployed.

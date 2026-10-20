@@ -85,21 +85,21 @@
   },
   {
     "viewport": "desktop",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "sample": 0,
     "mean": 0,
     "changed": 0
   },
   {
     "viewport": "desktop",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "sample": 1,
     "mean": 0,
     "changed": 0
   },
   {
     "viewport": "desktop",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "sample": 2,
     "mean": 0,
     "changed": 0
@@ -190,21 +190,21 @@
   },
   {
     "viewport": "mobile",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "sample": 0,
     "mean": 0,
     "changed": 0
   },
   {
     "viewport": "mobile",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "sample": 1,
     "mean": 0,
     "changed": 0
   },
   {
     "viewport": "mobile",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "sample": 2,
     "mean": 0,
     "changed": 0
@@ -295,21 +295,21 @@
   },
   {
     "viewport": "mobile-fallback",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "sample": 0,
     "mean": 0,
     "changed": 0
   },
   {
     "viewport": "mobile-fallback",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "sample": 1,
     "mean": 0,
     "changed": 0
   },
   {
     "viewport": "mobile-fallback",
-    "file": "01-goggles-on-aligned-reverse.mp4",
+    "file": "01-goggles-on-continuous-reverse.mp4",
     "sample": 2,
     "mean": 0,
     "changed": 0
