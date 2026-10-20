@@ -198,7 +198,7 @@ export function FilmChapters() {
 
     function advance(direction: number) {
       if (released || running || bridgeBusy || performance.now()<lockedUntil) return;
-      lockedUntil=performance.now()+850;
+      lockedUntil=performance.now()+(position>=3?1150:850);
       if (direction>0) {
         if (position < 3) {
           if (!forwardEnd[position]) {

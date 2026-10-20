@@ -66,10 +66,12 @@ for (const setup of setups) {
  assert.ok(first.includes('rotateY(0.0deg)')||first.includes('rotateY(0deg)'), 'Selected panel must face user dead straight '+first);
  assert.match(first,/calc\(-50% \+ 0(?:\.0)?px\)/,'Selected project must be horizontally centered');
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-glass-front.png'});
+ await page.waitForTimeout(1150);
  await down();
  assert.equal(await section.getAttribute('data-scene'),'4','One scroll -> one selected project');
  const next=await cards.nth(1).evaluate(el=>el.style.transform);
  assert.ok(next.includes('rotateY(0.0deg)')||next.includes('rotateY(0deg)'));
+ await page.waitForTimeout(1150);
  await page.screenshot({path:'qa-screenshots/'+setup.name+'-glass-stair.png'});
  await delay();
  await up();
