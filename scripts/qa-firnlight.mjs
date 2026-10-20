@@ -51,6 +51,17 @@ for(const scenario of scenarios){
   const secondTransform=await cards.first().evaluate(el=>el.style.transform);
   assert.notEqual(secondTransform,startTransform,'Each gallery stop must animate to next fixed target');
   await page.screenshot({path:'qa-screenshots/'+scenario.name+'-helix-next.png'});
+  if (scenario.name === 'desktop') {
+    await go(3);
+    await page.waitForTimeout(1100);
+    const before = await page.evaluate(()=>scrollY);
+    await page.mouse.wheel(0, 180);
+    await page.waitForTimeout(400);
+    assert.equal(await page.locator('.film-journey').getAttribute('data-scene'), '4', 'One desktop wheel gesture should select the next project');
+    const after = await page.evaluate(()=>scrollY);
+    assert.ok(Math.abs(after-before)<5, 'Gallery selection must not hijack native page position');
+    await page.screenshot({path:'qa-screenshots/desktop-one-wheel-next.png'});
+  }
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2);
   assert.equal(overflow,false,scenario.name+' must not overflow horizontally');
   await cards.nth(1).click({force:true});

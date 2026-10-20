@@ -57,6 +57,9 @@ export function FilmChapters() {
     let activeScene = -1;
     let interacted = false;
     let visible = true;
+    let wheelIndex = 0;
+    let wheelControlled = false;
+    let wheelLockedUntil = 0;
 
     // Playback is self-running after a chapter is reached; no video currentTime scrubbing.
     function activateClip(index: number) {
@@ -81,7 +84,16 @@ export function FilmChapters() {
       const bounds = section.getBoundingClientRect();
       const travel = Math.max(1, bounds.height - window.innerHeight);
       const progress = clamp(-bounds.top / travel);
-      const nextScene = Math.min(SCENE_COUNT - 1, Math.floor(progress * SCENE_COUNT));
+      let nextScene = Math.min(SCENE_COUNT - 1, Math.floor(progress * SCENE_COUNT));
+      if (nextScene < 3) {
+        wheelControlled = false;
+        wheelIndex = 0;
+      } else if (wheelControlled && window.innerWidth >= 700) {
+        // Manual wheel steps own the active gallery item, not fractional scroll.
+        nextScene = 3 + wheelIndex;
+      } else if (!wheelControlled) {
+        wheelIndex = nextScene - 3;
+      }
       const chapter = Math.min(nextScene, 3);
       section.dataset.chapter = String(chapter);
       section.dataset.scene = String(nextScene);
@@ -116,6 +128,29 @@ export function FilmChapters() {
       schedule();
     };
     const onTouch = () => { interacted = true; schedule(); };
+    const onWheel = (event: WheelEvent) => {
+      // Desktop gallery ONLY. Never fight native wheel or modify document scroll.
+      // Non-cancelable events are left fully to the browser.
+      if (window.innerWidth < 700 || !visible || activeScene < 3 || !event.cancelable || Math.abs(event.deltaY) < 3) return;
+      const bounds = section.getBoundingClientRect();
+      if (bounds.top > 0 || bounds.bottom < innerHeight) return;
+      const direction = Math.sign(event.deltaY);
+      if ((direction < 0 && wheelIndex === 0) || (direction > 0 && wheelIndex === projects.length - 1)) {
+        wheelControlled = false; // Natural scroll exits from either edge.
+        return;
+      }
+      event.preventDefault();
+      const now = performance.now();
+      if (now < wheelLockedUntil) return;
+      wheelLockedUntil = now + 850; // One gesture, one complete motion.
+      wheelControlled = true;
+      wheelIndex = Math.max(0, Math.min(projects.length - 1, wheelIndex + direction));
+      const nextScene = 3 + wheelIndex;
+      activeScene = nextScene;
+      section.dataset.scene = String(nextScene);
+      setScene(nextScene);
+      placeCards(cards.current, wheelIndex, reduced.matches);
+    };
     const observer = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
       if (visible) schedule();
@@ -128,6 +163,7 @@ export function FilmChapters() {
     observer.observe(section);
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('touchstart', onTouch, { passive: true });
+    window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('resize', schedule);
     const onVisibility = () => {
       if (document.hidden) videos.current.forEach(v => v?.pause());
@@ -145,6 +181,7 @@ export function FilmChapters() {
       observer.disconnect();
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('touchstart', onTouch);
+      window.removeEventListener('wheel', onWheel);
       window.removeEventListener('resize', schedule);
       document.removeEventListener('visibilitychange', onVisibility);
       videos.current.forEach(v => v?.pause());
