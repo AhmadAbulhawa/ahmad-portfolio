@@ -227,6 +227,9 @@ export function FilmChapters() {
       video.pause();
       video.playbackRate = i === 2 ? 1.5 : 1;
       const finished = () => {
+        // Safari occasionally ends decoding at the final timestamp without
+        // delivering 'ended'. The same handler is safely idempotent.
+        if (activeVideo !== video) return;
         video.pause();
         forwardEnd[i] = !reverse;
         running = false;
@@ -235,18 +238,29 @@ export function FilmChapters() {
         node!.dataset.finished = String(i);
         clearWaitTimer();
         setNeedsResume(false);
-        // Mobile swipes are deliberate gestures and should not feel frozen
-        // after the previous clip finishes. Wheel has a longer momentum guard.
         lockedUntil = performance.now() + (mobile ? 160 : 650);
+      };
+      const endByTimestamp = () => {
+        // A late 'timeupdate' or automatic pause at the actual end can
+        // unlock the next chapter if WebKit omits its native ended event.
+        // Do not unlock on seek, on stalled playback, or before the last
+        // 80ms of the *actual* recording.
+        if (activeVideo !== video || video.seeking || !Number.isFinite(video.duration) ||
+            video.duration <= 0 || video.currentTime < video.duration - .08) return;
+        if (!video.paused || video.ended) finished();
       };
       const playing = () => { clearWaitTimer(); setNeedsResume(false); };
       const waiting = () => showStallFor(video);
       video.addEventListener('ended',finished);
+      video.addEventListener('timeupdate',endByTimestamp);
+      video.addEventListener('pause',endByTimestamp);
       video.addEventListener('playing',playing);
       video.addEventListener('waiting',waiting);
       video.addEventListener('stalled',waiting);
       disposers.push(()=>{
         video.removeEventListener('ended',finished);
+        video.removeEventListener('timeupdate',endByTimestamp);
+        video.removeEventListener('pause',endByTimestamp);
         video.removeEventListener('playing',playing);
         video.removeEventListener('waiting',waiting);
         video.removeEventListener('stalled',waiting);
