@@ -47,10 +47,16 @@ export function Contact() {
           </a>
         </div>
         <div className="contact-bottom">
-          <a className="email-link" href={`mailto:${person.email}`}>
-            {person.email}
-            <Arrow diagonal />
-          </a>
+          <div className="contact-direct">
+            <a className="email-link" href={`mailto:${person.email}`}>
+              {person.email}
+              <Arrow diagonal />
+            </a>
+            <a className="phone-link" href={`tel:${person.phone.replace(/\s/g, '')}`}>
+              {person.phone}
+              <Arrow diagonal />
+            </a>
+          </div>
           <div className="social-links">
             <a href={person.github} target="_blank" rel="noopener noreferrer">
               GitHub <Arrow diagonal />
