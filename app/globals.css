@@ -658,11 +658,25 @@ p {
   border-top: 1px solid #35414d;
   padding-top: 30px;
 }
-.email-link {
+.contact-direct {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+.email-link,
+.phone-link {
   font-size: clamp(12px, 1.3vw, 21px);
   display: flex;
   align-items: center;
   gap: 20px;
+}
+.phone-link {
+  color: var(--muted);
+}
+.phone-link:hover {
+  color: var(--cyan);
 }
 .social-links {
   display: flex;
@@ -1400,12 +1414,14 @@ p {
     gap: 27px;
     padding-top: 25px;
   }
-  .email-link {
+  .email-link,
+  .phone-link {
     font-size: 12px;
     gap: 10px;
     justify-content: space-between;
   }
-  .email-link svg {
+  .email-link svg,
+  .phone-link svg {
     width: 17px;
   }
   .social-links {
