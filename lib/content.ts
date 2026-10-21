@@ -6,6 +6,7 @@ import type { FilmClip } from './films';
 export const person = {
   name: 'Ahmad Mohammad Abulhawa',
   email: 'ahmadabulhawar6@gmail.com',
+  phone: '+962 79 528 3106',
   github: 'https://github.com/AhmadAbulhawa',
   linkedin: 'https://www.linkedin.com/in/ahmad-abulhawa-1a8835338',
 };
