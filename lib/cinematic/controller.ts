@@ -26,8 +26,8 @@ export const FILMS = [
   // Forward ends and reverse begins on film 02's actual opening frame.
   { file: '01-goggles-on-continuous', start: 0, rate: 1 },
   // A short breath before the first visible disappearance; no hidden playback.
-  { file: '02-dissolve', start: 1.5, rate: 1 },
-  { file: '03-shatter', start: 0, rate: 1.5 },
+  { file: '02-dissolve', start: 1.5, rate: 1.6 },
+  { file: '03-shatter', start: 0, rate: 1.85 },
 ] as const;
 
 /** Owns the only cinematic decoder. Events are hints; media time is authority. */
@@ -156,7 +156,7 @@ export class CinematicController {
       phase: stalled ? 'stalled' : this.progressed ? 'playing' : 'loading',
     });
   }
-  private load(chapter: number, direction: Direction, reset = false) {
+  private load(chapter: number, direction: Direction, reset = false, resumeAt?: number) {
     if (reset) this.frames?.reset();
     else this.frames?.hold();
     this.generation++;
@@ -164,17 +164,18 @@ export class CinematicController {
     this.video.pause();
     this.stopWatchdog();
     this.progressed = false;
-    const warm = this.prepared?.chapter === chapter && this.prepared.direction === direction &&
-      !this.video.error;
-    this.lastTime = warm && Number.isFinite(this.video.currentTime) ? this.video.currentTime : 0;
+    const warm = resumeAt === undefined && this.prepared?.chapter === chapter &&
+      this.prepared.direction === direction && !this.video.error;
+    this.lastTime = resumeAt ?? (warm && Number.isFinite(this.video.currentTime) ? this.video.currentTime : 0);
     this.lastProgressAt = this.now();
-    this.publish({ chapter, direction, phase: 'loading', progress: 0, hasFrame: false });
-    if (!warm) this.prepareSource(chapter, direction);
+    this.publish({ chapter, direction, phase: 'loading',
+      progress: resumeAt === undefined ? 0 : 1 - this.state.progress, hasFrame: false });
+    if (!warm) this.prepareSource(chapter, direction, resumeAt);
     this.prepared = undefined;
-    this.frames?.prepare(direction === 1 ? FILMS[chapter].start : 0);
+    this.frames?.prepare(resumeAt ?? (direction === 1 ? FILMS[chapter].start : 0));
   }
-  private prepareSource(chapter: number, direction: Direction) {
-    this.seekTarget = direction === 1 ? FILMS[chapter].start : 0;
+  private prepareSource(chapter: number, direction: Direction, resumeAt?: number) {
+    this.seekTarget = resumeAt ?? (direction === 1 ? FILMS[chapter].start : 0);
     this.seekPending = this.seekTarget > 0;
     this.prepared = { chapter, direction };
     const file = FILMS[chapter].file;
@@ -201,10 +202,29 @@ export class CinematicController {
         this.publish({ phase: 'stalled' });
     });
   }
+  /** Switch to the already-reversed MP4 at the matching visible frame.
+   * HTML video cannot play backwards reliably on Safari, so negative playbackRate
+   * or repeated currentTime seeks would stutter. The source swap keeps one decoder.
+   */
+  private reverseActivePlayback(next: Direction) {
+    const previous = this.state.direction;
+    const video = this.video;
+    if (previous === next || !Number.isFinite(video.duration) || video.duration <= 0 ||
+        video.readyState < 1 || video.seeking) return false;
+    const chapter = this.state.chapter;
+    // Reverse footage represents the same clip, with the 1.5s intro trim
+    // already removed from chapter two. Convert within that shared range.
+    const remaining = Math.max(0, video.duration - video.currentTime);
+    const mappedTime = remaining + (next === 1 ? FILMS[chapter].start : 0);
+    this.load(chapter, next, false, mappedTime);
+    this.play();
+    return true;
+  }
   gesture(direction: Direction) {
     if (this.stopped || ['released', 'transitioning', 'gallery'].includes(this.state.phase)) return;
     this.inspect();
     if (this.active()) {
+      if (direction !== this.state.direction && this.reverseActivePlayback(direction)) return;
       if (this.state.phase === 'stalled') {
         // WebKit can report paused=false while its decoder is stationary.
         // play() alone is a no-op then. Re-arm playback in THIS user gesture.
