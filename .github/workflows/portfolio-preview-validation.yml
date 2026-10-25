@@ -1,7 +1,7 @@
-name: Portfolio preview validation
+name: Portfolio validation
 on:
   push:
-    branches: [portfolio-3d-v2]
+    branches: [main, portfolio-3d-v2]
   workflow_dispatch:
 jobs:
   validate:
@@ -15,4 +15,5 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm test
       - run: npm run build
