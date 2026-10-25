@@ -367,3 +367,16 @@ test('later clips accelerate, and trimmed dissolve reverses without jumping to i
     assert.equal(s.media.playbackRate, 1.85);
   } finally { s.close(); }
 });
+
+test('a reverse at the beginning does not seek to the exact end and stall', () => {
+  const s = setup();
+  try {
+    s.c.gesture(1);
+    s.media.currentTime = 0.01;
+    s.tick();
+    s.c.gesture(-1);
+    assert.equal(s.c.state.direction, -1);
+    assert.ok(s.media.currentTime > 7.9 && s.media.currentTime < 8);
+    assert.equal(s.media.calls, 2);
+  } finally { s.close(); }
+});
