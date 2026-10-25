@@ -132,7 +132,7 @@ test('missing ended/timeupdate/pause events recover on the same intentional gest
     s.media.paused = true;
     s.c.gesture(1);
     assert.equal(s.c.state.chapter, 2);
-    assert.equal(s.media.playbackRate, 1.5);
+    assert.equal(s.media.playbackRate, 1.85);
   } finally {
     s.close();
   }
@@ -315,4 +315,55 @@ test('initial buffering stays loading; buffering after media progress is stalled
   } finally {
     s.close();
   }
+});
+
+test('reversing an active first clip resumes at the matching reverse frame', () => {
+  const s = setup();
+  try {
+    s.c.gesture(1);
+    s.media.currentTime = 3.25;
+    s.tick();
+    const plays = s.media.calls;
+    s.c.gesture(-1);
+    assert.equal(s.c.state.chapter, 0);
+    assert.equal(s.c.state.direction, -1);
+    assert.match(s.media.src, /01-goggles-on-continuous-reverse.mp4$/);
+    assert.equal(s.media.currentTime, 4.75, 'Reverse MP4 starts at the equivalent frame');
+    assert.equal(s.media.calls, plays + 1);
+    s.media.currentTime = 5.5;
+    s.tick();
+    s.c.gesture(1);
+    assert.equal(s.c.state.chapter, 0);
+    assert.equal(s.c.state.direction, 1);
+    assert.match(s.media.src, /01-goggles-on-continuous.mp4$/);
+    assert.equal(s.media.currentTime, 2.5, 'A second opposite gesture returns to forward in place');
+    assert.equal(s.media.playbackRate, 1);
+  } finally { s.close(); }
+});
+test('later clips accelerate, and trimmed dissolve reverses without jumping to its start', () => {
+  const s = setup();
+  try {
+    s.c.gesture(1);
+    finish(s);
+    s.c.gesture(1);
+    assert.equal(s.media.playbackRate, 1.6);
+    s.media.currentTime = 4;
+    s.tick();
+    s.c.gesture(-1);
+    assert.equal(s.c.state.chapter, 1);
+    assert.match(s.media.src, /02-dissolve-reverse.mp4$/);
+    assert.equal(s.media.currentTime, 4);
+    assert.equal(s.media.duration, 6.5);
+    assert.equal(s.media.playbackRate, 1.6);
+    s.media.currentTime = 2.5;
+    s.tick();
+    s.c.gesture(1);
+    assert.equal(s.c.state.chapter, 1);
+    assert.equal(s.media.currentTime, 5.5, 'Forward footage restores the 1.5s trim');
+    assert.equal(s.media.playbackRate, 1.6);
+    finish(s);
+    s.c.gesture(1);
+    assert.equal(s.c.state.chapter, 2);
+    assert.equal(s.media.playbackRate, 1.85);
+  } finally { s.close(); }
 });
