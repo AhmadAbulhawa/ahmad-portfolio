@@ -215,7 +215,14 @@ export class CinematicController {
     // Reverse footage represents the same clip, with the 1.5s intro trim
     // already removed from chapter two. Convert within that shared range.
     const remaining = Math.max(0, video.duration - video.currentTime);
-    const mappedTime = remaining + (next === 1 ? FILMS[chapter].start : 0);
+    const incomingStart = next === 1 ? FILMS[chapter].start : 0;
+    const estimatedEnd = video.duration +
+      (next === 1 ? FILMS[chapter].start : -FILMS[chapter].start);
+    // Keep at least one encoded frame to play if the opposite gesture lands
+    // exactly on the incoming clip's last sample (common near chapter start).
+    const lastPlayable = Math.max(incomingStart, estimatedEnd - 1 / 24);
+    const mappedTime = Math.max(incomingStart,
+      Math.min(lastPlayable, remaining + incomingStart));
     this.load(chapter, next, false, mappedTime);
     this.play();
     return true;
