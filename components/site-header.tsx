@@ -43,26 +43,14 @@ export function SiteHeader({ cv }: { cv?: string }) {
   }, [open]);
   const close = () => setOpen(false);
 
-  const returnToIntro = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    close();
-    // Next's same-route Link is a no-op: explicitly reset the video player,
-    // the gesture gate and every gallery state without reloading the page.
-    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-      event.preventDefault();
-      history.replaceState(history.state, '', window.location.pathname + window.location.search);
-      window.dispatchEvent(new Event('portfolio:restart-intro'));
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    }
-  };
 
   return (
     <header className="firn-header" aria-label="Site header">
       <div className="firn-header-inner">
         <Link
-          href="/"
+          href="/#top"
           className="firn-brand"
           aria-label="Ahmad Abulhawa home"
-          onClick={returnToIntro}
         >
           AHMAD<span className="firn-brand-dot">.</span>
         </Link>

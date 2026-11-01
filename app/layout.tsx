@@ -47,28 +47,6 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={manrope.variable}>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: `(function () {
-          try {
-            if (location.pathname !== '/' && location.pathname !== '/index.html') return;
-            history.scrollRestoration = 'manual';
-            var navigation = performance.getEntriesByType('navigation')[0];
-            var isReload = navigation && navigation.type === 'reload';
-            // Incoming /#work, /#about, etc. must start at the cinematic intro.
-            // Strip the fragment in the head, before the browser's native anchor jump.
-            // Clicks on the menu *after* hydration still navigate to those sections.
-            if (location.hash || isReload) {
-              if (isReload) document.documentElement.dataset.portfolioReload = 'true';
-              history.replaceState(history.state, '', location.pathname + location.search);
-              window.scrollTo(0, 0);
-              window.addEventListener('pageshow', function () {
-                window.scrollTo(0, 0);
-                requestAnimationFrame(function () { window.scrollTo(0, 0); });
-              }, { once: true });
-            }
-          } catch (_error) { /* browser does not support restoration settings */ }
-        })();` }} />
-      </head>
       <body id="top">
         <a className="skip-link" href="#main-content">
           Skip to content

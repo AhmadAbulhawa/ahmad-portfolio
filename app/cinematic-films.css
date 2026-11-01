@@ -659,3 +659,42 @@
     font-size: 6px;
   }
 }
+
+
+/* Fast-path homepage hero: native scroll, no fixed overlay, video decoder or WebGL. */
+.film-journey[data-mode='native'] {
+  height: 100svh;
+  min-height: min(560px, 100svh);
+  overscroll-behavior: auto;
+}
+.film-journey[data-mode='native'] .film-stage {
+  position: relative;
+  inset: auto;
+  height: 100svh;
+  min-height: min(560px, 100svh);
+}
+.film-journey[data-mode='native'] .film-sentence h1 > span,
+.film-journey[data-mode='native'] .film-sentence h1 > em {
+  animation: none;
+}
+.film-journey[data-mode='native'] .film-word {
+  opacity: 1;
+  transform: none;
+}
+.film-native-scroll {
+  color: #bed2df;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+}
+@media (max-width: 700px) {
+  .film-native-scroll { display: none; }
+  .film-journey[data-mode='native'] .film-sentence {
+    bottom: clamp(122px, 19svh, 170px);
+  }
+}
+@media (max-height: 540px) {
+  .film-journey[data-mode='native'] .film-sentence {
+    bottom: 82px;
+  }
+}

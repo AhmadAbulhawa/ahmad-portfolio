@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Arrow } from '@/components/icons';
-import { Motion } from '@/components/motion';
 import { FilmChapters } from '@/components/film-chapters';
 import { VideoPlayer } from '@/components/video-player';
 import { TechnologySystem } from '@/components/technology-system';
@@ -11,7 +10,6 @@ export default function Home() {
   const [garage, munjiz, aqar] = projects;
   return (
     <>
-      <Motion />
       <main id="main-content">
         <FilmChapters />
         <div data-portfolio-content>

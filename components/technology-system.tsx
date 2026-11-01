@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { Arrow } from './icons';
-import { LiquidForm } from './threeui/liquid-form';
 type Group = { name: string; items: string[] };
 export function TechnologySystem({ groups }: { groups: Group[] }) {
   const [active, setActive] = useState(0);
@@ -59,7 +58,7 @@ export function TechnologySystem({ groups }: { groups: Group[] }) {
           </div>
         </div>
         <div className="technology-field">
-          <LiquidForm />
+          <div className="liquid-form" aria-hidden="true" />
           {groups.map((g, i) => (
             <div
               key={g.name}
